@@ -22,7 +22,7 @@ async (conn, mek, m, { from, q, reply, botFooter, botPic }) => {
         const uniqueId = Math.random().toString(36).substring(7);
 
         const fancyCaption = `
-✨ *𝐏𝐎𝐏𝐊𝐈𝐃-𝐌𝐃 𝐅𝐁 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃𝐄𝐑* ✨
+✨ *𝐐𝐔𝐄𝐄_𝐁𝐄𝐋𝐋𝐀-𝐌𝐃 𝐅𝐁 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃𝐄𝐑* ✨
 
 📝 *𝐓𝐢𝐭𝐥𝐞:* ${videoData.title || 'Facebook Video'}
 🚀 *𝐒𝐞𝐥𝐞𝐜𝐭 𝐃𝐨𝐰𝐧𝐥𝐨𝐚𝐝 𝐅𝐨𝐫𝐦𝐚𝐭:*

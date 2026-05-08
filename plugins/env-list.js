@@ -90,7 +90,7 @@ cmd({
         await conn.sendMessage(
             from,
             {
-                image: { url: config.MENU_IMAGE_URL },
+                image: { url: config.https://i.imgur.com/687ZxLW.jpeg },
                 caption: iosMenu,
                 contextInfo: {
                     mentionedJid: [m.sender],
@@ -101,8 +101,8 @@ cmd({
                         title: " System Settings Panel",
                         body: "Configuration Management Unit",
                         mediaType: 1,
-                        thumbnailUrl: config.MENU_IMAGE_URL,
-                        sourceUrl: "https://wa.me/254111385747",
+                        thumbnailUrl: config.https://i.imgur.com/687ZxLW.jpeg,
+                        sourceUrl: "https://wa.me/254755660053",
                         showAdAttribution: true
                     }
                 }

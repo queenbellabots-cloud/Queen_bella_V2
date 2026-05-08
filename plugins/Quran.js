@@ -62,7 +62,7 @@ ${translatedTafsirEnglish.text}`;
           forwardingScore: 999,  
           isForwarded: true,   
           forwardedNewsletterMessageInfo: {
-            newsletterJid: '120363289379419860@newsletter', 
+            newsletterJid: '120363423209691396@newsletter', 
             newsletterName: 'queenbella Md', 
             serverMessageId: 143
           }
@@ -444,14 +444,14 @@ async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sen
         await conn.sendMessage(
             from,
             {
-                image: { url: `https://files.catbox.moe/kiy0hl.jpg` },
+                image: { url: `https://i.imgur.com/687ZxLW.jpeg` },
                 caption: dec,
                 contextInfo: {
                     mentionedJid: [m.sender],
                     forwardingScore: 999,
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363289379419860@newsletter',
+                        newsletterJid: '120363423209691396@newsletter',
                         newsletterName: 'queenbella',
                         serverMessageId: 143
                     }

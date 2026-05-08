@@ -1,5 +1,5 @@
 //---------------------------------------------------------------------------
-//           POPKID-MD (MODIFIED: OPEN SETTINGS & ENHANCED FEATURES)
+//           QUEENBELLA-MD (MODIFIED: OPEN SETTINGS & ENHANCED FEATURES)
 //---------------------------------------------------------------------------
 const { cmd, commands } = require('../command');
 const config = require('../config');
@@ -294,7 +294,7 @@ cmd({
 *Privacy:*
 🔹 Read Receipt: ${config.READ_MESSAGE === "true" ? "✅" : "❌"}
 
-> © ᴘᴏᴘᴋɪᴅ xᴍᴅ 2026
+> ©ǫᴜᴇᴇɴʙᴇʟʟᴀ xᴍᴅ 2026
     `;
     return reply(status);
 });

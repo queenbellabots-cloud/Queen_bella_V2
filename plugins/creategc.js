@@ -2,8 +2,8 @@ const config = require('../config');
 const { cmd } = require('../command');
 
 // Newsletter settings
-const NEWSLETTER_JID = "120363423997837331@newsletter";
-const NEWSLETTER_NAME = "popkid xd";
+const NEWSLETTER_JID = "120363423209691396@newsletter";
+const NEWSLETTER_NAME = "queenbella xd";
 const BOT = "Popkid XD";
 
 // Stylish context
@@ -67,7 +67,7 @@ async (conn, mek, m, { from, sender, reply, react, q, isOwner }) => {
 
         // Success message
         const successText =
-`🆕 Popkid XD Group Created
+`🆕 QueenBella XD Group Created
 
 📛 Name : ${groupName}
 🆔 ID   : ${group.id}

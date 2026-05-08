@@ -10,7 +10,7 @@ cmd({
     filename: __filename
 }, async (conn, mek, m, { from, q, reply, botFooter, botPic }) => {
     try {
-        if (!q) return reply("📂 *Popkid, please provide an app name! (e.g., .apk WhatsApp)*");
+        if (!q) return reply("📂 *Queenbella, please provide an app name! (e.g., .apk WhatsApp)*");
 
         await conn.sendMessage(from, { react: { text: "🔍", key: mek.key } });
 
@@ -29,7 +29,7 @@ cmd({
 
         const fancyCaption = `
 ╔═══════════════════╗
-     📂  *𝐏𝐎𝐏𝐊𝐈𝐃-𝐌𝐃 𝐀𝐏𝐊* 📂
+     📂  *𝐐𝐔𝐄𝐄𝐍𝐁𝐄𝐋𝐋𝐀-𝐌𝐃 𝐀𝐏𝐊* 📂
 ╚═══════════════════╝
 
 📌 *𝐍𝐚𝐦𝐞:* ${app.name}
@@ -45,7 +45,7 @@ cmd({
         await sendButtons(conn, from, {
             title: `ᴀᴘᴋ ᴅᴏᴡɴʟᴏᴀᴅᴇʀ`,
             text: fancyCaption,
-            footer: botFooter || 'ᴘᴏᴘᴋɪᴅ ᴀɪ ᴋᴇɴʏᴀ 🇰🇪',
+            footer: botFooter || 'ǫᴜᴇᴇɴʙᴇʟʟᴀ ᴀɪ ᴋᴇɴʏᴀ',
             image: app.icon || botPic,
             buttons: [
                 { id: `appdoc_${dateNow}`, text: "📁 𝐒𝐞𝐧𝐝 𝐀𝐏𝐊 𝐅𝐢𝐥𝐞" },

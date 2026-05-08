@@ -55,7 +55,7 @@ ${translatedTafsirEnglish.text}`;
     await conn.sendMessage(
       from,
       {
-        image: { url: `https://files.catbox.moe/kiy0hl.jpg` },
+        image: { url: `https://i.imgur.com/687ZxLW.jpeg` },
         caption: quranSurah,
         contextInfo: {
           mentionedJid: [m.sender], 
@@ -63,7 +63,7 @@ ${translatedTafsirEnglish.text}`;
           isForwarded: true,   
           forwardedNewsletterMessageInfo: {
             newsletterJid: '120363289379419860@newsletter', 
-            newsletterName: 'popkid MD', 
+            newsletterName: 'queenbella Md', 
             serverMessageId: 143
           }
         }
@@ -452,7 +452,7 @@ async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sen
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
                         newsletterJid: '120363289379419860@newsletter',
-                        newsletterName: 'popkid',
+                        newsletterName: 'queenbella',
                         serverMessageId: 143
                     }
                 }

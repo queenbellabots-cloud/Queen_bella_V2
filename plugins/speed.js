@@ -17,13 +17,13 @@ cmd({
         const end = Date.now();
         const latency = end - start;
 
-        // Compact vCard (Popkid Ke)
+        // Compact vCard (Rodgers Ke)
         const fakevCard = {
             key: { fromMe: false, participant: "0@s.whatsapp.net", remoteJid: "status@broadcast" },
             message: {
                 contactMessage: {
                     displayName: "Popkid Ke",
-                    vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:popkid\nORG:popkid;\nTEL;type=CELL;type=VOICE;waid=254111385747:+254111385747\nEND:VCARD`
+                    vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:queenbella\nORG:queenbella;\nTEL;type=CELL;type=VOICE;waid=254755660053:+254755660053\nEND:VCARD`
                 }
             }
         };
@@ -34,14 +34,14 @@ cmd({
             forwardingScore: 999,
             isForwarded: true,
             forwardedNewsletterMessageInfo: {
-                newsletterJid: config.NEWSLETTER_JID || '120363423997837331@newsletter',
-                newsletterName: config.OWNER_NAME || 'POPKID XMD',
+                newsletterJid: config.NEWSLETTER_JID || '120363423209691396@newsletter',
+                newsletterName: config.OWNER_NAME || 'QUEEN BELLA MD',
                 serverMessageId: 1
             }
         };
 
         // Clean Text output
-        const speedMessage = `🚀 *Response:* ${latency}ms\n🛸 *Lag:* ${(latency / 12).toFixed(2)}ms\n\n> © Popkid Ke`;
+        const speedMessage = `🚀 *Response:* ${latency}ms\n🛸 *Lag:* ${(latency / 12).toFixed(2)}ms\n\n> © Rodgers Ke`;
 
         // Send message without the large thumbnail
         await conn.sendMessage(from, { 

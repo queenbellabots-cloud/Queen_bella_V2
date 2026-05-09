@@ -36,10 +36,10 @@ cmd({
             await conn.updateProfilePicture(conn.user.id, media);
             
             const successMsg = `
-✨ *𝐏𝐎𝐏𝐊𝐈𝐃-𝐌𝐃 𝐔𝐏𝐃𝐀𝐓𝐄* ✨
+✨ *𝐐𝐔𝐄𝐄𝐍 𝐁𝐄𝐋𝐋𝐀-𝐌𝐃 𝐔𝐏𝐃𝐀𝐓𝐄* ✨
 
 🖼️ *𝐒𝐭𝐚𝐭𝐮𝐬:* Profile Picture Changed
-👤 *𝐀𝐜𝐭𝐢𝐨𝐧 𝐛𝐲:* Popkid
+👤 *𝐀𝐜𝐭𝐢𝐨𝐧 𝐛𝐲:* Queen bella
 🛡️ *𝐒𝐞𝐜𝐮𝐫𝐢𝐭𝐲:* Native Encryption
 
 > *Your bot identity has been refreshed.*
@@ -47,7 +47,7 @@ cmd({
 
             await conn.sendMessage(from, { 
                 text: successMsg,
-                footer: botFooter || 'ᴘᴏᴘᴋɪᴅ ᴀɪ ᴋᴇɴʏ𝐚 🇰🇪'
+                footer: botFooter || 'ǫᴜᴇᴇɴ ʙᴇʟʟᴀ ᴀɪ ᴋᴇɴʏ𝐚 🇰🇪'
             }, { quoted: mek });
         }
 

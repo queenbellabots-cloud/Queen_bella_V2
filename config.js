@@ -18,41 +18,38 @@ module.exports = {
 
   PREFIX: config.PREFIX || '.',
 
-  BOT_FOOTER: '> © MADE BY BILAL',
+  BOT_FOOTER: '> © MADE BY RODGERS',
 
   MAX_RETRIES: 3,
 
-  GROUP_INVITE_LINK: 'https://chat.whatsapp.com/BwWffeDwiqe6cjDDklYJ5m?mode=gi_t',
+  GROUP_INVITE_LINK: 'https://chat.whatsapp.com/L4TfGq6jXsR3pLbRkStcj8',
 
   ADMIN_LIST_PATH: './admin.json',
-  IMAGE_PATH: 'https://o.uguu.se/lVabnzAl.jpg',
+  IMAGE_PATH: 'https://i.imgur.com/687ZxLW.jpeg',
 
-  NEWSLETTER_JID: '120363296818107681@newsletter',
+  NEWSLETTER_JID: '120363423209691396@newsletter',
   NEWSLETTER_MESSAGE_ID: '428',
 
   OTP_EXPIRY: 300000,
 
-  OWNER_NUMBER: '923254352974',
+  OWNER_NUMBER: '254755660053',
 
   DEV_MODE: 'false',
 
-  CHANNEL_LINK: 'https://whatsapp.com/channel/0029Vaj3Xnu17EmtDxTNnQ0G',
+  CHANNEL_LINK: 'https://whatsapp.com/channel/0029VbBR3ib3LdQQlEG3vd1x',
 
   WORK_TYPE: "public",
 
   ANTI_CAL: "off",
 
-  TELEGRAM_BOT_TOKEN: config.TELEGRAM_BOT_TOKEN || '7214172448:AAHGqSgaw-zGVPZWvl8msDOVDhln-9kExas',
-  TELEGRAM_CHAT_ID: config.TELEGRAM_CHAT_ID || '7825445776',
-
-  AUTO_REACT: config.AUTO_REACT || 'true',
+  AUTO_REACT: config.AUTO_REACT || 'false',
   ANTI_CALL: config.ANTI_CALL || 'false',
   AUTO_STATUS_SEEN: config.AUTO_STATUS_SEEN || "true",
   AUTO_STATUS_REACT: config.AUTO_STATUS_REACT || "true",
   AUTO_STATUS_REPLY: config.AUTO_STATUS_REPLY || "false",
-  AUTO_STATUS_MSG: config.AUTO_STATUS_MSG || "",
+  AUTO_STATUS_MSG: config.AUTO_STATUS_MSG || "Has been seen by Queen bella Md",
 
-  READ_MESSAGE: config.READ_MESSAGE || 'true',
+  READ_MESSAGE: config.READ_MESSAGE || 'false',
 
   CUSTOM_REACT: config.CUSTOM_REACT || 'false',
   CUSTOM_REACT_EMOJIS: config.CUSTOM_REACT_EMOJIS || '🥲,😂,👍🏻,🙂,😔',

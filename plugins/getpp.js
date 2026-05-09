@@ -31,14 +31,14 @@ cmd({
             ppUrl = await conn.profilePictureUrl(target, 'image');
         } catch (e) {
             // If high-res fails, try low-res or return error
-            ppUrl = 'https://telegra.ph/file/0285437887752697a29f8.jpg'; // Default Placeholder
+            ppUrl = 'https://i.imgur.com/687ZxLW.jpeg'; // Default Placeholder
         }
 
         const userNumber = target.split('@')[0];
 
         // 3. Craft the Stylish Message
         const stylishMsg = `
-✨ *𝐏𝐎𝐏𝐊𝐈𝐃-𝐌𝐃 𝐏𝐑𝐎𝐅𝐈𝐋𝐄* ✨
+✨ *𝐐𝐔𝐄𝐄𝐍_𝐁𝐄𝐋𝐋𝐀-𝐌𝐃 𝐏𝐑𝐎𝐅𝐈𝐋𝐄* ✨
 
 👤 *𝐔𝐬𝐞𝐫:* @${userNumber}
 📂 *𝐒𝐭𝐚𝐭𝐮𝐬:* Successfully Retrieved
@@ -52,13 +52,13 @@ cmd({
             image: { url: ppUrl },
             caption: stylishMsg,
             mentions: [target],
-            footer: botFooter || 'ᴘᴏᴘᴋɪᴅ ᴀɪ ᴋᴇɴʏᴀ 🇰🇪'
+            footer: botFooter || 'ǫᴜᴇᴇɴʙᴇʟʟᴀ ᴀɪ ᴋᴇɴʏᴀ 🇰🇪'
         }, { quoted: mek });
 
         await conn.sendMessage(from, { react: { text: "✅", key: mek.key } });
 
     } catch (err) {
         console.error("GETPP ERROR:", err);
-        reply("❌ *Popkid, I couldn't fetch that!* \n\nThis happens if the user has hidden their profile picture or if the number is not on WhatsApp.");
+        reply("❌ *QueenBella, I couldn't fetch that!* \n\nThis happens if the user has hidden their profile picture or if the number is not on WhatsApp.");
     }
 });

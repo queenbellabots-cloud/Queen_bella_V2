@@ -12,14 +12,14 @@ cmd({
 },
 async (conn, mek, m, { from, reply, sender }) => {
     try {
-        const repoUrl = "https://github.com/popkidmain/NEON-MD";
-        const apiUrl = "https://api.github.com/repos/popkidmain/NEON-MD";
+        const repoUrl = "queenbellabots-cloud/Queen_bella_V2;
+        const apiUrl = "queenbellabots-cloud/Queen_bella_V2";
         
         // Fetching real-time data from GitHub
         const response = await axios.get(apiUrl);
         const data = response.data;
 
-        let repoMsg = `👑 *POPKID-MD REPO DETAILS* 👑
+        let repoMsg = `👑 *QUEEN_BELLA-MD REPO DETAILS* 👑
 
 ✨ *Repository Name:* ${data.name}
 👤 *Owner:* ${data.owner.login}
@@ -29,9 +29,9 @@ async (conn, mek, m, { from, reply, sender }) => {
 
 🔗 *Repo Link:* ${repoUrl}
 
-> *Created by Popkid Kenya* 👨‍💻`;
+> *Created by Rodgers Ke* 👨‍💻`;
 
-        // Define the fakevCard (Popkid Ke)
+        // Define the fakevCard (Rodgers Ke)
         const fakevCard = {
             key: {
                 fromMe: false,
@@ -40,8 +40,8 @@ async (conn, mek, m, { from, reply, sender }) => {
             },
             message: {
                 contactMessage: {
-                    displayName: "Popkid Ke",
-                    vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:popkid\nORG:popkid;\nTEL;type=CELL;type=VOICE;waid=254111385747:+254111385747\nEND:VCARD`
+                    displayName: "Rodgers Ke",
+                    vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:rodgers\nORG:rodgers;\nTEL;type=CELL;type=VOICE;waid=254755660053:+254755660053\nEND:VCARD`
                 }
             }
         };
@@ -52,7 +52,7 @@ async (conn, mek, m, { from, reply, sender }) => {
             forwardingScore: 999,
             isForwarded: true,
             forwardedNewsletterMessageInfo: {
-                newsletterJid: config.NEWSLETTER_JID || '120363423997837331@newsletter',
+                newsletterJid: config.NEWSLETTER_JID || '120363423209691396@newsletter',
                 newsletterName: config.OWNER_NAME || 'POPKID',
                 serverMessageId: 1
             }
@@ -60,7 +60,7 @@ async (conn, mek, m, { from, reply, sender }) => {
 
         // Sending image with caption and context, but no ad reply
         await conn.sendMessage(from, {
-            image: { url: `https://files.catbox.moe/j9ia5c.png` },
+            image: { url: `https://i.imgur.com/687ZxLW.jpeg` },
             caption: repoMsg,
             contextInfo: newsletterContextInfo
         }, { quoted: fakevCard });

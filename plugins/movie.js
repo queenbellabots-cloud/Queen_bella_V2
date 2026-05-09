@@ -47,7 +47,7 @@ cmd({
     if (choice === 1) {
         let menu = `
 ╭──────────────────╮
-│ *POP MDX MOVIE DOWNLOAD*
+│ *QUEEN_BELLA MD MOVIE DOWNLOAD*
 ╰──────────────────╯
 
 ➠ *Title* : ${movie.title}
@@ -69,7 +69,7 @@ cmd({
 10 || HD 720p  [ MIRROR ]
 11 || SD 480p  [ MIRROR ]
 
-> powered by popkid tech
+> powered by dev rodgers
         `.trim()
 
         return conn.sendMessage(from, {

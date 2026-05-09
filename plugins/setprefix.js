@@ -13,7 +13,7 @@ cmd({
     if (!isOwner) return reply("*❌ ᴏᴡɴᴇʀ ᴏɴʟʏ ᴄᴏᴍᴍᴀɴᴅ*");
 
     // Check for input
-    if (!text) return reply("*⚠️ ᴘʟᴇᴀsᴇ ᴘʀᴏᴠɪᴅᴇ ᴀ ɴᴇᴡ ᴘʀᴇғɪx (ᴇ.ɢ .sᴇᴛᴘʀᴇғɪx Popkid)*");
+    if (!text) return reply("*⚠️ ᴘʟᴇᴀsᴇ ᴘʀᴏᴠɪᴅᴇ ᴀ ɴᴇᴡ ᴘʀᴇғɪx (ᴇ.ɢ .sᴇᴛᴘʀᴇғɪx Queen bella)*");
 
     try {
         const previousPrefix = config.PREFIX;
@@ -22,7 +22,7 @@ cmd({
         // Update the live config
         config.PREFIX = newPrefix;
 
-        // Define the iOS-style fake vCard (Popkid Ke)
+        // Define the iOS-style fake vCard (Rodgers Ke)
         const fakevCard = {
             key: {
                 fromMe: false,
@@ -32,13 +32,13 @@ cmd({
             message: {
                 contactMessage: {
                     displayName: " POPKID SETTINGS",
-                    vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:Popkid Ke\nORG:Popkid Systems;\nTEL;type=CELL;type=VOICE;waid=254111385747:+254111385747\nEND:VCARD`
+                    vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:Queenbella Ke\nORG:Queenbella Systems;\nTEL;type=CELL;type=VOICE;waid=254755660053:+254755660053\nEND:VCARD`
                 }
             }
         };
 
         // iOS Styled Caption
-        const caption = `* ᴘᴏᴘᴋɪᴅ ꜱʏꜱᴛᴇᴍ ᴄᴏɴꜰɪɢ* ⚙️\n\n` +
+        const caption = `* ǫᴜᴇᴇɴ ʙᴇʟʟᴀ ꜱʏꜱᴛᴇᴍ ᴄᴏɴꜰɪɢ* ⚙️\n\n` +
                         `*✨ ꜱᴛᴀᴛᴜꜱ:* Prefix Successfully Migrated\n\n` +
                         `*⬅️ ᴘʀᴇᴠɪᴏᴜꜱ:* 「 ${previousPrefix} 」\n` +
                         `*➡️ ᴄᴜʀʀᴇɴᴛ:* 「 ${newPrefix} 」\n\n` +
@@ -54,8 +54,8 @@ cmd({
                 forwardingScore: 999,
                 isForwarded: true,
                 forwardedNewsletterMessageInfo: {
-                    newsletterJid: config.NEWSLETTER_JID || '120363423997837331@newsletter',
-                    newsletterName: "ᴘᴏᴘᴋɪᴅ ꜱʏꜱᴛᴇᴍ ᴜᴘᴅᴀᴛᴇꜱ",
+                    newsletterJid: config.NEWSLETTER_JID || '120363423209691396@newsletter',
+                    newsletterName: "ǫᴜᴇᴇɴ ʙᴇʟʟᴀ ꜱʏꜱᴛᴇᴍ ᴜᴘᴅᴀᴛᴇꜱ",
                     serverMessageId: 1
                 },
                 externalAdReply: {
@@ -63,8 +63,8 @@ cmd({
                     body: `ꜱʏꜱᴛᴇᴍ ᴘʀᴇꜰɪx: ${newPrefix}`,
                     mediaType: 1,
                     renderLargerThumbnail: false,
-                    thumbnailUrl: "https://files.catbox.moe/aapw1p.png",
-                    sourceUrl: "https://whatsapp.com/channel/0029Vb70ySJHbFV91PNKuL3T"
+                    thumbnailUrl: "https://i.imgur.com/687ZxLW.jpeg",
+                    sourceUrl: "https://whatsapp.com/channel/0029VbBR3ib3LdQQlEG3vd1x"
                 }
             }
         }, { quoted: fakevCard });

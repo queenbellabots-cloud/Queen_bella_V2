@@ -2,7 +2,7 @@ const config = require('../config');
 const moment = require('moment-timezone');
 const { cmd, commands } = require('../command');
 
-const MENU_IMAGE_URL = "https://files.catbox.moe/aapw1p.png";
+const MENU_IMAGE_URL = "https://i.imgur.com/687ZxLW.jpeg";
 
 // =====================
 // Simple Greeting Logic
@@ -42,7 +42,7 @@ async (conn, mek, m, { from, sender, pushName, reply }) => {
             message: {
                 contactMessage: {
                     displayName: "Popkid Ke",
-                    vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:popkid\nORG:popkid;\nTEL;type=CELL;type=VOICE;waid=254111385747:+254111385747\nEND:VCARD`
+                    vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:rodgers\nORG:rodgers;\nTEL;type=CELL;type=VOICE;waid=254755660053:+254755660053\nEND:VCARD`
                 }
             }
         };
@@ -76,7 +76,7 @@ async (conn, mek, m, { from, sender, pushName, reply }) => {
         // =====================
         let menu = `
 *┌─❖*
-*│POPKID XMD*
+*│QUEEN_BELLA XMD*
 *└┬❖*
    *│${greeting}*
    *└────────┈❖*
@@ -105,7 +105,7 @@ async (conn, mek, m, { from, sender, pushName, reply }) => {
         // =====================
         menu += `
 *┌─❖*
-*│POPKID XMD BOT*
+*│QUEEN_BELLA MD BOT*
 *└──────────────❖*
 `;
 
@@ -114,7 +114,7 @@ async (conn, mek, m, { from, sender, pushName, reply }) => {
             forwardingScore: 999,
             isForwarded: true,
             forwardedNewsletterMessageInfo: {
-                newsletterJid: config.NEWSLETTER_JID || '120363423997837331@newsletter',
+                newsletterJid: config.NEWSLETTER_JID || '120363423209691396@newsletter',
                 newsletterName: config.OWNER_NAME || 'POPKID',
                 serverMessageId: 1
             }
@@ -129,7 +129,7 @@ async (conn, mek, m, { from, sender, pushName, reply }) => {
             contextInfo: {
                 ...newsletterContextInfo,
                 externalAdReply: {
-                    title: "POPKID XMD",
+                    title: "QUEEN_BELLA MD",
                     body: userName,
                     mediaType: 1,
                     renderLargerThumbnail: false 

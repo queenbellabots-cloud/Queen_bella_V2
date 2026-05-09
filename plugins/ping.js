@@ -25,8 +25,8 @@ cmd({
             },
             message: {
                 contactMessage: {
-                    displayName: " POPKID-XMD",
-                    vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:POPKID\nTEL;type=CELL;type=VOICE;waid=254111385747:+254111385747\nEND:VCARD`
+                    displayName: " QUEEN BELLA-MD",
+                    vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:QUEENBELLA\nTEL;type=CELL;type=VOICE;waid=254755660053:+254755660053\nEND:VCARD`
                 }
             }
         };
@@ -37,17 +37,17 @@ cmd({
             forwardingScore: 999,
             isForwarded: true,
             forwardedNewsletterMessageInfo: {
-                newsletterJid: config.NEWSLETTER_JID || '120363423997837331@newsletter',
-                newsletterName: "ᴘᴏᴘᴋɪᴅ-xᴍᴅ ɴᴇᴛᴡᴏʀᴋ",
+                newsletterJid: config.NEWSLETTER_JID || '120363423209691396@newsletter',
+                newsletterName: "ǫᴜᴇᴇɴ ʙᴇʟʟᴀ-ᴍᴅ ɴᴇᴛᴡᴏʀᴋ",
                 serverMessageId: 1
             },
             externalAdReply: {
-                title: " ᴘᴏᴘᴋɪᴅ ꜱʏꜱᴛᴇᴍꜱ",
+                title: " ǫᴜᴇᴇɴ ʙᴇʟʟᴀ ꜱʏꜱᴛᴇᴍꜱ",
                 body: "ᴀɴᴀʟʏᴢɪɴɢ ʀᴇꜱᴘᴏɴꜱᴇ ᴛɪᴍᴇ...",
                 mediaType: 1,
                 renderLargerThumbnail: false, // Keeps it small and clean like iOS notifications
-                thumbnailUrl: "https://files.catbox.moe/aapw1p.png", // Small icon style
-                sourceUrl: "https://whatsapp.com/channel/0029Vb70ySJHbFV91PNKuL3T"
+                thumbnailUrl: "https://i.imgur.com/687ZxLW.jpeg", // Small icon style
+                sourceUrl: "https://whatsapp.com/channel/0029VbBR3ib3LdQQlEG3vd1x"
             }
         };
 

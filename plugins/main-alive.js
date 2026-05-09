@@ -22,7 +22,7 @@ async (conn, mek, m, { from, sender, reply }) => {
             return `${h}h ${m}m ${s}s`;
         };
 
-        const status = `*┏────〘 ᴘᴏᴘᴋɪᴅ 〙───⊷*
+        const status = `*┏────〘 ǫᴜᴇᴇɴ_ʙᴇʟʟᴀ 〙───⊷*
 *┃* *🌐 Platform:* Heroku
 *┃* *📦 Mode:* ${config.MODE || 'private'}
 *┃* *👑 Owner:* ${config.OWNER_NAME || 'ᴘᴏᴘᴋɪᴅ'}

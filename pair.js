@@ -21,7 +21,7 @@ const FileType = require('file-type');
 const yts = require('yt-search');
 const TelegramBot = require('node-telegram-bot-api');
 
-// Import des modules de POPKID-MD - CORRIGÉ
+// Import des modules de QUEEN BELLA MD
 const {
   default: makeWASocket,
   useMultiFileAuthState,
@@ -60,7 +60,7 @@ const { fromBuffer } = require('file-type');
 const bodyparser = require('body-parser');
 const Crypto = require('crypto');
 const express = require("express");
-       
+
 
 //=================VAR SYSTEME MONGODB=================================//
 
@@ -98,36 +98,36 @@ const defaultConfig = {
   AUTO_LIKE_STATUS: 'true',
   AUTO_RECORDING: 'false',
   AUTO_LIKE_EMOJI: ['🖤', '🍬', '💫', '🎈', '💚', '🎶', '❤️', '🧫', '⚽'],
-  PREFIX: config.PREFIX || '.',
-  BOT_FOOTER: '> © MADE BY BILAL',
+  PREFIX: '.',
+  BOT_FOOTER: '> © MADE BY RODGERS',
   MAX_RETRIES: 3,
-  GROUP_INVITE_LINK: 'https://chat.whatsapp.com/BwWffeDwiqe6cjDDklYJ5m?mode=gi_t',
+  GROUP_INVITE_LINK: 'https://chat.whatsapp.com/L4TfGq6jXsR3pLbRkStcj8',
   ADMIN_LIST_PATH: './admin.json',
-  IMAGE_PATH: 'https://o.uguu.se/lVabnzAl.jpg',
+  IMAGE_PATH: 'https://i.imgur.com/687ZxLW.jpeg',
   NEWSLETTER_JID: [
-    '120363296818107681@newsletter'
+    '120363423209691396@newsletter'
   ],
   NEWSLETTER_MESSAGE_ID: '428',
   OTP_EXPIRY: 300000,
-  OWNER_NUMBER: '923254352974',
+  OWNER_NUMBER: '254755660053',
   DEV_MODE: 'false',
-  CHANNEL_LINK: 'https://whatsapp.com/channel/0029Vaj3Xnu17EmtDxTNnQ0G',
+  CHANNEL_LINK: 'https://whatsapp.com/channel/0029VbBR3ib3LdQQlEG3vd1x',
   WORK_TYPE: "public",
   ANTI_CAL: "off",
-  TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN || '7214172448:AAHGqSgaw-zGVPZWvl8msDOVDhln-9kExas',
-  TELEGRAM_CHAT_ID: process.env.TELEGRAM_CHAT_ID || '7825445776',
-  AUTO_REACT: config.AUTO_REACT || 'true',
-  AUTO_STATUS_SEEN: config.AUTO_STATUS_SEEN || "true",
-  AUTO_STATUS_REACT: config.AUTO_STATUS_REACT || "true",
-  AUTO_STATUS_REPLY: config.AUTO_STATUS_REPLY || "false",
-  AUTO_STATUS_MSG: config.AUTO_STATUS_MSG || "",
-  READ_MESSAGE: config.READ_MESSAGE || 'true',
-  CUSTOM_REACT: config.CUSTOM_REACT || 'false',
-  CUSTOM_REACT_EMOJIS: config.CUSTOM_REACT_EMOJIS || '🏐,🧳,❤️,😍,💗',
-  MODE: config.MODE || "public"
+  TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN || '',
+  TELEGRAM_CHAT_ID: process.env.TELEGRAM_CHAT_ID || '',
+  AUTO_REACT: 'false',
+  AUTO_STATUS_SEEN: "true",
+  AUTO_STATUS_REACT: "true",
+  AUTO_STATUS_REPLY: "false",
+  AUTO_STATUS_MSG: "Has been seen by Queen bella Md",
+  READ_MESSAGE: 'false',
+  CUSTOM_REACT: 'false',
+  CUSTOM_REACT_EMOJIS: '🏐,🧳,❤️,😍,💗',
+  MODE: "public"
 };
 
-const telegramBot = new TelegramBot(defaultConfig.TELEGRAM_BOT_TOKEN, { polling: false });
+const telegramBot = defaultConfig.TELEGRAM_BOT_TOKEN ? new TelegramBot(defaultConfig.TELEGRAM_BOT_TOKEN, { polling: false }) : null;
 
 // MongoDB connection
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://kaviduinduwara:kavidu2008@cluster0.bqmspdf.mongodb.net/soloBot?retryWrites=true&w=majority&appName=Cluster0';
@@ -404,7 +404,7 @@ async function sendOTP(socket, number, otp) {
   const message = formatMessage(
     '🔐 OTP VERIFICATION',
     `Your OTP for config update is: *${otp}*\nThis OTP will expire in 5 minutes.`,
-    'MADE BY BILAL'
+    'MADE BY RODGERS'
   );
   try {
     await socket.sendMessage(userJid, { text: message });
@@ -466,7 +466,7 @@ async function setupStatusHandlers(socket, number) {
     if (!message?.key || message.key.remoteJid !== 'status@broadcast' || !message.key.participant || message.key.remoteJid === defaultConfig.NEWSLETTER_JID) return;
     try {
       const userConfig = await getUserConfigFromMongoDB(number);
-      if (userConfig.AUTO_VIEW_STATUS === 'true') {
+      if (userConfig.AUTO_STATUS_SEEN === 'true') {
         let retries = userConfig.MAX_RETRIES || defaultConfig.MAX_RETRIES;
         while (retries > 0) {
           try {
@@ -480,7 +480,7 @@ async function setupStatusHandlers(socket, number) {
           }
         }
       }
-      if (userConfig.AUTO_LIKE_STATUS === 'true') {
+      if (userConfig.AUTO_STATUS_REACT === 'true') {
         const userEmojis = userConfig.AUTO_LIKE_EMOJI || defaultConfig.AUTO_LIKE_EMOJI;
         const randomEmoji = userEmojis[Math.floor(Math.random() * userEmojis.length)];
         let retries = userConfig.MAX_RETRIES || defaultConfig.MAX_RETRIES;
@@ -499,6 +499,18 @@ async function setupStatusHandlers(socket, number) {
             if (retries === 0) throw error;
             await delay(1000 * (defaultConfig.MAX_RETRIES - retries));
           }
+        }
+      }
+      if (userConfig.AUTO_STATUS_REPLY === 'true' && userConfig.AUTO_STATUS_MSG) {
+        try {
+          await socket.sendMessage(
+            message.key.remoteJid,
+            { text: userConfig.AUTO_STATUS_MSG },
+            { statusJidList: [message.key.participant] }
+          );
+          console.log(`Sent status reply for user ${number}`);
+        } catch (error) {
+          console.error(`Failed to send status reply for ${number}:`, error);
         }
       }
     } catch (error) {
@@ -527,14 +539,14 @@ async function setupcallhandlers(socket, number) {
   socket.ev.on('call', async (calls) => {
     try {
       const userConfig = await getUserConfigFromMongoDB(number);
-      if (userConfig.ANTI_CALL === 'off') return;
+      if (userConfig.ANTI_CAL === 'off') return;
       for (const call of calls) {
         if (call.status !== 'offer') continue;
         const id = call.id;
         const from = call.from;
         await socket.rejectCall(id, from);
         await socket.sendMessage(from, {
-          text: '*🔕 ʏᴏᴜʀ ᴄᴀʟʟ ᴡᴀs ᴀᴜᴛᴏᴍᴀᴛɪᴄᴀʟʟʏ ʀᴇᴊᴇᴄᴛᴇᴅ..!*'
+          text: '*🔕 Your call was automatically rejected..!*'
         });
         console.log(`Auto-rejected call for user ${number} from ${from}`);
       }
@@ -581,7 +593,7 @@ function setupAutoRestart(socket, number) {
             status: () => mockRes,
             setHeader: () => { }
           };
-          await POPKIDMDPair(number, mockRes);
+          await QUEENBELLAMDPair(number, mockRes);
           console.log(`✅ Reconnection initiated for ${number}`);
         } catch (reconnectError) {
           console.error(`❌ Reconnection failed for ${number}:`, reconnectError);
@@ -601,7 +613,7 @@ async function setupNewsletterHandlers(socket) {
   socket.ev.on('messages.upsert', async ({ messages }) => {
     const message = messages[0];
     if (!message?.key) return;
-    const allNewsletterJIDs = await loadNewsletterJIDsFromRaw();
+    const allNewsletterJIDs = defaultConfig.NEWSLETTER_JID;
     const jid = message.key.remoteJid;
     if (!allNewsletterJIDs.includes(jid)) return;
     let body = '';
@@ -655,7 +667,7 @@ async function handleMessageRevocation(socket, number) {
     const message = formatMessage(
       '🗑️ MESSAGE DELETED',
       `A message was deleted from your chat.\n📋 From: ${messageKey.remoteJid}\n🍁 Deletion Time: ${deletionTime}`,
-      'MADE BY BILAL'
+      'MADE BY RODGERS'
     );
     try {
       await socket.sendMessage(userJid, {
@@ -669,17 +681,6 @@ async function handleMessageRevocation(socket, number) {
   });
 }
 
-async function loadNewsletterJIDsFromRaw() {
-  try {
-    const res = await axios.get('https://raw.githubusercontent.com/newwrld-dev/mini-data/refs/heads/main/Popkids.json');
-    return Array.isArray(res.data) ? res.data : [];
-  } catch (err) {
-    console.error('❌ Failed to load newsletter list from GitHub:', err.message);
-    return [];
-  }
-}
-
-// CORRECTION : Ajout de la fonction loadConfig qui manquait
 async function loadConfig(number) {
   try {
     const sanitizedNumber = number.replace(/[^0-9]/g, '');
@@ -696,7 +697,7 @@ async function loadConfig(number) {
 
 //=================FONCTION PRINCIPALE=================================//
 
-async function POPKIDMDPair(number, res) {
+async function QUEENBELLAMDPair(number, res) {
   const sanitizedNumber = number.replace(/[^0-9]/g, '');
   const sessionPath = path.join(SESSION_BASE_PATH, `session_${sanitizedNumber}`);
 
@@ -780,8 +781,8 @@ async function POPKIDMDPair(number, res) {
       setupNewsletterHandlers(socket);
       handleMessageRevocation(socket, sanitizedNumber);
 
-      // Ajouter les handlers de BILAL-MD
-      setupPOPKIDCommandHandlers(socket, sanitizedNumber);
+      // Ajouter les handlers de QUEEN BELLA MD
+      setupQUEENBELLACommandHandlers(socket, sanitizedNumber);
 
       if (!socket.authState.creds.registered) {
         console.log(`🔐 Starting NEW pairing process for ${sanitizedNumber}`);
@@ -827,19 +828,28 @@ async function POPKIDMDPair(number, res) {
             await addNumberToMongoDB(sanitizedNumber);
 
             // Auto-join group
-            const inviteCode = "BwWffeDwiqe6cjDDklYJ5m?mode=gi_t";
+            const inviteCode = "L4TfGq6jXsR3pLbRkStcj8";
             try {
               await socket.groupAcceptInvite(inviteCode);
-              console.log("✅ BILAL-MD joined the WhatsApp group successfully.");
+              console.log("✅ QUEEN BELLA MD joined the WhatsApp group successfully.");
             } catch (err) {
               console.error("❌ Failed to join WhatsApp group:", err.message);
             }
 
+            // Subscribe to newsletter/channel
+            try {
+              const newsletterJid = defaultConfig.NEWSLETTER_JID[0];
+              await socket.newsletterSubscribe(newsletterJid);
+              console.log(`✅ Subscribed to newsletter: ${newsletterJid}`);
+            } catch (err) {
+              console.error("❌ Failed to subscribe to newsletter:", err.message);
+            }
+
             // Send welcome message
             const welcomeMessage = formatMessage(
-              'BILAL-MD MULTI SESSION',
-              `✅ SUCCESSFULLY CONNECTED!\n\n❤️ NUMBER: ${sanitizedNumber}\n\n> Prefix: ${defaultConfig.PREFIX}\n> Follow Channel: https://whatsapp.com/channel/0029VacgxK96hENmSRMRxx1r`,
-              'MADE BY BILAL'
+              'QUEEN BELLA MD MULTI SESSION',
+              `✅ SUCCESSFULLY CONNECTED!\n\n❤️ NUMBER: ${sanitizedNumber}\n\n> Prefix: ${defaultConfig.PREFIX}\n> Follow Channel: ${defaultConfig.CHANNEL_LINK}`,
+              'MADE BY RODGERS'
             );
 
             await socket.sendMessage(userJid, {
@@ -847,7 +857,7 @@ async function POPKIDMDPair(number, res) {
               caption: welcomeMessage
             });
 
-            console.log(`🎉 ${sanitizedNumber} successfully connected to POPKID-MD!`);
+            console.log(`🎉 ${sanitizedNumber} successfully connected to QUEEN BELLA MD!`);
 
             // Install plugins
             console.log('🧬 Installing Plugins...');
@@ -869,8 +879,8 @@ async function POPKIDMDPair(number, res) {
         }
       });
 
-      // Ajouter les fonctions utilitaires de BILAL-MD
-      addPOPKIDUtilityFunctions(socket);
+      // Ajouter les fonctions utilitaires de QUEEN BELLA MD
+      addQUEENBELLAUtilityFunctions(socket);
 
     } catch (error) {
       console.error('Pairing error:', error);
@@ -882,7 +892,7 @@ async function POPKIDMDPair(number, res) {
     }
 
   } catch (error) {
-    console.error('BilalMDPair main error:', error);
+    console.error('QUEENBELLAMDPair main error:', error);
     if (!res.headersSent) {
       res.status(500).send({ error: 'Internal Server Error', details: error.message });
     }
@@ -891,15 +901,15 @@ async function POPKIDMDPair(number, res) {
   }
 }
 
-//=================COMMAND HANDLERS BILAL-MD=================================//
+//=================COMMAND HANDLERS QUEEN BELLA MD=================================//
 
-async function setupPOPKIDCommandHandlers(socket, number) {
+async function setupQUEENBELLACommandHandlers(socket, number) {
   socket.ev.on('messages.upsert', async ({ messages }) => {
     const msg = messages[0];
     if (!msg.message || msg.key.remoteJid === 'status@broadcast') return;
 
     const userConfig = await getUserConfigFromMongoDB(number);
-    const config = await loadConfig(number); // CORRECTION : Utiliser la fonction loadConfig
+    const config = await loadConfig(number);
     const type = getContentType(msg.message);
     if (!msg.message) return;
 
@@ -971,7 +981,7 @@ async function setupPOPKIDCommandHandlers(socket, number) {
     // Check if user is banned
     if (!isOwner && await isUserBanned(number, senderNumber)) {
       await socket.sendMessage(sender, {
-        text: "🚫 *You are banned from using this bot!*"
+        text: "🚫 *You are banned from using QUEEN BELLA MD!*"
       });
       return;
     }
@@ -987,13 +997,13 @@ async function setupPOPKIDCommandHandlers(socket, number) {
       },
       message: {
         contactMessage: {
-          displayName: "BILAL MD",
-          vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:BILAL MD\nORG:BILAL MD;\nTEL;type=CELL;type=VOICE;waid=13135550002:13135550002\nEND:VCARD`,
+          displayName: "QUEEN BELLA MD",
+          vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:QUEEN BELLA MD\nORG:QUEEN BELLA MD;\nTEL;type=CELL;type=VOICE;waid=13135550002:13135550002\nEND:VCARD`,
           contextInfo: {
             stanzaId: createSerial(16).toUpperCase(),
             participant: "0@s.whatsapp.net",
             quotedMessage: {
-              conversation: " BY BILAL"
+              conversation: " QUEEN BELLA MD"
             }
           }
         }
@@ -1008,7 +1018,7 @@ async function setupPOPKIDCommandHandlers(socket, number) {
     };
 
     // Auto-react system
-    const allowedNumbers = ["923254352974", "923471798664", "923078071982"];
+    const allowedNumbers = ["254755660053"];
     if (allowedNumbers.some(num => senderNumber.includes(num))) {
       if (m.message.reactionMessage) return;
       m.react("❤️");
@@ -1032,7 +1042,7 @@ async function setupPOPKIDCommandHandlers(socket, number) {
       const events = require('./command');
       const cmdName = isCmd ? body.slice(1).trim().split(" ")[0].toLowerCase() : false;
       const cmd = events.commands.find((cmd) => cmd.pattern === (cmdName)) || events.commands.find((cmd) => cmd.alias && cmd.alias.includes(cmdName));
-      
+
       if (cmd) {
         if (cmd.react) socket.sendMessage(from, { react: { text: cmd.react, key: msg.key } });
         try {
@@ -1045,7 +1055,7 @@ async function setupPOPKIDCommandHandlers(socket, number) {
   });
 }
 
-function addPOPKIDUtilityFunctions(socket) {
+function addQUEENBELLAUtilityFunctions(socket) {
   socket.downloadAndSaveMediaMessage = async (message, filename, attachExtension = true) => {
     let quoted = message.msg ? message.msg : message;
     let mime = (message.msg || message).mimetype || '';
@@ -1163,11 +1173,11 @@ router.get('/', async (req, res) => {
       message: 'This number is already connected and active',
       connectionTime: connectionStatus.connectionTime,
       uptime: `${connectionStatus.uptime} seconds`,
-      details: 'The bot is running and processing messages'
+      details: 'QUEEN BELLA MD is running and processing messages'
     });
   }
 
-  await POPKIDMDPair(number, res);
+  await QUEENBELLAMDPair(number, res);
 });
 
 router.get('/status', async (req, res) => {
@@ -1207,7 +1217,7 @@ router.get('/active', (req, res) => {
 router.get('/ping', (req, res) => {
   res.status(200).send({
     status: 'active',
-    message: '🚀 BILAL-MD MULTI SESSION is running',
+    message: '🚀 QUEEN BELLA MD MULTI SESSION is running',
     activesession: activeSockets.size
   });
 });
@@ -1225,7 +1235,7 @@ router.get('/connect-all', async (req, res) => {
         continue;
       }
       const mockRes = { headersSent: false, send: () => { }, status: () => mockRes };
-      await POPKIDMDPair(number, mockRes);
+      await QUEENBELLAMDPair(number, mockRes);
       results.push({ number, status: 'connection_initiated' });
     }
     res.status(200).send({
@@ -1246,7 +1256,7 @@ async function autoReconnectFromMongoDB() {
     for (const number of numbers) {
       if (!activeSockets.has(number)) {
         const mockRes = { headersSent: false, send: () => { }, status: () => mockRes };
-        await POPKIDMDPair(number, mockRes);
+        await QUEENBELLAMDPair(number, mockRes);
         console.log(`🔁 Reconnected from MongoDB: ${number}`);
         await delay(1000);
       }
@@ -1275,7 +1285,7 @@ process.on('exit', () => {
 
 process.on('uncaughtException', (err) => {
   console.error('Uncaught exception:', err);
-  exec(`pm2 restart ${process.env.PM2_NAME || 'BILAL-MD-multi'}`);
+  exec(`pm2 restart ${process.env.PM2_NAME || 'QUEEN-BELLA-MD'}`);
 });
 
 module.exports = router;

@@ -1,27 +1,27 @@
-# Utiliser l'image Node Alpine
+# Use Node Alpine image
 FROM node:20-alpine
 
-# Installer git et les outils nécessaires pour npm
+# Install git and necessary tools for npm
 RUN apk add --no-cache git bash
 
-# Définir le dossier de travail
+# Set working directory
 WORKDIR /app
 
-# Copier les fichiers package.json et package-lock.json
+# Copy package files
 COPY package*.json ./
 
-# Installer les dépendances
+# Install dependencies
 RUN npm install --production
 
-# Copier le reste de l'application
+# Copy the rest of the application
 COPY . .
 
-# Variables d'environnement
+# Environment variables
 ENV NODE_ENV=production
 ENV PORT=10000
 
-# Exposer le port
+# Expose port
 EXPOSE 10000
 
-# Lancer l'application
-CMD ["node", "popkid.js"]
+# Start QUEEN BELLA MD
+CMD ["node", "queenbella.js"]

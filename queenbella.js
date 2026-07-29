@@ -1,47 +1,53 @@
 const express = require('express');
 const app = express();
-__path = process.cwd()
-const bodyParser = require("body-parser");
-const PORT = process.env.PORT || 10000; 
+
+const path = require('path');
+const PORT = process.env.PORT || 10000;
+
 const pairRoutes = require('./pair');
 
 require('events').EventEmitter.defaultMaxListeners = 500;
 
 // Middleware
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.use('/code', pairRoutes); 
-app.get('/pair', async (req, res, next) => {
-    res.sendFile(__path + '/pair.html')
-});
-app.get('/', async (req, res, next) => {
-    res.sendFile(__path + '/main.html')
+app.use('/code', pairRoutes);
+
+app.get('/pair', (req, res) => {
+    res.sendFile(path.join(process.cwd(), 'pair.html'));
 });
 
+app.get('/', (req, res) => {
+    res.sendFile(path.join(process.cwd(), 'main.html'));
+});
 
-app.on('listening', () => {
-  console.log(`
-INCONNU BOY IS THE BEST 👋 
-Server running on http://0.0.0.0:${PORT}
+// Start Server
+const server = app.listen(PORT, '0.0.0.0', async () => {
+    console.log(`
+╔══════════════════════════════════════╗
+║        👑 QUEEN BELLA PAIR API       ║
+╠══════════════════════════════════════╣
+║ ✅ Server Status : ONLINE            ║
+║ 🌐 Port          : ${PORT}
+║ 🚀 Ready for Pair Requests           ║
+╚══════════════════════════════════════╝
 `);
-  
-  
-  setTimeout(async () => {
-    try {
-      const { autoReconnectFromMongoDB } = require('./pair');
-      await autoReconnectFromMongoDB();
-      console.log('✅ Auto-reconnect completed');
-    } catch (error) {
-      console.error('❌ Auto-reconnect failed:', error.message);
-    }
-  }, 5000);
+
+    // Auto reconnect saved sessions
+    setTimeout(async () => {
+        try {
+            const { autoReconnectFromMongoDB } = require('./pair');
+
+            if (typeof autoReconnectFromMongoDB === "function") {
+                await autoReconnectFromMongoDB();
+                console.log("✅ QUEEN BELLA auto-reconnect completed.");
+            }
+        } catch (err) {
+            console.error("❌ Auto-reconnect failed:", err.message);
+        }
+    }, 5000);
 });
 
-// Démarrer le serveur
-app.listen(PORT, '0.0.0.0', () => {
-  console.log('🚀 Server started...');
-});
-
-module.exports = app;
+module.exports = { app, server };

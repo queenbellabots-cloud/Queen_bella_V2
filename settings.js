@@ -12,7 +12,7 @@ const settings = {
   description: "QUEEN BELLA MD - A Multi-Device WhatsApp Bot By Dev RODGERS",
   version: "1.0.0",
   updateZipUrl: "https://github.com/YOUR_USERNAME/QUEEN-BELLA-MD/archive/refs/heads/main.zip",
-  usePairingCode: false,
+  usePairingCode: true,  // 👈 CHANGE THIS TO TRUE
   // 👇 YOUR CHANNEL INFO
   channelId: '120363423209691396@newsletter',
   channelName: '👑 QUEEN BELLA MD 👑',

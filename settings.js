@@ -7,8 +7,17 @@ const settings = {
   usePairingCode: true,
   channelId: "120363423209691396@newsletter",
   channelName: "👑 QUEEN BELLA MD 👑",
-  channelLink: "https://whatsapp.com/channel/0029VbBR3ib3LdQQlEG3vd1x",
-  menuImage: "https://i.imgur.com/687ZxLW.jpeg",
+  channelLink: "https://whatsapp.com/channel/0029VbCwZHACXC3PNHgtMT31",
+  // Menu images (will rotate)
+  menuImages: [
+    "https://imagetourl.cloud/9eumy3kr.jpg",
+    "https://imagetourl.cloud/jey865he.jpg",
+    "https://imagetourl.cloud/8uafyai1.jpg"
+  ],
+  welcomeImages: [
+    "https://imagetourl.cloud/jey865he.jpg",
+    "https://imagetourl.cloud/8uafyai1.jpg"
+  ],
   footer: "© MADE BY RODGERS"
 };
 

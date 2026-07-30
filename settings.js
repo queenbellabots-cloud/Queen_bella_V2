@@ -12,6 +12,7 @@ const settings = {
   description: "QUEEN BELLA MD - A Multi-Device WhatsApp Bot By Dev RODGERS",
   version: "1.0.0",
   updateZipUrl: "https://github.com/YOUR_USERNAME/QUEEN-BELLA-MD/archive/refs/heads/main.zip",
+  usePairingCode: true,  // ✅ Keep this true for pairing code
 };
 
 // 👇 Set global prefix

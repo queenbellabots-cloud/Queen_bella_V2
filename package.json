@@ -1,7 +1,7 @@
 {
   "name": "queen-bella-md",
   "version": "1.0.0",
-  "description": "👑 QUEEN BELLA MD - A WhatsApp Bot by Dev RODGERS",
+  "description": "👑 QUEEN BELLA MD - A WhatsApp Bot",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
@@ -18,13 +18,6 @@
     "pino": "^8.21.0",
     "readline": "^1.3.0"
   },
-  "keywords": [
-    "whatsapp-bot",
-    "whatsapp",
-    "baileys",
-    "queen-bella",
-    "bot"
-  ],
   "author": "𝐑𝐎𝐃𝐆𝐄𝐑𝐒 𝐎𝐍𝐘𝐀𝐍𝐆𝐎",
   "license": "MIT",
   "engines": {

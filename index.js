@@ -60,7 +60,7 @@ function loadCommands() {
     const files = fs.readdirSync(commandsDir).filter(file => file.endsWith('.js'));
     console.log(chalk.red.bold(`\n📦 Loading QUEEN BELLA MD Commands...`));
     global.commands.clear();
-    
+
     for (const file of files) {
         try {
             const filePath = path.join(commandsDir, file);
@@ -108,9 +108,9 @@ setInterval(() => {
 global.botname = "👑 QUEEN BELLA MD 👑";
 global.themeemoji = "👑";
 
-// Pairing code setup
-const pairingCode = process.argv.includes("--pairing-code") || true;
+// Pairing code setup - USE SETTINGS
 const useMobile = process.argv.includes("--mobile");
+const pairingCode = settings.usePairingCode !== undefined ? settings.usePairingCode : true;
 
 const rl = process.stdin.isTTY ? readline.createInterface({ input: process.stdin, output: process.stdout }) : null;
 const question = (text) => {
@@ -128,7 +128,7 @@ const isSystemJid = (jid) => {
 async function startQueenBella() {
     try {
         loadCommands();
-        
+
         const sessionFolder = './session';
         if (!fs.existsSync(sessionFolder)) {
             fs.mkdirSync(sessionFolder, { recursive: true });
@@ -200,7 +200,7 @@ async function startQueenBella() {
                 if (chatUpdate.type !== 'notify') return;
                 const mek = chatUpdate.messages[0];
                 if (!mek || !mek.message || !mek.key?.id) return;
-                
+
                 const chatId = mek.key.remoteJid;
                 const time = new Date().toLocaleTimeString();
 
@@ -221,12 +221,12 @@ async function startQueenBella() {
 
                 if (!chatId || isSystemJid(chatId)) return;
                 if (processedMessages.has(mek.key.id)) return;
-                
+
                 if (mek.messageTimestamp) {
                     const messageAge = Date.now() - (mek.messageTimestamp * 1000);
                     if (messageAge > 5 * 60 * 1000) return;
                 }
-                
+
                 processedMessages.add(mek.key.id);
                 lastActivity = Date.now();
 
@@ -282,7 +282,7 @@ async function startQueenBella() {
         QueenBella.public = true;
         QueenBella.serializeM = (m) => smsg(QueenBella, m, store);
 
-        // Pairing code generation
+        // Pairing code generation - FIXED VERSION
         let pairingDone = false;
         QueenBella.ev.on('connection.update', async (s) => {
             const { connection, lastDisconnect, qr } = s;
@@ -291,34 +291,42 @@ async function startQueenBella() {
                 if (connection === 'connecting' || connection === 'open') {
                     pairingDone = true;
                     if (useMobile) throw new Error('Cannot use pairing code with mobile API');
-                    
+
+                    // Use number from settings
                     let phoneNumber = settings.ownerNumber || '254755660053';
                     phoneNumber = String(phoneNumber).replace(/[^0-9]/g, '');
                     
-                    if (!phoneNumber) {
-                        phoneNumber = await question(chalk.bgBlack(chalk.greenBright(
-                            `Enter WhatsApp number:\nFormat: 254755660053: `
-                        )));
-                        phoneNumber = phoneNumber.replace(/[^0-9]/g, '');
-                    }
+                    console.log(chalk.green(`📱 Using phone number: ${phoneNumber}`));
+                    console.log(chalk.yellow(`⏳ Requesting pairing code...`));
 
                     setTimeout(async () => {
                         try {
                             let code = await QueenBella.requestPairingCode(phoneNumber);
                             code = code?.match(/.{1,4}/g)?.join("-") || code;
-                            console.log(chalk.black(chalk.bgGreen(`Pairing Code: `)), 
-                                chalk.black(chalk.white(code)));
+                            console.log(chalk.black(chalk.bgGreen(`✅ Pairing Code: `)), chalk.black(chalk.white(code)));
+                            console.log(chalk.yellow(`📱 Enter this code in WhatsApp Web/Linked Devices`));
                         } catch (error) {
-                            console.error('Error getting pairing code:', error);
+                            console.error(chalk.red('❌ Error getting pairing code:'), error);
+                            console.log(chalk.red(`💡 Make sure:`));
+                            console.log(chalk.red(`   - The number ${phoneNumber} is correct`));
+                            console.log(chalk.red(`   - WhatsApp is installed on that number`));
+                            console.log(chalk.red(`   - You have internet connection`));
+                            console.log(chalk.yellow(`🔄 Retrying in 10 seconds...`));
                             pairingDone = false;
+                            setTimeout(() => {
+                                if (!QueenBella.authState.creds.registered) {
+                                    startQueenBella();
+                                }
+                            }, 10000);
                         }
-                    }, 3000);
+                    }, 5000);
                 }
             }
 
-            if (qr) console.log(chalk.yellow('📱 QR Code generated.'));
+            // Only show QR if pairing is disabled
+            if (qr && !pairingCode) console.log(chalk.yellow('📱 QR Code generated.'));
             if (connection === 'connecting') console.log(chalk.yellow('🔄 Connecting...'));
-            
+
             if (connection === "open") {
                 console.clear();
                 console.log(chalk.magenta.bold(`

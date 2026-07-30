@@ -1,9 +1,12 @@
+const settings = require('../settings');
+
 module.exports = {
     name: 'uptime',
     aliases: ['runtime', 'up'],
     category: 'main',
     description: 'Show bot uptime',
     usage: '.uptime',
+    react: '⏰',
     async execute(conn, mek, args, chatId, isOwner) {
         const uptime = process.uptime();
         const days = Math.floor(uptime / 86400);
@@ -11,14 +14,21 @@ module.exports = {
         const minutes = Math.floor((uptime % 3600) / 60);
         const seconds = Math.floor(uptime % 60);
         
-        await conn.sendMessage(chatId, {
-            text: `⏰ *QUEEN BELLA MD UPTIME*\n\n` +
-                  `${days > 0 ? `📅 Days: ${days}\n` : ''}` +
-                  `⏰ Hours: ${hours}\n` +
-                  `⏱️ Minutes: ${minutes}\n` +
-                  `⏱️ Seconds: ${seconds}\n\n` +
-                  `🟢 Status: Online ✅\n\n` +
-                  `© MADE BY RODGERS`
-        });
+        const response = `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃   👑 QUEEN BELLA MD V1   ┃
+┃   Created by Dev RODGERS  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+⏰ QUEEN BELLA MD UPTIME
+
+${days > 0 ? `📅 Days: ${days}\n` : ''}⏰ Hours: ${hours}
+⏱️ Minutes: ${minutes}
+⏱️ Seconds: ${seconds}
+
+🟢 Status: Online ✅
+
+${settings.footer}`;
+
+        await conn.sendMessage(chatId, { text: response });
     }
 };

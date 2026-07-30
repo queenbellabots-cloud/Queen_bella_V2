@@ -1,6 +1,5 @@
 /**
- * 👑 QUEEN BELLA MD - A WhatsApp Bot
- * Copyright (c) 2026 𝐑𝐎𝐃𝐆𝐄𝐑𝐒 𝐎𝐍𝐘𝐀𝐍𝐆𝐎
+ * 👑 QUEEN BELLA MD - WhatsApp Bot
  * Created by Dev RODGERS
  */
 
@@ -25,13 +24,11 @@ require('./settings');
 const fs = require('fs');
 const chalk = require('chalk');
 const path = require('path');
-const axios = require('axios');
 const zlib = require('zlib');
-const os = require('os');
+
 const { handleMessages, handleGroupParticipantUpdate } = require('./main');
-const { handleStatusUpdate } = require('./plugins/autostatus');
 const PhoneNumber = require('awesome-phonenumber');
-const { smsg, getBuffer, sleep } = require('./lib/myfunc');
+const { sleep } = require('./lib/myfunc');
 
 const {
     default: makeWASocket,
@@ -73,15 +70,16 @@ function loadCommands() {
                         global.commands.set(alias.toLowerCase(), command);
                     });
                 }
+                console.log(chalk.green(`✅ Loaded: ${command.name}`));
             }
         } catch (error) {
-            console.error(chalk.red(`❌ Failed to load ${file}:`), error);
+            console.error(chalk.red(`❌ Failed to load ${file}:`), error.message);
         }
     }
     console.log(chalk.green(`✅ Loaded ${global.commands.size} commands successfully.`));
 }
 
-// Store & Settings
+// Store
 const store = require('./lib/lightweight_store');
 store.readFromFile();
 const settings = require('./settings');
@@ -105,12 +103,12 @@ setInterval(() => {
 }, 30000);
 
 // Global bot identity
-global.botname = "👑 QUEEN BELLA MD 👑";
+global.botname = settings.botName;
 global.themeemoji = "👑";
 
-// Pairing code setup - USE SETTINGS
+// Pairing code setup
+const pairingCode = settings.usePairingCode || true;
 const useMobile = process.argv.includes("--mobile");
-const pairingCode = settings.usePairingCode !== undefined ? settings.usePairingCode : true;
 
 const rl = process.stdin.isTTY ? readline.createInterface({ input: process.stdin, output: process.stdout }) : null;
 const question = (text) => {
@@ -132,23 +130,6 @@ async function startQueenBella() {
         const sessionFolder = './session';
         if (!fs.existsSync(sessionFolder)) {
             fs.mkdirSync(sessionFolder, { recursive: true });
-        }
-        const sessionFile = path.join(sessionFolder, 'creds.json');
-
-        // Handle session ID
-        if (settings.sessionID && settings.sessionID.startsWith('QueenBella!')) {
-            try {
-                const [header, b64data] = settings.sessionID.split('!');
-                if (header === 'QueenBella' && b64data) {
-                    const cleanB64 = b64data.replace('...', '');
-                    const compressedData = Buffer.from(cleanB64, 'base64');
-                    const decompressedData = zlib.gunzipSync(compressedData);
-                    fs.writeFileSync(sessionFile, decompressedData, 'utf8');
-                    console.log('📡 Session restored from token');
-                }
-            } catch (e) {
-                console.error('Session parsing failed:', e.message);
-            }
         }
 
         let { version } = await fetchLatestBaileysVersion();
@@ -182,18 +163,6 @@ async function startQueenBella() {
         QueenBella.ev.on('creds.update', saveCreds);
         store.bind(QueenBella.ev);
 
-        let lastActivity = Date.now();
-        const INACTIVITY_TIMEOUT = 30 * 60 * 1000;
-
-        const watchdogInterval = setInterval(async () => {
-            if (Date.now() - lastActivity > INACTIVITY_TIMEOUT && QueenBella.ws?.readyState === 1) {
-                console.log('⚠️ Dead socket, reconnecting...');
-                await QueenBella.end(undefined, undefined, { reason: 'inactive' });
-                clearInterval(watchdogInterval);
-                setTimeout(() => startQueenBella(), 5000);
-            }
-        }, 5 * 60 * 1000);
-
         // Message handler
         QueenBella.ev.on('messages.upsert', async chatUpdate => {
             try {
@@ -202,50 +171,20 @@ async function startQueenBella() {
                 if (!mek || !mek.message || !mek.key?.id) return;
 
                 const chatId = mek.key.remoteJid;
-                const time = new Date().toLocaleTimeString();
-
-                // Status handling
-                if (chatId === 'status@broadcast') {
-                    const poster = mek.key.participant || mek.participant || 'Unknown';
-                    const posterNumber = poster.split('@')[0];
-                    let posterName = 'Unknown User';
-                    try {
-                        posterName = await QueenBella.getName(poster) || mek.pushName || `+${posterNumber}`;
-                    } catch (e) {
-                        posterName = mek.pushName || `+${posterNumber}`;
-                    }
-                    console.log(chalk.yellowBright(`\n📱 Status from ${posterName} at ${time}`));
-                    await handleStatusUpdate(QueenBella, chatUpdate);
-                    return;
-                }
 
                 if (!chatId || isSystemJid(chatId)) return;
                 if (processedMessages.has(mek.key.id)) return;
-
-                if (mek.messageTimestamp) {
-                    const messageAge = Date.now() - (mek.messageTimestamp * 1000);
-                    if (messageAge > 5 * 60 * 1000) return;
-                }
-
                 processedMessages.add(mek.key.id);
-                lastActivity = Date.now();
 
                 mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? 
                     mek.message.ephemeralMessage.message : mek.message;
 
                 if (!QueenBella.public && !mek.key.fromMe) return;
                 if (mek.key.id.startsWith('BAE5') && mek.key.id.length === 16) return;
-                if (QueenBella?.msgRetryCounterCache) QueenBella.msgRetryCounterCache.clear();
 
                 handleMessages(QueenBella, chatUpdate, true).catch(err => {
                     if (!err.message?.includes('rate-overlimit')) 
                         console.error("Error:", err.message);
-                });
-
-                setImmediate(async () => {
-                    if (settings.autoRead && chatId.endsWith('@g.us')) {
-                        try { await QueenBella.readMessages([mek.key]); } catch (e) {}
-                    }
                 });
 
             } catch (err) {
@@ -280,9 +219,8 @@ async function startQueenBella() {
         };
 
         QueenBella.public = true;
-        QueenBella.serializeM = (m) => smsg(QueenBella, m, store);
 
-        // Pairing code generation - FIXED VERSION
+        // Pairing code generation
         let pairingDone = false;
         QueenBella.ev.on('connection.update', async (s) => {
             const { connection, lastDisconnect, qr } = s;
@@ -290,9 +228,6 @@ async function startQueenBella() {
             if (pairingCode && !QueenBella.authState.creds.registered && !pairingDone) {
                 if (connection === 'connecting' || connection === 'open') {
                     pairingDone = true;
-                    if (useMobile) throw new Error('Cannot use pairing code with mobile API');
-
-                    // Use number from settings
                     let phoneNumber = settings.ownerNumber || '254755660053';
                     phoneNumber = String(phoneNumber).replace(/[^0-9]/g, '');
                     
@@ -307,23 +242,11 @@ async function startQueenBella() {
                             console.log(chalk.yellow(`📱 Enter this code in WhatsApp Web/Linked Devices`));
                         } catch (error) {
                             console.error(chalk.red('❌ Error getting pairing code:'), error);
-                            console.log(chalk.red(`💡 Make sure:`));
-                            console.log(chalk.red(`   - The number ${phoneNumber} is correct`));
-                            console.log(chalk.red(`   - WhatsApp is installed on that number`));
-                            console.log(chalk.red(`   - You have internet connection`));
-                            console.log(chalk.yellow(`🔄 Retrying in 10 seconds...`));
-                            pairingDone = false;
-                            setTimeout(() => {
-                                if (!QueenBella.authState.creds.registered) {
-                                    startQueenBella();
-                                }
-                            }, 10000);
                         }
                     }, 5000);
                 }
             }
 
-            // Only show QR if pairing is disabled
             if (qr && !pairingCode) console.log(chalk.yellow('📱 QR Code generated.'));
             if (connection === 'connecting') console.log(chalk.yellow('🔄 Connecting...'));
 
@@ -331,59 +254,23 @@ async function startQueenBella() {
                 console.clear();
                 console.log(chalk.magenta.bold(`
     ╔══════════════════════════════════╗
-    ║      👑 QUEEN BELLA MD 👑      ║
+    ║      👑 QUEEN BELLA MD V1      ║
     ║    Created by Dev RODGERS       ║
     ╚══════════════════════════════════╝
                 `));
                 console.log(chalk.magenta.bold(`    [ QUEEN BELLA MD is Online! ]\n`));
                 console.log(chalk.cyan(`< ================================== >`));
-                console.log(chalk.magenta(`👑 BOT NAME  : QUEEN BELLA MD`));
-                console.log(chalk.magenta(`👑 OWNER     : 𝐑𝐎𝐃𝐆𝐄𝐑𝐒 𝐎𝐍𝐘𝐀𝐍𝐆𝐎`));
-                console.log(chalk.magenta(`👑 DEVELOPER : 𝐑𝐎𝐃𝐆𝐄𝐑𝐒 𝐎𝐍𝐘𝐀𝐍𝐆𝐎`));
+                console.log(chalk.magenta(`👑 BOT NAME  : ${settings.botName}`));
+                console.log(chalk.magenta(`👑 OWNER     : ${settings.botOwner}`));
+                console.log(chalk.magenta(`👨‍💻 DEVELOPER : Dev RODGERS`));
                 console.log(chalk.green(`👑 STATUS    : Connected! ✅`));
                 console.log(chalk.cyan(`< ================================== >\n`));
-
-                try {
-                    const botNumber = QueenBella.user.id.split(':')[0] + '@s.whatsapp.net';
-                    const rawBotNumber = QueenBella.user.id.split(':')[0];
-                    const currentPrefix = settings.prefix || '.';
-
-                    const connectMessage = `*👑 QUEEN BELLA MD CONNECTED!*\n\n` +
-                        `⏰ *Time:* ${new Date().toLocaleString()}\n` +
-                        `⚡ *Prefix:* ${currentPrefix}\n` +
-                        `👑 *Owner:* ${rawBotNumber}\n` +
-                        `👨‍💻 *Developer:* 𝐑𝐎𝐃𝐆𝐄𝐑𝐒 𝐎𝐍𝐘𝐀𝐍𝐆𝐎\n` +
-                        `✅ *Status:* Online and Ready!\n\n` +
-                        `> © MADE BY RODGERS`;
-
-                    await QueenBella.sendMessage(botNumber, { 
-                        text: connectMessage,
-                        contextInfo: {
-                            forwardingScore: 1,
-                            isForwarded: true,
-                            forwardedNewsletterMessageInfo: {
-                                newsletterJid: '120363423209691396@newsletter',
-                                newsletterName: '👑 QUEEN BELLA MD 👑',
-                                serverMessageId: -1
-                            }
-                        }
-                    });
-                } catch (error) {
-                    console.error('Error sending welcome message:', error.message);
-                }
             }
 
             if (connection === 'close') {
-                clearInterval(watchdogInterval);
                 const statusCode = lastDisconnect?.error?.output?.statusCode || 
                     lastDisconnect?.error?.statusCode;
                 const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
-
-                if (statusCode === 515 || statusCode === 503 || statusCode === 408) {
-                    console.log(chalk.yellow(`⚠️ Stream down (${statusCode}). Reconnecting...`));
-                } else {
-                    console.log(chalk.red(`Connection closed. Status: ${statusCode}`));
-                }
 
                 if (statusCode === DisconnectReason.loggedOut) {
                     try {
@@ -397,20 +284,6 @@ async function startQueenBella() {
                     startQueenBella();
                 }
             }
-        });
-
-        // Anti-call
-        QueenBella.ev.on('call', async (calls) => {
-            try {
-                const { readState } = require('./plugins/anticall');
-                if (!readState().enabled) return;
-                for (const call of calls) {
-                    if (!call.from) continue;
-                    await QueenBella.sendMessage(call.from, { 
-                        text: '👑 QUEEN BELLA MD - Calls are auto-rejected.' 
-                    });
-                }
-            } catch (e) {}
         });
 
         // Group participants

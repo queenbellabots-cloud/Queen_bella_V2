@@ -1,109 +1,97 @@
 <div align="center">
+  
+# 👑 QUEEN BELLA MD V1
 
-<img src="https://i.imgur.com/687ZxLW.jpeg" alt="Queen Bella Banner" width="100%"/>
+### *The Ultimate Multi-Device WhatsApp Bot*
 
-# ✨ QUEEN BELLA V1 ✨
+[![WhatsApp Channel](https://img.shields.io/badge/Join-WhatsApp%20Channel-25D366?style=for-the-badge&logo=whatsapp)](https://whatsapp.com/channel/0029VbCwZHACXC3PNHgtMT31)
+[![Support Group](https://img.shields.io/badge/Join-Support%20Group-25D366?style=for-the-badge&logo=whatsapp)](https://chat.whatsapp.com/L4TfGq6jXsR3pLbRkStcj8)
+[![GitHub Stars](https://img.shields.io/github/stars/queenbellabots-cloud/Queer?style=for-the-badge&logo=github)](https://github.com/queenbellabots-cloud/Queer)
+[![GitHub Forks](https://img.shields.io/github/forks/queenbellabots-cloud/Queer?style=for-the-badge&logo=github)](https://github.com/queenbellabots-cloud/Queer)
 
-<img src="https://readme-typing-svg.herokuapp.com?color=00C7B7&center=true&vCenter=true&lines=Powerful+WhatsApp+Bot;Fast+⚡+Reliable+🚀;Made+by+RODGERS+ONYANGO" />
+---
 
-<img src="https://komarev.com/ghpvc/?username=ROGERS-4&label=Visitors&color=blue&style=flat" />
+<img src="https://imagetourl.cloud/jey865he.jpg" alt="QUEEN BELLA MD" width="400" style="border-radius: 20px;">
+
+---
+
+### ✨ *Created by* 
+# 𝐑𝐎𝐃𝐆𝐄𝐑𝐒 𝐎𝐍𝐘𝐀𝐍𝐆𝑶
+### *Dev RODGERS*
 
 </div>
 
 ---
 
-# 🌟 FEATURES
+## 🌟 **Features**
 
-| Category | Features |
-|----------|---------|
-| 🔥 Core | Auto Status View, Auto React, Anti-Call, Anti-Delete |
-| 📸 Media | View Once Saver, Sticker Maker, Image Downloader |
-| 👑 Admin | Tag All, Group Info, Welcome Messages |
-
----
-
-# 🚀 DEPLOY OPTIONS
-
-<div align="center">
-<table>
-<tr>
-
-<td align="center" width="250">
-  <a href="https://render.com/deploy?repo=https://github.com/ROGERS-4/bellamd-v1.0">
-    <img src="https://img.shields.io/badge/DEPLOY_TO-RENDER-46E3B7?style=for-the-badge&logo=render&logoColor=white"/>
-  </a>
-  <br/>
-  <b>🚀 Render</b>
-</td>
-
-<td align="center" width="250">
-  <a href="https://heroku.com/deploy?template=https://github.com/ROGERS-4/bellamd-v1.0">
-    <img src="https://img.shields.io/badge/DEPLOY_TO-HEROKU-430098?style=for-the-badge&logo=heroku&logoColor=white"/>
-  </a>
-  <br/>
-  <b>🌟 Heroku</b>
-</td>
-
-<td align="center" width="250">
-  <a href="https://github.com/ROGERS-4/bellamd-v1.0/fork">
-    <img src="https://img.shields.io/badge/FORK_ON-GITHUB-181717?style=for-the-badge&logo=github&logoColor=white"/>
-  </a>
-  <br/>
-  <b>🍴 Fork Repo</b>
-</td>
-
-</tr>
-</table>
-</div>
+| Feature | Description |
+|---------|-------------|
+| 🤖 **Multi-Device** | Works with WhatsApp's multi-device feature |
+| 📱 **Pairing Code** | Easy pairing without QR scanning |
+| 👥 **Public/Private Mode** | Control who can use the bot |
+| 🖼️ **Image Menu** | Beautiful menu with images |
+| 📢 **Channel Integration** | Direct link to your WhatsApp channel |
+| ⏰ **Status Viewer** | Auto-view status updates |
+| 🔒 **Anti-Call** | Automatically rejects calls |
+| ⚡ **Fast Response** | Quick command execution |
+| 💾 **Lightweight** | Minimal memory usage |
 
 ---
 
-# 📋 COMMANDS LIST
+## 📋 **Commands**
 
-| Command | Description | Example |
-|--------|------------|--------|
-| `.menu` | Show animated menu | `.menu` |
-| `.ping` | Check bot status | `.ping` |
-| `.uptime` | Show uptime | `.uptime` |
-| `.owner` | Owner info | `.owner` |
-| `.channel` | Channel link | `.channel` |
-| `.autoviewstatus` | Auto view status | `.autoviewstatus on/off` |
-| `.autoreactstatus` | Auto react status | `.autoreactstatus on/off` |
-| `.anticall` | Anti-call | `.anticall on/off` |
-| `.antidelete` | Anti-delete | `.antidelete on/off` |
-| `.vv` | View-once saver | `.vv` |
-| `.sticker` | Create sticker | `.sticker` |
-| `.tagall` | Tag all members | `.tagall` |
-| `.groupinfo` | Group info | `.groupinfo` |
-| `.info` | Bot info | `.info` |
+| Command | Description |
+|---------|-------------|
+| `.menu` | Show all available commands |
+| `.ping` | Check bot latency |
+| `.alive` | Check if bot is alive |
+| `.info` | Show bot information |
+| `.owner` | Show owner details |
+| `.uptime` | Show bot uptime |
+| `.mode` | Check/change bot mode |
+| `.autoviewstatus` | Toggle auto-view status |
 
 ---
 
-# 🔧 ENVIRONMENT VARIABLES
+## 🚀 **Deployment Guide**
 
-<details>
-<summary>📝 Click to Expand</summary>
+### **Deploy on Katabump**
 
-```env
-BOT_NAME=𝐐𝐔𝐄𝐄𝐍 𝐁𝐄𝐋𝐋𝐀 𝐕𝟏
-BOT_VERSION=1.0
-OWNER_NAME=𝐑𝐎𝐃𝐆𝐄𝐑𝐒 𝐎𝐍𝐘𝐀𝐍𝐆𝐎
-OWNER_NUMBER=254755660053
-DEVELOPER=𝐑𝐎𝐃𝐆𝐄𝐑𝐒 𝐎𝐍𝐘𝐀𝐍𝐆𝐎
-PREFIX=.
-MODE=PUBLIC
+1. **Download Repository**
+   - Go to: https://github.com/queenbellabots-cloud/Queer
+   - Click the green **"Code"** button
+   - Select **"Download ZIP"**
 
-SESSION_ID=
-SESSION_FOLDER=sessions/auth
-BACKUP_FOLDER=backups
+2. **Upload to Katabump**
+   - Login to your Katabump dashboard
+   - Click **"Create New Server"**
+   - Choose **"Upload Files"** method
+   - Upload the downloaded ZIP file
+   - Extract the files
 
-CHANNEL_LINK=https://whatsapp.com/channel/0029VbBR3ib3LdQQlEG3vd1x
+3. **Configure Settings**
+   - Open `settings.js`
+   - Change `ownerNumber` to your WhatsApp number
+   - Update bot name and owner name if needed
 
-MENU_IMAGES=https://i.imgur.com/687ZxLW.jpeg
+4. **Deploy & Run**
+   - Click **"Deploy"** button
+   - Wait for the server to start
+   - Open the console to get your pairing code
 
-AUTO_VIEW_STATUS=true
-AUTO_REACT_STATUS=true
-ANTI_CALL=true
-ANTI_DELETE=true
+5. **Link Your WhatsApp**
+   - Open WhatsApp on your phone
+   - Go to **Settings → Linked Devices → Link a Device**
+   - Enter the pairing code shown in the console
 
-TIMEZONE=Africa/Nairobi
+---
+
+### **Deploy on Other Platforms**
+
+#### **Render.com**
+```bash
+# Create a new Web Service
+# Connect your GitHub repository
+# Set environment variable: PORT=3000
+# Deploy!

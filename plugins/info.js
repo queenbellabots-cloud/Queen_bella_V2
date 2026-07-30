@@ -28,7 +28,18 @@ module.exports = {
                   `⏰ *Uptime:* ${hours}h ${minutes}m ${seconds}s\n` +
                   `💾 *Memory:* ${usedMemory} MB\n` +
                   `📅 *Date:* ${moment().tz('Africa/Nairobi').format('DD/MM/YYYY HH:mm:ss')}\n\n` +
-                  `© MADE BY RODGERS`
+                  `📢 *Channel:* ${settings.channelName}\n` +
+                  `🔗 ${settings.channelLink}\n\n` +
+                  `${settings.footer}`,
+            contextInfo: {
+                forwardingScore: 999,
+                isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: settings.channelId,
+                    newsletterName: settings.channelName,
+                    serverMessageId: 1
+                }
+            }
         });
     }
 };

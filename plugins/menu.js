@@ -2,7 +2,6 @@
  * 👑 QUEEN BELLA MD - Menu Command
  */
 
-const moment = require('moment-timezone');
 const settings = require('../settings');
 
 module.exports = {
@@ -11,6 +10,7 @@ module.exports = {
     category: 'main',
     description: 'Show all available commands',
     usage: '.menu',
+    react: '👑',
     async execute(conn, mek, args, chatId, isOwner) {
         try {
             const sender = mek.key.participant || mek.key.remoteJid;
@@ -43,53 +43,43 @@ module.exports = {
             const totalCommands = cmdList.length;
             const sortedCategories = Object.keys(categories).sort();
 
-            // Pick random menu image
-            const menuImages = settings.menuImages || [
-                "https://imagetourl.cloud/9eumy3kr.jpg",
-                "https://imagetourl.cloud/jey865he.jpg",
-                "https://imagetourl.cloud/8uafyai1.jpg"
-            ];
-            const randomImage = menuImages[Math.floor(Math.random() * menuImages.length)];
+            // Build menu with clean borders
+            let menu = `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n`;
+            menu += `┃   👑 QUEEN BELLA MD V1 👑    ┃\n`;
+            menu += `┃   Created by Dev RODGERS      ┃\n`;
+            menu += `┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n\n`;
+            
+            menu += `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n`;
+            menu += `┃      📊 BOT INFO              ┃\n`;
+            menu += `┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n`;
+            menu += `👤 User: ${userName}\n`;
+            menu += `👑 Owner: ${settings.botOwner}\n`;
+            menu += `👨‍💻 Developer: Dev RODGERS\n`;
+            menu += `📱 Number: ${settings.ownerNumber}\n`;
+            menu += `⚡ Prefix: ${settings.prefix}\n`;
+            menu += `📊 Commands: ${totalCommands}\n\n`;
 
-            // Build menu
-            let menu = `╔═══════════════════════════════════════╗
-║     👑 QUEEN BELLA MD V1 👑          ║
-║    Created by Dev RODGERS             ║
-╚═══════════════════════════════════════╝
-
-╔═══════════════════════════════════════╗
-║       📊 BOT INFO                    ║
-╚═══════════════════════════════════════╝
-> 👤 User: ${userName}
-> 👑 Owner: ${settings.botOwner}
-> 👨‍💻 Developer: Dev RODGERS
-> 📱 Number: ${settings.ownerNumber}
-> ⚡ Prefix: ${settings.prefix}
-> 📊 Commands: ${totalCommands}
-> 🟢 Mode: ${settings.commandMode || 'PUBLIC'}
-
-╔═══════════════════════════════════════╗
-║     📋 COMMAND LIST                  ║
-╚═══════════════════════════════════════╝`;
+            menu += `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n`;
+            menu += `┃     📋 COMMAND LIST           ┃\n`;
+            menu += `┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n`;
 
             for (const category of sortedCategories) {
-                menu += `\n┌─── *${category} MENU* ───┐`;
+                menu += `\n┌─── ${category} MENU ───┐\n`;
                 for (const cmdName of categories[category].sort()) {
-                    menu += `\n│ ❍ .${cmdName}`;
+                    menu += `│  .${cmdName}\n`;
                 }
-                menu += `\n└────────────────────────┘`;
+                menu += `└────────────────────────┘\n`;
             }
 
-            menu += `\n
-╔═══════════════════════════════════════╗
-║  📢 JOIN OUR CHANNEL                 ║
-║  👇 Click the button below            ║
-╚═══════════════════════════════════════╝
+            menu += `\n┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n`;
+            menu += `┃  📢 JOIN OUR CHANNEL         ┃\n`;
+            menu += `┃  👇 Click the button below    ┃\n`;
+            menu += `┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n\n`;
+            menu += `${settings.footer}`;
 
-${settings.footer}`;
-
+            // Send with image - NO EXTERNAL AD REPLY
             await conn.sendMessage(chatId, {
-                image: { url: randomImage },
+                image: { url: settings.menuImage },
                 caption: menu,
                 contextInfo: {
                     mentionedJid: [sender],
@@ -99,29 +89,15 @@ ${settings.footer}`;
                         newsletterJid: settings.channelId,
                         newsletterName: settings.channelName,
                         serverMessageId: 1
-                    },
-                    externalAdReply: {
-                        title: settings.botName,
-                        body: `Welcome ${userName}!`,
-                        mediaType: 1,
-                        renderLargerThumbnail: true,
-                        thumbnailUrl: randomImage,
-                        sourceUrl: settings.channelLink,
-                        mediaUrl: settings.channelLink
                     }
                 }
             });
 
         } catch (error) {
             console.error('Error in menu:', error);
-            // Try sending without image if error
-            try {
-                await conn.sendMessage(chatId, { 
-                    text: '❌ Error loading menu. Please try again.'
-                });
-            } catch (e) {
-                console.error('Failed to send error message:', e);
-            }
+            await conn.sendMessage(chatId, { 
+                text: '❌ Error loading menu. Please try again.'
+            });
         }
     }
 };

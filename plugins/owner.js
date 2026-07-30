@@ -12,8 +12,9 @@ module.exports = {
                   `👤 *Name:* ${settings.botOwner}\n` +
                   `👨‍💻 *Developer:* Dev RODGERS\n` +
                   `📱 *Number:* ${settings.ownerNumber}\n` +
-                  `📢 *Channel:* ${settings.channelName}\n\n` +
-                  `© MADE BY RODGERS`,
+                  `📢 *Channel:* ${settings.channelName}\n` +
+                  `🔗 ${settings.channelLink}\n\n` +
+                  `${settings.footer}`,
             contextInfo: {
                 forwardingScore: 999,
                 isForwarded: true,

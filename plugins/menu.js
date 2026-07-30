@@ -43,7 +43,7 @@ module.exports = {
             const totalCommands = cmdList.length;
             const sortedCategories = Object.keys(categories).sort();
 
-            // Build menu with clean borders
+            // Build menu
             let menu = `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n`;
             menu += `┃   👑 QUEEN BELLA MD V1 👑    ┃\n`;
             menu += `┃   Created by Dev RODGERS      ┃\n`;
@@ -57,7 +57,8 @@ module.exports = {
             menu += `👨‍💻 Developer: Dev RODGERS\n`;
             menu += `📱 Number: ${settings.ownerNumber}\n`;
             menu += `⚡ Prefix: ${settings.prefix}\n`;
-            menu += `📊 Commands: ${totalCommands}\n\n`;
+            menu += `📊 Commands: ${totalCommands}\n`;
+            menu += `🔒 Mode: ${settings.commandMode.toUpperCase()}\n\n`;
 
             menu += `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n`;
             menu += `┃     📋 COMMAND LIST           ┃\n`;
@@ -77,7 +78,6 @@ module.exports = {
             menu += `┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n\n`;
             menu += `${settings.footer}`;
 
-            // Send with image - NO EXTERNAL AD REPLY
             await conn.sendMessage(chatId, {
                 image: { url: settings.menuImage },
                 caption: menu,

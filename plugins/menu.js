@@ -7,7 +7,10 @@ const fs = require('fs');
 const path = require('path');
 const moment = require('moment-timezone');
 
-const MENU_IMAGE_URL = "https://i.imgur.com/687ZxLW.jpeg"; // Replace with your image
+// Load settings
+const settings = require('../settings');
+
+const MENU_IMAGE_URL = settings.menuImage || "https://i.imgur.com/687ZxLW.jpeg";
 
 // =====================
 // Simple Greeting Logic
@@ -29,7 +32,7 @@ module.exports = {
     category: 'main',
     description: 'Show all available commands with channel button',
     usage: '.menu',
-    react: '✨',
+    react: '👑',
     async execute(conn, mek, args, chatId, isOwner) {
         try {
             const sender = mek.key.participant || mek.key.remoteJid;
@@ -77,25 +80,28 @@ module.exports = {
             // BUILD MENU
             // =====================
             let menu = `
-╔═══════════════════════════════╗
-║     👑 QUEEN BELLA MD 👑      ║
-║    Created by Dev RODGERS      ║
-╚═══════════════════════════════╝
+╔═══════════════════════════════════════╗
+║     👑 QUEEN BELLA MD V1 👑          ║
+║    Created by Dev RODGERS             ║
+╚═══════════════════════════════════════╝
 
-╔═══════════════════════════════╗
-║       📊 BOT INFO            ║
-╚═══════════════════════════════╝
-> 🕵️ *User:* ${userName}
+╔═══════════════════════════════════════╗
+║       📊 BOT INFO                    ║
+╚═══════════════════════════════════════╝
+> 👤 *User:* ${userName}
+> ${greeting}
 > 📅 *Date:* ${date}
 > ⏰ *Time:* ${time}
-> ${greeting}
-> ⭐ *Total Commands:* ${totalCommands}
-> ⚡ *Prefix:* .
-> 👑 *Owner:* 𝐑𝐎𝐃𝐆𝐄𝐑𝐒 𝐎𝐍𝐘𝐀𝐍𝐆𝐎
+> 👑 *Owner:* ${settings.botOwner || '𝐑𝐎𝐃𝐆𝐄𝐑𝐒 𝐎𝐍𝐘𝐀𝐍𝐆𝐎'}
+> 👨‍💻 *Developer:* Dev RODGERS
+> 📱 *Number:* ${settings.ownerNumber || '254755660053'}
+> ⚡ *Prefix:* ${settings.prefix || '.'}
+> 📊 *Commands:* ${totalCommands}
+> 🟢 *Mode:* ${settings.commandMode || 'PUBLIC'}
 
-╔═══════════════════════════════╗
-║     📋 COMMAND LIST          ║
-╚═══════════════════════════════╝\n`;
+╔═══════════════════════════════════════╗
+║     📋 COMMAND LIST                  ║
+╚═══════════════════════════════════════╝\n`;
 
             // Add commands by category
             for (const category of sortedCategories) {
@@ -108,12 +114,12 @@ module.exports = {
             }
 
             menu += `
-╔═══════════════════════════════╗
-║  📢 JOIN OUR CHANNEL         ║
-║  👇 Click the button below    ║
-╚═══════════════════════════════╝
+╔═══════════════════════════════════════╗
+║  📢 JOIN OUR CHANNEL                 ║
+║  👇 Click the button below            ║
+╚═══════════════════════════════════════╝
 
-© MADE BY RODGERS`;
+${settings.footer || '> © MADE BY RODGERS'}`;
 
             // =====================
             // CREATE CHANNEL CONTEXT INFO
@@ -123,9 +129,9 @@ module.exports = {
                 forwardingScore: 999,
                 isForwarded: true,
                 forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363423209691396@newsletter', // Your channel ID
-                    newsletterName: '👑 QUEEN BELLA MD 👑',
-                    serverMessageId: 1
+                    newsletterJid: settings.channelId || '120363423209691396@newsletter',
+                    newsletterName: settings.channelName || '👑 QUEEN BELLA MD 👑',
+                    serverMessageId: 428
                 }
             };
 
@@ -138,13 +144,13 @@ module.exports = {
                 contextInfo: {
                     ...newsletterContextInfo,
                     externalAdReply: {
-                        title: "👑 QUEEN BELLA MD",
+                        title: settings.botName || "👑 QUEEN BELLA MD V1",
                         body: `Welcome ${userName}!`,
                         mediaType: 1,
                         renderLargerThumbnail: true,
                         thumbnailUrl: MENU_IMAGE_URL,
-                        sourceUrl: 'https://whatsapp.com/channel/0029Va...', // Your channel link
-                        mediaUrl: 'https://whatsapp.com/channel/0029Va...' // Your channel link
+                        sourceUrl: settings.channelLink || 'https://whatsapp.com/channel/0029VbBR3ib3LdQQlEG3vd1x',
+                        mediaUrl: settings.channelLink || 'https://whatsapp.com/channel/0029VbBR3ib3LdQQlEG3vd1x'
                     }
                 }
             });

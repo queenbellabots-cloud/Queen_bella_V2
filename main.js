@@ -2,32 +2,64 @@
  * QUEEN BELLA MD - Main Handlers
  */
 
+const settings = require('./settings');
+
 async function handleMessages(conn, chatUpdate, isOwner) {
     try {
         const mek = chatUpdate.messages[0];
         if (!mek || !mek.message) return;
         
-        const text = mek.message?.conversation || 
-                     mek.message?.extendedTextMessage?.text || 
-                     mek.message?.imageMessage?.caption || '';
+        // Get text from message
+        let text = '';
+        if (mek.message.conversation) {
+            text = mek.message.conversation;
+        } else if (mek.message.extendedTextMessage) {
+            text = mek.message.extendedTextMessage.text;
+        } else if (mek.message.imageMessage) {
+            text = mek.message.imageMessage.caption || '';
+        } else if (mek.message.videoMessage) {
+            text = mek.message.videoMessage.caption || '';
+        }
         
         if (!text) return;
         
         // Check if command exists
-        if (text.startsWith('.')) {
+        if (text.startsWith(settings.prefix || '.')) {
             const args = text.slice(1).trim().split(' ');
             const commandName = args.shift().toLowerCase();
+            
+            // 👇 PUBLIC/PRIVATE MODE CHECK
+            const sender = mek.key.participant || mek.key.remoteJid;
+            const isOwner = sender === settings.ownerNumber + '@s.whatsapp.net' || 
+                           sender === settings.ownerNumber + '@c.us';
+            
+            // If mode is private, only owner can use commands
+            if (settings.commandMode === 'private' && !isOwner) {
+                await conn.sendMessage(mek.key.remoteJid, { 
+                    text: '🔒 This bot is in private mode. Only the owner can use commands.'
+                });
+                return;
+            }
+            
+            console.log(`📥 Command: ${commandName} from ${mek.key.remoteJid}`);
             
             if (global.commands && global.commands.has(commandName)) {
                 const command = global.commands.get(commandName);
                 try {
-                    await command.execute(conn, mek, args, mek.key.remoteJid, mek.key.fromMe);
+                    console.log(`✅ Executing: ${commandName}`);
+                    await command.execute(conn, mek, args, mek.key.remoteJid, isOwner);
+                    console.log(`✅ Command executed: ${commandName}`);
                 } catch (error) {
-                    console.error('Error executing command:', error);
+                    console.error(`❌ Error executing ${commandName}:`, error);
                     await conn.sendMessage(mek.key.remoteJid, { 
                         text: '❌ Error executing command!'
                     });
                 }
+            } else {
+                // Command not found
+                await conn.sendMessage(mek.key.remoteJid, { 
+                    text: `❌ Unknown command: ${text}\nType ${settings.prefix}menu for available commands.`
+                });
             }
         }
     } catch (error) {

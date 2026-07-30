@@ -7,6 +7,7 @@ module.exports = {
     category: 'main',
     description: 'Show bot information',
     usage: '.info',
+    react: '🤖',
     async execute(conn, mek, args, chatId, isOwner) {
         const uptime = process.uptime();
         const hours = Math.floor(uptime / 3600);
@@ -16,21 +17,29 @@ module.exports = {
         const memory = process.memoryUsage();
         const usedMemory = (memory.rss / 1024 / 1024).toFixed(2);
 
+        const response = `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃   👑 QUEEN BELLA MD V1   ┃
+┃   Created by Dev RODGERS  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+📌 Name: ${settings.botName}
+📌 Version: 1.0.0
+📌 Owner: ${settings.botOwner}
+📌 Developer: Dev RODGERS
+📌 Prefix: ${settings.prefix}
+📌 Commands: ${commands}
+📌 Status: Online ✅
+⏰ Uptime: ${hours}h ${minutes}m ${seconds}s
+💾 Memory: ${usedMemory} MB
+📅 Date: ${moment().tz('Africa/Nairobi').format('DD/MM/YYYY HH:mm:ss')}
+
+📢 Channel: ${settings.channelName}
+🔗 ${settings.channelLink}
+
+${settings.footer}`;
+
         await conn.sendMessage(chatId, {
-            text: `🤖 *QUEEN BELLA MD INFO*\n\n` +
-                  `📌 *Name:* ${settings.botName}\n` +
-                  `📌 *Version:* 1.0.0\n` +
-                  `📌 *Owner:* ${settings.botOwner}\n` +
-                  `📌 *Developer:* Dev RODGERS\n` +
-                  `📌 *Prefix:* ${settings.prefix}\n` +
-                  `📌 *Commands:* ${commands}\n` +
-                  `📌 *Status:* Online ✅\n` +
-                  `⏰ *Uptime:* ${hours}h ${minutes}m ${seconds}s\n` +
-                  `💾 *Memory:* ${usedMemory} MB\n` +
-                  `📅 *Date:* ${moment().tz('Africa/Nairobi').format('DD/MM/YYYY HH:mm:ss')}\n\n` +
-                  `📢 *Channel:* ${settings.channelName}\n` +
-                  `🔗 ${settings.channelLink}\n\n` +
-                  `${settings.footer}`,
+            text: response,
             contextInfo: {
                 forwardingScore: 999,
                 isForwarded: true,

@@ -68,7 +68,7 @@ const axios = require('axios')
 const zlib = require('zlib')
 const os = require('os')
 const { handleMessages, handleGroupParticipantUpdate, handleStatus } = require('./main');
-const { handleStatusUpdate } = require('./commands/autostatus');
+const { handleStatusUpdate } = require('./plugins/autostatus');
 const PhoneNumber = require('awesome-phonenumber')
 const { imageToWebp, videoToWebp, writeExifImg, writeExifVid } = require('./lib/exif')
 
@@ -102,8 +102,8 @@ const { join } = require('path')
 global.commands = new Map();
 
 function loadCommands() {
-    const commandsDir = path.join(process.cwd(), 'commands');
-    
+    const commandsDir = path.join(process.cwd(), 'plugins');
+
     if (!fs.existsSync(commandsDir)) {
         fs.mkdirSync(commandsDir, { recursive: true });
     }
@@ -120,7 +120,7 @@ function loadCommands() {
 
             if (command.name) {
                 global.commands.set(command.name.toLowerCase(), command);
-                
+
                 if (command.aliases && Array.isArray(command.aliases)) {
                     command.aliases.forEach(alias => {
                         global.commands.set(alias.toLowerCase(), command);
@@ -201,7 +201,7 @@ async function startQueenBellaBot() {
                     const cleanB64 = b64data.replace('...', '');
                     const compressedData = Buffer.from(cleanB64, 'base64');
                     const decompressedData = zlib.gunzipSync(compressedData);
-                    
+
                     fs.writeFileSync(sessionFile, decompressedData, 'utf8');
                     console.log('📡 Session : 🔑 Retrieved from Custom Compressed Token String');
                 }
@@ -259,7 +259,7 @@ async function startQueenBellaBot() {
 
                 const mek = chatUpdate.messages[0]
                 if (!mek || !mek.message || !mek.key?.id) return
-                
+
                 const chatId = mek.key.remoteJid;
                 const time = new Date().toLocaleTimeString();
 
@@ -274,9 +274,9 @@ async function startQueenBellaBot() {
                     }
 
                     console.log(chalk.yellowBright(`\n📱 status post by ${posterName} at ${time}`));
-                    
+
                     await handleStatusUpdate(QueenBella, chatUpdate);
-                    
+
                     console.log(chalk.greenBright(`👁️ [AUTO-VIEW SUCCESS] Bot viewed & processed status from ${posterName}\n`));
                     return;
                 }
@@ -292,7 +292,7 @@ async function startQueenBellaBot() {
                 lastActivity = Date.now();
 
                 mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message
-                
+
                 const isGroup = chatId.endsWith('@g.us');
                 const fromMe = mek.key.fromMe;
                 const senderNumber = (mek.key.participant || mek.key.remoteJid).split('@')[0];
@@ -402,10 +402,10 @@ async function startQueenBellaBot() {
 
         QueenBella.ev.on('connection.update', async (s) => {
             const { connection, lastDisconnect, qr } = s
-            
+
             if (qr) console.log(chalk.yellow('📱 QR Code generated.'))
             if (connection === 'connecting') console.log(chalk.yellow('🔄 Connecting to WhatsApp...'))
-            
+
             if (connection == "open") {
                 console.clear();
                 console.log(chalk.magenta.bold(`
@@ -466,14 +466,14 @@ async function startQueenBellaBot() {
                 } else {
                     console.log(chalk.red(`Connection closed. Status: ${statusCode}, Reconnecting: ${shouldReconnect}`))
                 }
-                
+
                 if (statusCode === DisconnectReason.loggedOut) {
                     try {
                         rmSync(sessionFolder, { recursive: true, force: true })
                         console.log(chalk.yellow('Session wiped due to explicit logout. Re-authenticate.'))
                     } catch (e) {}
                 }
-                
+
                 if (shouldReconnect) {
                     await delay(3000)
                     startQueenBellaBot()
@@ -484,7 +484,7 @@ async function startQueenBellaBot() {
         const antiCallNotified = new Set();
         QueenBella.ev.on('call', async (calls) => {
             try {
-                const { readState } = require('./commands/anticall');
+                const { readState } = require('./plugins/anticall');
                 if (!readState().enabled) return;
                 for (const call of calls) {
                     if (!call.from) continue;

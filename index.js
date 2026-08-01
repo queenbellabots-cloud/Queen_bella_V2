@@ -106,6 +106,11 @@ setInterval(() => {
 global.botname = settings.botName;
 global.themeemoji = "👑";
 
+// Auto-read PM toggle (default: false)
+if (global.autoReadPM === undefined) {
+    global.autoReadPM = false;
+}
+
 // Pairing code setup
 const pairingCode = settings.usePairingCode || true;
 const useMobile = process.argv.includes("--mobile");
@@ -185,6 +190,25 @@ async function startQueenBella() {
                 handleMessages(QueenBella, chatUpdate, true).catch(err => {
                     if (!err.message?.includes('rate-overlimit')) 
                         console.error("Error:", err.message);
+                });
+
+                // ==========================================
+                // 📖 AUTO-READ MESSAGES
+                // ==========================================
+                setImmediate(async () => {
+                    try {
+                        // Auto-read for groups (from settings)
+                        if (settings.autoRead && chatId.endsWith('@g.us')) {
+                            await QueenBella.readMessages([mek.key]);
+                        }
+                        
+                        // Auto-read for private messages (from command toggle)
+                        if (global.autoReadPM && !chatId.endsWith('@g.us')) {
+                            await QueenBella.readMessages([mek.key]);
+                        }
+                    } catch (e) {
+                        // Silent fail for auto-read
+                    }
                 });
 
             } catch (err) {

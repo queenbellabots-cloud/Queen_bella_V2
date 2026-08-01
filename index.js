@@ -192,23 +192,16 @@ async function startQueenBella() {
                         console.error("Error:", err.message);
                 });
 
-                // ==========================================
                 // 📖 AUTO-READ MESSAGES
-                // ==========================================
                 setImmediate(async () => {
                     try {
-                        // Auto-read for groups (from settings)
                         if (settings.autoRead && chatId.endsWith('@g.us')) {
                             await QueenBella.readMessages([mek.key]);
                         }
-                        
-                        // Auto-read for private messages (from command toggle)
                         if (global.autoReadPM && !chatId.endsWith('@g.us')) {
                             await QueenBella.readMessages([mek.key]);
                         }
-                    } catch (e) {
-                        // Silent fail for auto-read
-                    }
+                    } catch (e) {}
                 });
 
             } catch (err) {
@@ -295,32 +288,32 @@ async function startQueenBella() {
                     const botNumber = QueenBella.user.id.split(':')[0] + '@s.whatsapp.net';
                     const currentPrefix = settings.prefix || '.';
                     
+                    const userName = settings.botOwner || 'QUEEN BELLA USER';
+                    const userNumber = settings.ownerNumber || '254755660053';
+                    
                     const welcomeImages = settings.welcomeImages || [
                         "https://imagetourl.cloud/jey865he.jpg",
                         "https://imagetourl.cloud/8uafyai1.jpg"
                     ];
                     const randomImage = welcomeImages[Math.floor(Math.random() * welcomeImages.length)];
                     
-                    const welcomeText = `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃   👑 QUEEN BELLA MD V1   ┃
-┃   Created by Dev RODGERS  ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+                    const welcomeText = `╔═══☉❖ʜᴇʟʟᴏ ${userName.toUpperCase()}❖☉═══╗
+║   ᴛʜᴀɴᴋ ʏᴏᴜ ғᴏʀ ᴄʜᴏᴏsɪɴɢ ʙᴇʟʟᴀ!     
+║    ᴍᴀᴅᴇ ʙʏ  ᴅᴇᴠ ʀᴏᴅɢᴇʀs                
+╚══════════════════════╝
+✅ ᴄᴏɴɴᴇᴄᴛᴇᴅ sᴜᴄᴄᴇssғᴜʟʟʏ!
 
-✅ CONNECTED SUCCESSFULLY!
-
-👑 Bot: ${settings.botName}
-👤 Owner: ${settings.botOwner}
-👨‍💻 Developer: Dev RODGERS
-📱 Number: ${settings.ownerNumber}
-⚡ Prefix: ${currentPrefix}
-🟢 Status: Online and Ready!
-
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃  📢 JOIN OUR CHANNEL         ┃
-┃  👇 Click the button below    ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-
-${settings.footer}`;
+🤖 ʙᴏᴛ:  𝗤𝗨𝗘𝗘𝗡 𝗕𝗘𝗟𝗟𝗔 𝗠𝗗
+👤 ᴏᴡɴᴇʀ: ${userName}
+👨‍💻 ᴅᴇᴠᴇʟᴏᴘᴇʀ: ᴅᴇᴠ ʀᴏᴅɢᴇʀs
+📱 ɴᴜᴍʙᴇʀ: ${userNumber}
+⚡ ᴘʀᴇғɪx: ${currentPrefix}
+🟢 sᴛᴀᴛᴜs: ᴏɴʟɪɴᴇ ᴀɴᴅ ʀᴇᴀᴅʏ!
+┏━━━━━━━━━━━━━━━━━━┓
+╏     📢 ᴊᴏɪɴ ᴏᴜʀ ᴄʜᴀɴɴᴇʟ         
+╏👇 ᴄʟɪᴄᴋ ᴛʜᴇ ʙᴜᴛᴛᴏɴ ʙᴇʟᴏᴡ
+┗━━━━━━━━━━━━━━━━━━┛
+© ᴀ ʙᴇʟʟᴀ ʙᴏᴛs ᴘʀᴏᴅᴜᴄᴛɪᴏɴs`;
 
                     await QueenBella.sendMessage(botNumber, {
                         image: { url: randomImage },

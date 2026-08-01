@@ -56,44 +56,38 @@ module.exports = {
             ];
             const randomImage = menuImages[Math.floor(Math.random() * menuImages.length)];
 
-            // YOUR EXACT DESIGN - COPY PASTED DIRECTLY
-            let menu = ╔═════════════════════════════════╗
-║       𝐐𝐔𝐄𝐄𝐍 𝐁𝐄𝐋𝐋𝐀 𝐕𝟏              
-║   𝙿𝙾𝚆𝙴𝚁𝙴𝙳 𝙱𝚈 𝙳𝙴𝚅 𝚁𝙾𝙳𝙶𝙴𝚁𝚂          
-╚═════════════════════════════════╝
-                    𝐁𝐎𝐓 𝐈𝐍𝐅𝐎
-╠═════════════════════════════════╣
-👤 User: ${userName}
-👑 Owner: ${userNameDisplay}
-👨‍💻 Developer: ᴅᴇᴠ ʀᴏᴅɢᴇʀs
-📱 Number: ${userNumber}
-⚡ Prefix: ${settings.prefix || '.'}
-📊 Commands: ${totalCommands}
-🔒 Mode: ${mode}
+            // Build menu - CLEAN VERSION
+            let menu = '╔═══════════════════════════════════════╗\n';
+            menu += '║       QUEEN BELLA V1                  ║\n';
+            menu += '║   POWERED BY DEV RODGERS              ║\n';
+            menu += '╚═══════════════════════════════════════╝\n';
+            menu += '                    BOT INFO\n';
+            menu += '╠═══════════════════════════════════════╣\n';
+            menu += '👤 User: ' + userName + '\n';
+            menu += '👑 Owner: ' + userNameDisplay + '\n';
+            menu += '👨‍💻 Developer: DEV RODGERS\n';
+            menu += '📱 Number: ' + userNumber + '\n';
+            menu += '⚡ Prefix: ' + (settings.prefix || '.') + '\n';
+            menu += '📊 Commands: ' + totalCommands + '\n';
+            menu += '🔒 Mode: ' + mode + '\n\n';
 
-┏━━━━━━━━━━━━━━━━━━━━┓
-┃     𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐋𝐈𝐒𝐓      
-┗━━━━━━━━━━━━━━━━━━━━┛
-╦══════MAIN MENU═════╦
-╠  .alive
-╠  .autoviewstatus
-╠  .info
-╠  .menu
-╠  .mode
-╠  .owner
-╠  .ping
-╠  .uptime
-╚═══════════════════╩
+            menu += '┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n';
+            menu += '┃     COMMAND LIST                     ┃\n';
+            menu += '┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n';
 
-╦═════TOOLS MENU═════╦
-╠  .vv
-╚═══════════════════╩
-╔═════════════════════════╗
-║  📢 JOIN OUR CHANNEL                   
-║  👇 Click the button below              
-╚═════════════════════════╝
+            for (const category of sortedCategories) {
+                menu += '\n╦══════' + category + ' MENU═════╦\n';
+                for (const cmdName of categories[category].sort()) {
+                    menu += '╠  .' + cmdName + '\n';
+                }
+                menu += '╚═══════════════════════╩\n';
+            }
 
-© ᴀ ʙᴇʟʟᴀ ʙᴏᴛs ᴘʀᴏᴅᴜᴛɪᴏɴs`;
+            menu += '\n╔═══════════════════════════════════════╗\n';
+            menu += '║  📢 JOIN OUR CHANNEL                   ║\n';
+            menu += '║  👇 Click the button below              ║\n';
+            menu += '╚═══════════════════════════════════════╝\n\n';
+            menu += '© A BELLA BOTS PRODUCTIONS';
 
             await conn.sendMessage(chatId, {
                 image: { url: randomImage },

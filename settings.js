@@ -2,8 +2,8 @@ const settings = {
   prefix: ".",
   botName: "👑 QUEEN BELLA MD V1",
   botOwner: "𝐑𝐎𝐃𝐆𝐄𝐑𝐒 𝐎𝐍𝐘𝐀𝐍𝐆𝐎",
-  ownerNumber: "254755660053",
-  commandMode: "public", // 👈 "public" or "private"
+  ownerNumber: "254716386654",  // 👈 Fix: Remove the AAAAAAAAAAAA and add closing quote
+  commandMode: "public",
   usePairingCode: true,
   autoRead: true,
   
@@ -16,8 +16,17 @@ const settings = {
   botImage: "https://imagetourl.cloud/jey865he.jpg",
   menuImage: "https://imagetourl.cloud/9eumy3kr.jpg",
   ownerImage: "https://imagetourl.cloud/jey865he.jpg",
+  menuImages: [
+    "https://imagetourl.cloud/9eumy3kr.jpg",
+    "https://imagetourl.cloud/jey865he.jpg",
+    "https://imagetourl.cloud/8uafyai1.jpg"
+  ],
+  welcomeImages: [
+    "https://imagetourl.cloud/jey865he.jpg",
+    "https://imagetourl.cloud/8uafyai1.jpg"
+  ],
   
-  footer: "© MADE BY RODGERS"
+  footer: "© ᴀ ʙᴇʟʟᴀ ʙᴏᴛs ᴘʀᴏᴅᴜᴛɪᴏɴs"
 };
 
 global.prefix = settings.prefix;

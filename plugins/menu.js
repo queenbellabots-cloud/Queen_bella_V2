@@ -21,7 +21,7 @@ module.exports = {
             const commands = global.commands || new Map();
             const cmdList = [];
             const seen = new Set();
-            
+
             for (const [name, cmd] of commands) {
                 if (!seen.has(name) && cmd.name === name) {
                     seen.add(name);
@@ -43,43 +43,60 @@ module.exports = {
             const totalCommands = cmdList.length;
             const sortedCategories = Object.keys(categories).sort();
 
-            // Build menu
-            let menu = `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n`;
-            menu += `┃   👑 QUEEN BELLA MD V1 👑    ┃\n`;
-            menu += `┃   Created by Dev RODGERS      ┃\n`;
-            menu += `┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n\n`;
-            
-            menu += `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n`;
-            menu += `┃      📊 BOT INFO              ┃\n`;
-            menu += `┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n`;
-            menu += `👤 User: ${userName}\n`;
-            menu += `👑 Owner: ${settings.botOwner}\n`;
-            menu += `👨‍💻 Developer: Dev RODGERS\n`;
-            menu += `📱 Number: ${settings.ownerNumber}\n`;
-            menu += `⚡ Prefix: ${settings.prefix}\n`;
-            menu += `📊 Commands: ${totalCommands}\n`;
-            menu += `🔒 Mode: ${settings.commandMode.toUpperCase()}\n\n`;
+            // Get user info
+            const userNameDisplay = settings.botOwner || 'QUEEN BELLA USER';
+            const userNumber = settings.ownerNumber || '254755660053';
+            const mode = settings.commandMode ? settings.commandMode.toUpperCase() : 'PUBLIC';
 
-            menu += `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n`;
-            menu += `┃     📋 COMMAND LIST           ┃\n`;
-            menu += `┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n`;
+            // Pick random menu image
+            const menuImages = settings.menuImages || [
+                "https://imagetourl.cloud/9eumy3kr.jpg",
+                "https://imagetourl.cloud/jey865he.jpg",
+                "https://imagetourl.cloud/8uafyai1.jpg"
+            ];
+            const randomImage = menuImages[Math.floor(Math.random() * menuImages.length)];
 
-            for (const category of sortedCategories) {
-                menu += `\n┌─── ${category} MENU ───┐\n`;
-                for (const cmdName of categories[category].sort()) {
-                    menu += `│  .${cmdName}\n`;
-                }
-                menu += `└────────────────────────┘\n`;
-            }
+            // YOUR EXACT DESIGN - COPY PASTED DIRECTLY
+            let menu = ╔═════════════════════════════════╗
+║       𝐐𝐔𝐄𝐄𝐍 𝐁𝐄𝐋𝐋𝐀 𝐕𝟏              
+║   𝙿𝙾𝚆𝙴𝚁𝙴𝙳 𝙱𝚈 𝙳𝙴𝚅 𝚁𝙾𝙳𝙶𝙴𝚁𝚂          
+╚═════════════════════════════════╝
+                    𝐁𝐎𝐓 𝐈𝐍𝐅𝐎
+╠═════════════════════════════════╣
+👤 User: ${userName}
+👑 Owner: ${userNameDisplay}
+👨‍💻 Developer: ᴅᴇᴠ ʀᴏᴅɢᴇʀs
+📱 Number: ${userNumber}
+⚡ Prefix: ${settings.prefix || '.'}
+📊 Commands: ${totalCommands}
+🔒 Mode: ${mode}
 
-            menu += `\n┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n`;
-            menu += `┃  📢 JOIN OUR CHANNEL         ┃\n`;
-            menu += `┃  👇 Click the button below    ┃\n`;
-            menu += `┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n\n`;
-            menu += `${settings.footer}`;
+┏━━━━━━━━━━━━━━━━━━━━┓
+┃     𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐋𝐈𝐒𝐓      
+┗━━━━━━━━━━━━━━━━━━━━┛
+╦══════MAIN MENU═════╦
+╠  .alive
+╠  .autoviewstatus
+╠  .info
+╠  .menu
+╠  .mode
+╠  .owner
+╠  .ping
+╠  .uptime
+╚═══════════════════╩
+
+╦═════TOOLS MENU═════╦
+╠  .vv
+╚═══════════════════╩
+╔═════════════════════════╗
+║  📢 JOIN OUR CHANNEL                   
+║  👇 Click the button below              
+╚═════════════════════════╝
+
+© ᴀ ʙᴇʟʟᴀ ʙᴏᴛs ᴘʀᴏᴅᴜᴛɪᴏɴs`;
 
             await conn.sendMessage(chatId, {
-                image: { url: settings.menuImage },
+                image: { url: randomImage },
                 caption: menu,
                 contextInfo: {
                     mentionedJid: [sender],

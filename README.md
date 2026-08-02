@@ -20,7 +20,7 @@
 
 <br><br>
 
-### ✨ *Created with ❤️ by* 
+### *Created by* 
 # 𝐑𝐎𝐃𝐆𝐄𝐑𝐒 𝐎𝐍𝐘𝐀𝐍𝐆𝑶
 ### *Dev RODGERS*
 
@@ -84,9 +84,7 @@
   <img src="https://img.shields.io/badge/☕%20Buy%20Me%20Coffee-FF5E00?style=for-the-badge&logo=buymeacoffee&logoColor=white" alt="Buy Me Coffee">
 </a>
 
-**M-Pesa Number:** *0140022665*
-
-*Click the button above to open M-Pesa Sim Toolkit*
+**Number:** *0140022665*
 
 </div>
 

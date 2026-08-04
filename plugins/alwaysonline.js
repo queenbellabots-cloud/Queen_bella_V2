@@ -28,20 +28,14 @@ module.exports = {
                 react: { text: randomReact, key: mek.key }
             });
 
-            // Only owner can change
-            if (!isOwner) {
-                await conn.sendMessage(chatId, {
-                    text: '❌ Only the bot owner can change this setting.'
-                });
-                return;
-            }
+            // ✅ REMOVED OWNER CHECK - EVERYONE CAN USE!
 
             const action = args[0]?.toLowerCase();
 
             // ── Turn ON ──────────────────────────────────────────────────────────────
             if (action === 'on') {
                 global.alwaysOnline = true;
-                
+
                 // Send online presence
                 await conn.sendPresenceUpdate('available', chatId);
 
@@ -71,7 +65,7 @@ ${settings.footer}`
             // ── Turn OFF ─────────────────────────────────────────────────────────────
             if (action === 'off') {
                 global.alwaysOnline = false;
-                
+
                 // Set to offline/unavailable
                 await conn.sendPresenceUpdate('unavailable', chatId);
 
@@ -98,7 +92,7 @@ ${settings.footer}`
 
             // ── Show current status ─────────────────────────────────────────────────
             const status = global.alwaysOnline ? '🟢 ONLINE' : '🔴 OFFLINE';
-            
+
             await conn.sendMessage(chatId, {
                 text: `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃   👑 QUEEN BELLA MD V1   ┃

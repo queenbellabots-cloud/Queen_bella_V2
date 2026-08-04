@@ -126,7 +126,7 @@ ${settings.footer}`,
 
             } catch (error) {
                 console.error('Join group error:', error);
-                
+
                 let errorMessage = '❌ *Failed to join group.*';
                 if (error.message.includes('already')) {
                     errorMessage = '❌ *Already a member of this group.*';

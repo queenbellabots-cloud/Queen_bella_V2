@@ -77,7 +77,7 @@ module.exports = {
                 return;
             }
 
-            // ✅ FIXED ADMIN CHECK - USING HELPER
+            // ✅ CHECK IF BOT IS ADMIN (REQUIRED)
             const botAdmin = await isBotAdmin(conn, chatId);
             if (!botAdmin) {
                 await conn.sendMessage(chatId, {
@@ -86,22 +86,7 @@ module.exports = {
                 return;
             }
 
-            // Check if user is admin or owner
-            let isAdmin = false;
-            try {
-                const groupMetadata = await conn.groupMetadata(chatId);
-                const senderJid = mek.key.participant || mek.key.remoteJid;
-                isAdmin = groupMetadata.participants.some(p => 
-                    p.id === senderJid && p.admin === 'admin'
-                );
-            } catch (e) {}
-
-            if (!isAdmin && !isOwner) {
-                await conn.sendMessage(chatId, {
-                    text: '❌ Only admins can change welcome settings.'
-                });
-                return;
-            }
+            // ✅ REMOVED USER ADMIN/OWNER CHECK - EVERYONE CAN TOGGLE WELCOME!
 
             const status = args[0]?.toLowerCase();
 
@@ -185,7 +170,7 @@ module.exports.goodbye = {
                 return;
             }
 
-            // ✅ FIXED ADMIN CHECK - USING HELPER
+            // ✅ CHECK IF BOT IS ADMIN (REQUIRED)
             const botAdmin = await isBotAdmin(conn, chatId);
             if (!botAdmin) {
                 await conn.sendMessage(chatId, {
@@ -194,22 +179,7 @@ module.exports.goodbye = {
                 return;
             }
 
-            // Check if user is admin or owner
-            let isAdmin = false;
-            try {
-                const groupMetadata = await conn.groupMetadata(chatId);
-                const senderJid = mek.key.participant || mek.key.remoteJid;
-                isAdmin = groupMetadata.participants.some(p => 
-                    p.id === senderJid && p.admin === 'admin'
-                );
-            } catch (e) {}
-
-            if (!isAdmin && !isOwner) {
-                await conn.sendMessage(chatId, {
-                    text: '❌ Only admins can change goodbye settings.'
-                });
-                return;
-            }
+            // ✅ REMOVED USER ADMIN/OWNER CHECK - EVERYONE CAN TOGGLE GOODBYE!
 
             const status = args[0]?.toLowerCase();
 

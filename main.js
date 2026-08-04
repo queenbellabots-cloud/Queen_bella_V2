@@ -8,7 +8,7 @@ async function handleMessages(conn, chatUpdate, isOwner) {
     try {
         const mek = chatUpdate.messages[0];
         if (!mek || !mek.message) return;
-        
+
         // Get text from message
         let text = '';
         if (mek.message.conversation) {
@@ -20,29 +20,23 @@ async function handleMessages(conn, chatUpdate, isOwner) {
         } else if (mek.message.videoMessage) {
             text = mek.message.videoMessage.caption || '';
         }
-        
+
         if (!text) return;
-        
+
         // Check if command exists
         if (text.startsWith(settings.prefix || '.')) {
             const args = text.slice(1).trim().split(' ');
             const commandName = args.shift().toLowerCase();
-            
-            // 👇 PUBLIC/PRIVATE MODE CHECK
+
+            // 👇 GET SENDER INFO
             const sender = mek.key.participant || mek.key.remoteJid;
             const isOwner = sender === settings.ownerNumber + '@s.whatsapp.net' || 
                            sender === settings.ownerNumber + '@c.us';
-            
-            // If mode is private, only owner can use commands
-            if (settings.commandMode === 'private' && !isOwner) {
-                await conn.sendMessage(mek.key.remoteJid, { 
-                    text: '🔒 This bot is in private mode. Only the owner can use commands.'
-                });
-                return;
-            }
-            
+
+            // ✅ PRIVATE MODE CHECK REMOVED - EVERYONE CAN USE COMMANDS!
+
             console.log(`📥 Command: ${commandName} from ${mek.key.remoteJid}`);
-            
+
             if (global.commands && global.commands.has(commandName)) {
                 const command = global.commands.get(commandName);
                 try {

@@ -1,16 +1,24 @@
 const settings = {
   prefix: ".",
   botName: "𝗤𝗨𝗘𝗘𝗡 𝗕𝗘𝗟𝗟𝗔 𝗩𝟭",
-  botOwner: "𝐑𝐎𝐃𝐆𝐄𝐑𝐒",
-  ownerNumber: "254755660053",  // ✅ Fixed your number
+  botOwner: "𝐑𝐎𝐃𝐆𝐄𝐑𝐒", // Enter your name
+  ownerNumber: "254755660053", // Enter your number
   commandMode: "public",
   usePairingCode: true,
   autoRead: true,
 
-  // ✅ CORRECT CHANNEL JID - UPDATED
+  // ✅ CHANNEL INFO
   channelId: "120363411498601038@newsletter",
   channelName: "QUEEN BELLA MD",
   channelLink: "https://whatsapp.com/channel/0029VbCwZHACXC3PNHgtMT31",
+
+  // ✅ CUSTOM STATUS REACTION EMOJIS
+  statusReactions: [
+    '🔥', '❤️', '😍', '👑', '✨', '🌟', '💯', '🎉', '💪', '👏',
+    '🙌', '🤩', '😎', '💥', '⭐', '🌈', '🎊', '🎈', '💖', '💗',
+    '💝', '💟', '❣️', '💕', '💞', '💓', '🧡', '💛', '💚', '💙',
+    '💜', '🖤', '🤍', '🤎', '❤️‍🔥', '💘', '💌', '💋', '🫶', '💫'
+  ],
 
   botImage: "https://imagetourl.cloud/jey865he.jpg",
   menuImage: "https://imagetourl.cloud/9eumy3kr.jpg",

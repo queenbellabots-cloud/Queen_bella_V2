@@ -4,6 +4,7 @@
  */
 
 const settings = require('../settings');
+const { isBotAdmin } = require('./checkadmin');
 
 // Different reaction emojis
 const ADD_REACTIONS = ['👤', '➕', '✅', '✨', '🎯', '🚀', '💫', '🌟'];
@@ -40,22 +41,13 @@ module.exports = {
                 return;
             }
 
-            // Get group metadata to check bot admin status
-            try {
-                const groupMetadata = await conn.groupMetadata(chatId);
-                const botJid = conn.user.id.split(':')[0] + '@s.whatsapp.net';
-                const isBotAdmin = groupMetadata.participants.some(p => 
-                    p.id === botJid && p.admin === 'admin'
-                );
-
-                if (!isBotAdmin) {
-                    await conn.sendMessage(chatId, {
-                        text: '❌ I need admin rights to add members.'
-                    });
-                    return;
-                }
-            } catch (e) {
-                console.error('Group metadata error:', e);
+            // ✅ FIXED ADMIN CHECK - USING HELPER
+            const botAdmin = await isBotAdmin(conn, chatId);
+            if (!botAdmin) {
+                await conn.sendMessage(chatId, {
+                    text: '❌ I need admin rights to add members.'
+                });
+                return;
             }
 
             // Identify Target JID

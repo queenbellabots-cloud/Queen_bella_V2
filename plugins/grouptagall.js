@@ -4,6 +4,7 @@
  */
 
 const settings = require('../settings');
+const { isBotAdmin } = require('./checkadmin');
 
 // Different reaction emojis
 const TAGALL_REACTIONS = ['📣', '🔊', '📢', '🗣️', '📯', '📨', '📬', '📭'];
@@ -28,6 +29,15 @@ module.exports = {
             if (!isGroup) {
                 await conn.sendMessage(chatId, {
                     text: '❌ This command is for groups only!'
+                });
+                return;
+            }
+
+            // ✅ FIXED ADMIN CHECK - USING HELPER
+            const botAdmin = await isBotAdmin(conn, chatId);
+            if (!botAdmin) {
+                await conn.sendMessage(chatId, {
+                    text: '❌ I need to be an admin to tag all members.'
                 });
                 return;
             }

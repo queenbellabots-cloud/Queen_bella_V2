@@ -4,6 +4,7 @@
  */
 
 const settings = require('../settings');
+const { isBotAdmin } = require('./checkadmin');
 
 // Different reaction emojis
 const LEAVE_REACTIONS = ['🚪', '🚶', '👋', '🏃', '💨', '🚀', '🔚', '⌛'];
@@ -38,6 +39,17 @@ module.exports = {
                     text: '❌ This command can only be used in groups.'
                 });
                 return;
+            }
+
+            // ✅ Check if bot is admin (optional - not required to leave)
+            // But we can check and notify if bot is admin before leaving
+            try {
+                const botAdmin = await isBotAdmin(conn, chatId);
+                if (botAdmin) {
+                    console.log('Bot is admin, leaving group...');
+                }
+            } catch (e) {
+                // Ignore admin check errors
             }
 
             // Get group name

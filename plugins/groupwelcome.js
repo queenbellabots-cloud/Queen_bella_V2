@@ -4,6 +4,7 @@
  */
 
 const settings = require('../settings');
+const { isBotAdmin } = require('./checkadmin');
 const fs = require('fs');
 const path = require('path');
 
@@ -76,7 +77,16 @@ module.exports = {
                 return;
             }
 
-            // Check if admin
+            // ✅ FIXED ADMIN CHECK - USING HELPER
+            const botAdmin = await isBotAdmin(conn, chatId);
+            if (!botAdmin) {
+                await conn.sendMessage(chatId, {
+                    text: '❌ I need to be an admin to manage welcome settings.'
+                });
+                return;
+            }
+
+            // Check if user is admin or owner
             let isAdmin = false;
             try {
                 const groupMetadata = await conn.groupMetadata(chatId);
@@ -175,7 +185,16 @@ module.exports.goodbye = {
                 return;
             }
 
-            // Check if admin
+            // ✅ FIXED ADMIN CHECK - USING HELPER
+            const botAdmin = await isBotAdmin(conn, chatId);
+            if (!botAdmin) {
+                await conn.sendMessage(chatId, {
+                    text: '❌ I need to be an admin to manage goodbye settings.'
+                });
+                return;
+            }
+
+            // Check if user is admin or owner
             let isAdmin = false;
             try {
                 const groupMetadata = await conn.groupMetadata(chatId);

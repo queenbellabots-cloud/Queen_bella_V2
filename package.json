@@ -1,7 +1,9 @@
+# Create new package.json
+cat > package.json << 'EOF'
 {
   "name": "queen-bella-md",
   "version": "1.0.0",
-  "description": "👑 QUEEN BELLA MD - A WhatsApp Bot by Dev RODGERS",
+  "description": "👑 QUEEN BELLA MD - A WhatsApp Bot",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
@@ -14,7 +16,6 @@
     "chalk": "^4.1.2",
     "express": "^4.19.2",
     "file-type": "^16.5.4",
-    "fluent-ffmpeg": "^2.1.3",
     "moment-timezone": "^0.5.45",
     "node-cache": "^5.1.2",
     "pino": "^8.21.0",
@@ -24,3 +25,10 @@
     "node": ">=18.0.0"
   }
 }
+EOF
+
+# Install
+npm install
+
+# Start
+npm start

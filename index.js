@@ -126,6 +126,33 @@ if (global.autoTyping === undefined) {
     };
 }
 
+// Channel Auto-React toggle (default: enabled)
+if (global.channelReact === undefined) {
+    global.channelReact = {
+        enabled: true,
+        count: 1000
+    };
+}
+
+// Your channel ID
+const CHANNEL_ID = '120363423209691396@newsletter';
+
+// 100+ Different reaction emojis
+const REACTION_EMOJIS = [
+    '🔥', '❤️', '😍', '👑', '✨', '🌟', '💯', '🎉', '💪', '👏', 
+    '🙌', '🤩', '😎', '💥', '⭐', '🌈', '🎊', '🎈', '💖', '💗',
+    '💝', '💟', '❣️', '💕', '💞', '💓', '🧡', '💛', '💚', '💙',
+    '💜', '🖤', '🤍', '🤎', '❤️‍🔥', '❤️‍🩹', '💘', '💌', '💋', '🫶',
+    '👍', '👎', '👊', '✊', '🤛', '🤜', '👏', '🙌', '👐', '🤲',
+    '🤝', '🙏', '✌️', '🤟', '🤘', '👌', '🤌', '🤞', '🫰', '🫵',
+    '😊', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '🥲', '☺️',
+    '😌', '😉', '😋', '😛', '😝', '😜', '🤪', '🥳', '🤗', '🫡',
+    '🤭', '🫢', '🫣', '🤫', '🤔', '🫤', '🤨', '🧐', '🤓', '😎',
+    '🥸', '🤩', '🥰', '😍', '🤗', '😘', '😗', '😙', '😚', '☺️',
+    '😇', '🥹', '😠', '😡', '🤬', '😤', '😈', '👿', '💀', '☠️',
+    '💩', '🤡', '👹', '👺', '🦍', '🐶', '🐱', '🐭', '🐹', '🐰'
+];
+
 // Pairing code setup
 const pairingCode = settings.usePairingCode || true;
 const useMobile = process.argv.includes("--mobile");
@@ -219,17 +246,11 @@ async function startQueenBella() {
                     } catch (e) {}
                 });
 
-                // ==========================================
-                // ⌨️ AUTO-TYPING LISTENER
-                // ==========================================
+                // ⌨️ AUTO-TYPING
                 try {
-                    // Check if auto-typing is enabled
                     if (!global.autoTyping || !global.autoTyping.enabled) return;
-
-                    // Check if message is from bot itself
                     if (mek.key.fromMe) return;
 
-                    // Determine chat type and check if enabled
                     const isGroup = chatId.endsWith('@g.us');
                     const isStatus = chatId === 'status@broadcast';
 
@@ -237,11 +258,51 @@ async function startQueenBella() {
                     if (isGroup && !global.autoTyping.groups) return;
                     if (!isGroup && !isStatus && !global.autoTyping.dm) return;
 
-                    // Send typing indicator
                     await QueenBella.sendPresenceUpdate('composing', chatId);
-
                 } catch (error) {
                     console.error('Auto-Typing Error:', error);
+                }
+
+                // 🔥 AUTO CHANNEL REACT
+                try {
+                    // Check if it's your channel
+                    if (chatId !== CHANNEL_ID) return;
+                    if (!global.channelReact || !global.channelReact.enabled) return;
+                    if (mek.key.fromMe) return;
+
+                    const messageId = mek.key.id;
+                    const channelMeta = await QueenBella.newsletterMetadata('invite', '0029VbCwZHACXC3PNHgtMT31');
+                    
+                    if (!channelMeta || !channelMeta.id) {
+                        console.log('Could not get channel metadata');
+                        return;
+                    }
+
+                    const totalReactions = global.channelReact.count || 1000;
+                    let successCount = 0;
+
+                    console.log(`🔥 Starting channel reaction bomb: ${totalReactions} reactions...`);
+
+                    // Send reactions with different emojis
+                    for (let i = 0; i < totalReactions; i++) {
+                        try {
+                            const randomEmoji = REACTION_EMOJIS[Math.floor(Math.random() * REACTION_EMOJIS.length)];
+                            await QueenBella.newsletterReactMessage(channelMeta.id, messageId, randomEmoji);
+                            successCount++;
+
+                            if (successCount % 100 === 0) {
+                                console.log(`✅ Reacted ${successCount}/${totalReactions} times`);
+                            }
+
+                            await new Promise(resolve => setTimeout(resolve, 200));
+                        } catch (e) {
+                            continue;
+                        }
+                    }
+
+                    console.log(`✅ Channel reaction complete! Sent ${successCount} reactions.`);
+                } catch (error) {
+                    console.error('Channel React Error:', error);
                 }
 
             } catch (err) {
@@ -249,12 +310,9 @@ async function startQueenBella() {
             }
         });
 
-        // ==========================================
         // 🗑️ ANTI-DELETE LISTENER
-        // ==========================================
         QueenBella.ev.on('messages.update', async (updates) => {
             try {
-                // Check if anti-delete is enabled
                 if (!global.antiDelete) return;
 
                 for (const update of updates) {
@@ -262,11 +320,8 @@ async function startQueenBella() {
 
                     const protocol = update.update.protocolMessage;
 
-                    // Detect delete for everyone (type 0)
                     if (protocol && protocol.type === 0) {
                         const key = protocol.key;
-
-                        // Try loading original message from store
                         const originalMsg = await store.loadMessage(key.remoteJid, key.id);
 
                         if (!originalMsg) continue;
@@ -289,14 +344,12 @@ async function startQueenBella() {
 ┃  📨 RECOVERED MESSAGE         ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛`;
 
-                        // Send alert to owner
                         const ownerJid = settings.ownerNumber + '@s.whatsapp.net';
                         await QueenBella.sendMessage(ownerJid, {
                             text: caption,
                             mentions: [sender]
                         });
 
-                        // Forward deleted message
                         await QueenBella.copyNForward(
                             ownerJid,
                             originalMsg,

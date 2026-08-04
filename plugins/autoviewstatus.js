@@ -1,26 +1,32 @@
 /**
  * 👑 QUEEN BELLA MD - Auto Status Control
- * Control automatic status viewing and reacting
+ * Automatically views and reacts to status updates
  */
 
 const settings = require('../settings');
 
+// Custom reaction emojis from settings
+const REACTION_EMOJIS = settings.statusReactions || [
+    '🔥', '❤️', '😍', '👑', '✨', '🌟', '💯', '🎉', '💪', '👏',
+    '🙌', '🤩', '😎', '💥', '⭐', '🌈', '🎊', '🎈', '💖', '💗',
+    '💝', '💟', '❣️', '💕', '💞', '💓', '🧡', '💛', '💚', '💙',
+    '💜', '🖤', '🤍', '🤎', '❤️‍🔥', '💘', '💌', '💋', '🫶', '💫'
+];
+
 // Runtime toggles
 if (global.autoStatusFlags === undefined) {
     global.autoStatusFlags = {
-        seen: null,
-        react: null,
+        view: true,   // Auto-view status
+        react: true,  // Auto-react to status
     };
 }
 
-const FLAGS = global.autoStatusFlags;
-
 module.exports = {
     name: 'autoviewstatus',
-    aliases: ['autoview', 'autolike', 'autoreact', 'autostatus', 'statusconfig', 'avs'],
+    aliases: ['avs', 'autostatus', 'statusconfig'],
     category: 'status',
     description: 'Control automatic status viewing and reacting',
-    usage: '.autoview on/off | .autolike on/off | .autostatus',
+    usage: '.autoviewstatus on/off | .autostatusreact on/off',
     react: '⚙️',
     async execute(conn, mek, args, chatId, isOwner) {
         try {
@@ -29,141 +35,115 @@ module.exports = {
                 react: { text: '⚙️', key: mek.key }
             });
 
+            // Only owner can change settings
+            if (!isOwner) {
+                await conn.sendMessage(chatId, {
+                    text: '❌ Only the bot owner can change this setting.'
+                });
+                return;
+            }
+
             const rawCmd = args[0]?.toLowerCase() || '';
             const sub = args[1]?.toLowerCase() || '';
 
-            // ── .autostatus / .statusconfig — show current state ─────────────────
-            if (rawCmd === 'autostatus' || rawCmd === 'statusconfig' || rawCmd === '') {
-                const seenEff = FLAGS.seen !== null ? FLAGS.seen : true;
-                const reactEff = FLAGS.react !== null ? FLAGS.react : true;
-                const seenSrc = FLAGS.seen !== null ? '_(runtime)_' : '_(default)_';
-                const reactSrc = FLAGS.react !== null ? '_(runtime)_' : '_(default)_';
+            // ── .autoviewstatus on/off ──────────────────────────────────────────────
+            if (rawCmd === 'on' || rawCmd === 'off') {
+                const newState = rawCmd === 'on';
+                global.autoStatusFlags.view = newState;
+                
+                await conn.sendMessage(chatId, {
+                    react: { text: newState ? '✅' : '❌', key: mek.key }
+                });
 
-                const statusText = `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+                await conn.sendMessage(chatId, {
+                    text: `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃   👑 QUEEN BELLA MD V1   ┃
+┃   Created by Dev RODGERS  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+👁️ *AUTO-VIEW STATUS*
+
+Status: ${newState ? '✅ ENABLED' : '❌ DISABLED'}
+
+📌 Bot will ${newState ? 'now' : 'no longer'} automatically view status updates.
+
+${settings.footer}`
+                });
+                return;
+            }
+
+            // ── .autostatusreact on/off ────────────────────────────────────────────
+            if (rawCmd === 'autostatusreact' || rawCmd === 'autoreact' || rawCmd === 'autolike') {
+                if (sub !== 'on' && sub !== 'off') {
+                    const currentState = global.autoStatusFlags.react ? 'ON' : 'OFF';
+                    await conn.sendMessage(chatId, {
+                        text: `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃   👑 QUEEN BELLA MD V1   ┃
+┃   Created by Dev RODGERS  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+❤️ *AUTO-REACT STATUS*
+
+Status: ${currentState === 'ON' ? '✅ ENABLED' : '❌ DISABLED'}
+
+📌 To change: .autostatusreact on or .autostatusreact off
+
+${settings.footer}`
+                    });
+                    return;
+                }
+
+                const newState = sub === 'on';
+                global.autoStatusFlags.react = newState;
+
+                await conn.sendMessage(chatId, {
+                    react: { text: newState ? '❤️' : '💔', key: mek.key }
+                });
+
+                await conn.sendMessage(chatId, {
+                    text: `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃   👑 QUEEN BELLA MD V1   ┃
+┃   Created by Dev RODGERS  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+❤️ *AUTO-REACT STATUS*
+
+Status: ${newState ? '✅ ENABLED' : '❌ DISABLED'}
+
+📌 Bot will ${newState ? 'now' : 'no longer'} automatically react to status updates.
+
+${settings.footer}`
+                });
+                return;
+            }
+
+            // ── Show current status ──────────────────────────────────────────────────
+            const viewStatus = global.autoStatusFlags.view ? '✅ ON' : '❌ OFF';
+            const reactStatus = global.autoStatusFlags.react ? '✅ ON' : '❌ OFF';
+
+            await conn.sendMessage(chatId, {
+                text: `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃   👑 QUEEN BELLA MD V1   ┃
 ┃   Created by Dev RODGERS  ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 📊 *AUTO-STATUS SETTINGS*
 
-👁️ *Auto View:*   ${seenEff ? '✅ ON' : '❌ OFF'}  ${seenSrc}
-❤️ *Auto React:*  ${reactEff ? '✅ ON' : '❌ OFF'}  ${reactSrc}
+👁️ *Auto View:*   ${viewStatus}
+❤️ *Auto React:*  ${reactStatus}
 
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃  📋 COMMANDS                  ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-• .autoview on  — View all statuses
-• .autoview off — Stop viewing statuses
-• .autolike on  — React to all statuses
-• .autolike off — Stop reacting to statuses
-• .autostatus   — Show this panel
-
-${settings.footer}`;
-
-                await conn.sendMessage(chatId, { text: statusText });
-                
-                // 👇 REACT WITH SUCCESS EMOJI
-                await conn.sendMessage(chatId, {
-                    react: { text: '✅', key: mek.key }
-                });
-                return;
-            }
-
-            // ── .autoview on/off ──────────────────────────────────────────────────
-            if (rawCmd === 'autoview') {
-                if (sub !== 'on' && sub !== 'off') {
-                    const eff = FLAGS.seen !== null ? FLAGS.seen : true;
-                    await conn.sendMessage(chatId, {
-                        text: `👁️ *Auto View* is currently *${eff ? 'ON' : 'OFF'}*\n\nUsage: .autoview on or .autoview off`
-                    });
-                    return;
-                }
-                FLAGS.seen = sub === 'on';
-                
-                // 👇 REACT WITH EYE EMOJI
-                await conn.sendMessage(chatId, {
-                    react: { text: '👁️', key: mek.key }
-                });
-                
-                await conn.sendMessage(chatId, {
-                    text: FLAGS.seen
-                        ? `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃   👑 QUEEN BELLA MD V1   ┃
-┃   Created by Dev RODGERS  ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-
-👁️ *Auto View: ON*
-
-✅ Bot will now *view every status* as soon as it arrives.
+• .autoviewstatus on/off    — Toggle auto-view
+• .autostatusreact on/off   — Toggle auto-react
+• .autoviewstatus           — Show this panel
 
 ${settings.footer}`
-                        : `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃   👑 QUEEN BELLA MD V1   ┃
-┃   Created by Dev RODGERS  ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-
-👁️ *Auto View: OFF*
-
-❌ Bot will stop automatically viewing statuses.
-
-${settings.footer}`
-                });
-                return;
-            }
-
-            // ── .autolike / .autoreact on/off ─────────────────────────────────────
-            if (rawCmd === 'autolike' || rawCmd === 'autoreact') {
-                if (sub !== 'on' && sub !== 'off') {
-                    const eff = FLAGS.react !== null ? FLAGS.react : true;
-                    await conn.sendMessage(chatId, {
-                        text: `❤️ *Auto React* is currently *${eff ? 'ON' : 'OFF'}*\n\nUsage: .autolike on or .autolike off`
-                    });
-                    return;
-                }
-                FLAGS.react = sub === 'on';
-                
-                // 👇 REACT WITH HEART EMOJI
-                await conn.sendMessage(chatId, {
-                    react: { text: '❤️', key: mek.key }
-                });
-                
-                await conn.sendMessage(chatId, {
-                    text: FLAGS.react
-                        ? `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃   👑 QUEEN BELLA MD V1   ┃
-┃   Created by Dev RODGERS  ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-
-❤️ *Auto React: ON*
-
-✅ Bot will now *react to every status* with an emoji.
-
-${settings.footer}`
-                        : `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃   👑 QUEEN BELLA MD V1   ┃
-┃   Created by Dev RODGERS  ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-
-❤️ *Auto React: OFF*
-
-❌ Bot will stop automatically reacting to statuses.
-
-${settings.footer}`
-                });
-                return;
-            }
-
-            // ── Unknown command ─────────────────────────────────────────────────────
-            await conn.sendMessage(chatId, {
-                text: `❌ Unknown command.\n\nAvailable commands:\n.autoview on/off\n.autolike on/off\n.autostatus`
             });
 
         } catch (error) {
             console.error('Error in autoviewstatus:', error);
-            // 👇 REACT WITH ERROR EMOJI
-            await conn.sendMessage(chatId, {
-                react: { text: '❌', key: mek.key }
-            });
             await conn.sendMessage(chatId, {
                 text: '❌ Error in auto-status command.'
             });

@@ -5,10 +5,10 @@
 
 const settings = require('../settings');
 
-// Runtime toggles — override config values without editing settings.js
+// Runtime toggles
 if (global.autoStatusFlags === undefined) {
     global.autoStatusFlags = {
-        seen: null,   // null = use config default, true/false = runtime override
+        seen: null,
         react: null,
     };
 }
@@ -24,13 +24,10 @@ module.exports = {
     react: '⚙️',
     async execute(conn, mek, args, chatId, isOwner) {
         try {
-            // Only owner can use this command
-            if (!isOwner) {
-                await conn.sendMessage(chatId, {
-                    text: '🔒 *Auto-Status Control*\n\nOnly the bot owner can change these settings.'
-                });
-                return;
-            }
+            // 👇 REACT WITH SETTINGS EMOJI
+            await conn.sendMessage(chatId, {
+                react: { text: '⚙️', key: mek.key }
+            });
 
             const rawCmd = args[0]?.toLowerCase() || '';
             const sub = args[1]?.toLowerCase() || '';
@@ -64,6 +61,11 @@ module.exports = {
 ${settings.footer}`;
 
                 await conn.sendMessage(chatId, { text: statusText });
+                
+                // 👇 REACT WITH SUCCESS EMOJI
+                await conn.sendMessage(chatId, {
+                    react: { text: '✅', key: mek.key }
+                });
                 return;
             }
 
@@ -77,6 +79,12 @@ ${settings.footer}`;
                     return;
                 }
                 FLAGS.seen = sub === 'on';
+                
+                // 👇 REACT WITH EYE EMOJI
+                await conn.sendMessage(chatId, {
+                    react: { text: '👁️', key: mek.key }
+                });
+                
                 await conn.sendMessage(chatId, {
                     text: FLAGS.seen
                         ? `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
@@ -113,6 +121,12 @@ ${settings.footer}`
                     return;
                 }
                 FLAGS.react = sub === 'on';
+                
+                // 👇 REACT WITH HEART EMOJI
+                await conn.sendMessage(chatId, {
+                    react: { text: '❤️', key: mek.key }
+                });
+                
                 await conn.sendMessage(chatId, {
                     text: FLAGS.react
                         ? `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
@@ -146,6 +160,10 @@ ${settings.footer}`
 
         } catch (error) {
             console.error('Error in autoviewstatus:', error);
+            // 👇 REACT WITH ERROR EMOJI
+            await conn.sendMessage(chatId, {
+                react: { text: '❌', key: mek.key }
+            });
             await conn.sendMessage(chatId, {
                 text: '❌ Error in auto-status command.'
             });

@@ -305,6 +305,14 @@ async function startQueenBella() {
                     console.error('Channel React Error:', error);
                 }
 
+                // 🛡️ ANTI-TAG WATCHER
+                try {
+                    const { antiTagWatcher } = require('./plugins/groupantitag');
+                    await antiTagWatcher(QueenBella, mek, chatId);
+                } catch (error) {
+                    console.error('Anti-Tag Watcher Error:', error);
+                }
+
             } catch (err) {
                 console.error("Error in messages:", err);
             }

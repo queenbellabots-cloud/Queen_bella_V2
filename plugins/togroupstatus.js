@@ -16,7 +16,7 @@ module.exports = {
     name: 'togroupstatus',
     aliases: ['groupstatus', 'statusgroup', 'togcstatus', 'gstatus'],
     category: 'group',
-    description: 'Send text or quoted media to group status. Owner only.',
+    description: 'Send text or quoted media to group status',
     usage: '.togroupstatus <text> or reply to media',
     react: '📢',
     async execute(conn, mek, args, chatId, isOwner) {
@@ -36,13 +36,7 @@ module.exports = {
                 return;
             }
 
-            // Check if owner
-            if (!isOwner) {
-                await conn.sendMessage(chatId, {
-                    text: '❌ Owner Only Command!'
-                });
-                return;
-            }
+            // ✅ REMOVED OWNER CHECK - EVERYONE CAN USE!
 
             // Get quoted message
             const quoted = mek.message?.extendedTextMessage?.contextInfo?.quotedMessage;

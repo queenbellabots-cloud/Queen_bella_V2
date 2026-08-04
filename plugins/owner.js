@@ -1,40 +1,60 @@
+/**
+ * 👑 QUEEN BELLA MD - Owner/Developer Info
+ * Shows developer contact information
+ */
+
 const settings = require('../settings');
 
 module.exports = {
     name: 'owner',
-    aliases: ['creator', 'dev'],
+    aliases: ['creator', 'developer', 'dev'],
     category: 'main',
-    description: 'Show bot owner info',
+    description: 'Show developer/owner information',
     usage: '.owner',
     react: '👑',
     async execute(conn, mek, args, chatId, isOwner) {
         try {
+            const sender = mek.key.participant || mek.key.remoteJid;
+            
+            // 👇 REACT
+            await conn.sendMessage(chatId, {
+                react: { text: '👑', key: mek.key }
+            });
+
+            // Get the actual bot owner (person using the bot)
+            const botOwnerName = settings.botOwner || 'QUEEN BELLA USER';
+            const botOwnerNumber = settings.ownerNumber || '254755660053';
+
+            // Developer info (YOU)
+            const devName = settings.developerName || '𝐑𝐎𝐃𝐆𝐄𝐑𝐒';
+            const devNumber = settings.developerNumber || '254755660053';
+            const devChannel = settings.developerChannel || settings.channelLink;
+
             const ownerText = `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃   👑 QUEEN BELLA MD V1   ┃
-┃   Created by Dev RODGERS  ┃
+┃   👑 QUEEN BELLA MD V1   
+┃   Created by Dev RODGERS  
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃      👨‍💻 OWNER INFO          ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+👤 *BOT OWNER* (This bot is deployed by)
+Name: ${botOwnerName}
+Number: ${botOwnerNumber}
 
-👤 Name: RODGERS ONYANGO
-👨‍💻 Developer: Dev RODGERS
-📱 Number: 254755660053
-🩵 Status: Confused 🤔
-📢 Channel: ${settings.channelName}
+👨‍💻 *DEVELOPER* (Bot Creator)
+Name: ${devName}
+Number: ${devNumber}
+Channel: ${devChannel}
 
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃  📢 JOIN OUR CHANNEL         ┃
-┃  👇 Click the button below    ┃
+┃  📢 JOIN OUR CHANNEL         
+┃  👇 Click the button below    
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 ${settings.footer}`;
 
             await conn.sendMessage(chatId, {
-                image: { url: settings.ownerImage },
-                caption: ownerText,
+                text: ownerText,
                 contextInfo: {
+                    mentionedJid: [sender],
                     forwardingScore: 999,
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
@@ -44,9 +64,12 @@ ${settings.footer}`;
                     }
                 }
             });
+
         } catch (error) {
-            console.error('Error in owner:', error);
-            await conn.sendMessage(chatId, { text: '❌ Error loading owner info.' });
+            console.error('Error in owner command:', error);
+            await conn.sendMessage(chatId, { 
+                text: '❌ Error loading owner info.'
+            });
         }
     }
 };

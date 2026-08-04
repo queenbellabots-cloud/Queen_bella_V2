@@ -4,6 +4,9 @@
 
 const settings = require('../settings');
 
+// Different reaction emojis for menu command
+const MENU_REACTIONS = ['👑', '✨', '🌟', '🔥', '💫', '⭐', '🌈', '🎯', '🚀', '💎', '👁️', '🎉', '💥', '⚡', '🌀'];
+
 module.exports = {
     name: 'menu',
     aliases: ['help', 'allmenu', 'cmds'],
@@ -16,6 +19,12 @@ module.exports = {
             const sender = mek.key.participant || mek.key.remoteJid;
             const pushName = mek.pushName || 'User';
             const userName = pushName || "User";
+
+            // 👇 REACT WITH RANDOM EMOJI FROM LIST
+            const randomReact = MENU_REACTIONS[Math.floor(Math.random() * MENU_REACTIONS.length)];
+            await conn.sendMessage(chatId, {
+                react: { text: randomReact, key: mek.key }
+            });
 
             // Get all commands
             const commands = global.commands || new Map();
@@ -55,6 +64,9 @@ module.exports = {
                 "https://imagetourl.cloud/8uafyai1.jpg"
             ];
             const randomImage = menuImages[Math.floor(Math.random() * menuImages.length)];
+
+            // ✅ CORRECT CHANNEL JID - Using settings.channelId
+            const channelJid = settings.channelId || '120363411498601038@newsletter';
 
             // Build menu - CLEAN VERSION
             let menu = '╔═══════════════════════════════════════╗\n';
@@ -97,8 +109,8 @@ module.exports = {
                     forwardingScore: 999,
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
-                        newsletterJid: settings.channelId,
-                        newsletterName: settings.channelName,
+                        newsletterJid: channelJid,  // ✅ Using correct channel JID
+                        newsletterName: settings.channelName || 'QUEEN BELLA MD',
                         serverMessageId: 1
                     }
                 }

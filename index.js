@@ -139,6 +139,14 @@ if (global.alwaysOnline === undefined) {
     global.alwaysOnline = true;
 }
 
+// ✅ Auto Status Flags (View & React)
+if (global.autoStatusFlags === undefined) {
+    global.autoStatusFlags = {
+        seen: true,   // Auto-view status
+        react: true,  // Auto-react to status
+    };
+}
+
 // ✅ YOUR CORRECT CHANNEL ID - UPDATED
 const CHANNEL_ID = '120363411498601038@newsletter';
 
@@ -271,10 +279,7 @@ async function startQueenBella() {
                 // 🟢 ALWAYS ONLINE
                 try {
                     if (global.alwaysOnline) {
-                        // Send presence update - shows as online
                         await QueenBella.sendPresenceUpdate('available', chatId);
-                        
-                        // Also mark messages as read (double ticks) if not from self
                         if (mek.key && !mek.key.fromMe) {
                             await QueenBella.readMessages([mek.key]);
                         }
@@ -283,9 +288,45 @@ async function startQueenBella() {
                     console.error('Always Online Error:', error);
                 }
 
+                // 👁️ AUTO STATUS VIEW/REACT
+                try {
+                    // Check if it's a status update
+                    if (chatId === 'status@broadcast') {
+                        if (!mek || !mek.message) return;
+
+                        // Check if auto-view is enabled
+                        const autoView = global.autoStatusFlags?.seen !== undefined ? global.autoStatusFlags.seen : true;
+                        const autoReact = global.autoStatusFlags?.react !== undefined ? global.autoStatusFlags.react : true;
+
+                        // 👁️ VIEW STATUS
+                        if (autoView) {
+                            try {
+                                await QueenBella.readMessages([mek.key]);
+                                console.log('✅ Status viewed automatically');
+                            } catch (viewError) {
+                                console.error('Error viewing status:', viewError);
+                            }
+                        }
+
+                        // ❤️ REACT TO STATUS
+                        if (autoReact) {
+                            try {
+                                const randomEmoji = REACTION_EMOJIS[Math.floor(Math.random() * REACTION_EMOJIS.length)];
+                                await QueenBella.sendMessage(mek.key.remoteJid, {
+                                    react: { text: randomEmoji, key: mek.key }
+                                });
+                                console.log(`✅ Reacted with ${randomEmoji} to status`);
+                            } catch (reactError) {
+                                console.error('Error reacting to status:', reactError);
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Auto Status Error:', error);
+                }
+
                 // 🔥 AUTO CHANNEL REACT
                 try {
-                    // Check if it's your channel
                     if (chatId !== CHANNEL_ID) return;
                     if (!global.channelReact || !global.channelReact.enabled) return;
                     if (mek.key.fromMe) return;
@@ -303,7 +344,6 @@ async function startQueenBella() {
 
                     console.log(`🔥 Starting channel reaction bomb: ${totalReactions} reactions...`);
 
-                    // Send reactions with different emojis
                     for (let i = 0; i < totalReactions; i++) {
                         try {
                             const randomEmoji = REACTION_EMOJIS[Math.floor(Math.random() * REACTION_EMOJIS.length)];

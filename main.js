@@ -28,19 +28,18 @@ async function handleMessages(conn, chatUpdate, isOwner) {
             const args = text.slice(1).trim().split(' ');
             const commandName = args.shift().toLowerCase();
 
-            // 👇 GET SENDER INFO
+            // 👇 GET SENDER INFO - BUT NO RESTRICTIONS
             const sender = mek.key.participant || mek.key.remoteJid;
             const senderNumber = sender.split('@')[0];
             const ownerNumber = settings.ownerNumber || '254755660053';
 
-            // Check if sender is the bot owner (person who deployed it)
+            // Check if sender is owner (for commands that need it)
             const isOwner = 
                 sender === ownerNumber + '@s.whatsapp.net' || 
                 sender === ownerNumber + '@c.us' ||
                 senderNumber === ownerNumber;
 
-            // ✅ PUBLIC MODE - Everyone can use commands
-            // Owner-only commands will check isOwner internally
+            // ✅ EVERYONE CAN USE ALL COMMANDS - NO RESTRICTIONS!
 
             console.log(`📥 Command: ${commandName} from ${senderNumber}`);
 

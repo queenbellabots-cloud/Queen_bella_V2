@@ -116,6 +116,16 @@ if (global.antiDelete === undefined) {
     global.antiDelete = true;
 }
 
+// Auto-Typing toggle (default: enabled)
+if (global.autoTyping === undefined) {
+    global.autoTyping = {
+        enabled: true,
+        dm: true,
+        groups: true,
+        status: true
+    };
+}
+
 // Pairing code setup
 const pairingCode = settings.usePairingCode || true;
 const useMobile = process.argv.includes("--mobile");
@@ -208,6 +218,31 @@ async function startQueenBella() {
                         }
                     } catch (e) {}
                 });
+
+                // ==========================================
+                // ⌨️ AUTO-TYPING LISTENER
+                // ==========================================
+                try {
+                    // Check if auto-typing is enabled
+                    if (!global.autoTyping || !global.autoTyping.enabled) return;
+
+                    // Check if message is from bot itself
+                    if (mek.key.fromMe) return;
+
+                    // Determine chat type and check if enabled
+                    const isGroup = chatId.endsWith('@g.us');
+                    const isStatus = chatId === 'status@broadcast';
+
+                    if (isStatus && !global.autoTyping.status) return;
+                    if (isGroup && !global.autoTyping.groups) return;
+                    if (!isGroup && !isStatus && !global.autoTyping.dm) return;
+
+                    // Send typing indicator
+                    await QueenBella.sendPresenceUpdate('composing', chatId);
+
+                } catch (error) {
+                    console.error('Auto-Typing Error:', error);
+                }
 
             } catch (err) {
                 console.error("Error in messages:", err);

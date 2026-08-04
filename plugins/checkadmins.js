@@ -1,6 +1,5 @@
 /**
  * 👑 QUEEN BELLA MD - Admin Check Helper
- * Checks if bot is admin in a group
  */
 
 async function isBotAdmin(conn, chatId) {
@@ -8,7 +7,6 @@ async function isBotAdmin(conn, chatId) {
         const groupMetadata = await conn.groupMetadata(chatId);
         const botJid = conn.user.id;
         
-        // Try all possible JID formats
         const botJidFormats = [
             botJid,
             botJid.split(':')[0] + '@s.whatsapp.net',

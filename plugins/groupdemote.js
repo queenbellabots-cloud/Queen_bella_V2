@@ -4,6 +4,7 @@
  */
 
 const settings = require('../settings');
+const { isBotAdmin } = require('./checkadmin');
 
 // Different reaction emojis
 const DEMOTE_REACTIONS = ['⬇️', '🔽', '📉', '👇', '⬇️', '🔄', '📊', '⏬'];
@@ -32,22 +33,13 @@ module.exports = {
                 return;
             }
 
-            // Check if bot is admin
-            try {
-                const groupMetadata = await conn.groupMetadata(chatId);
-                const botJid = conn.user.id.split(':')[0] + '@s.whatsapp.net';
-                const isBotAdmin = groupMetadata.participants.some(p => 
-                    p.id === botJid && p.admin === 'admin'
-                );
-
-                if (!isBotAdmin) {
-                    await conn.sendMessage(chatId, {
-                        text: '❌ I need to be an admin to demote someone.'
-                    });
-                    return;
-                }
-            } catch (e) {
-                console.error('Group metadata error:', e);
+            // ✅ FIXED ADMIN CHECK - USING HELPER
+            const botAdmin = await isBotAdmin(conn, chatId);
+            if (!botAdmin) {
+                await conn.sendMessage(chatId, {
+                    text: '❌ I need to be an admin to demote someone.'
+                });
+                return;
             }
 
             // Identify target user
@@ -133,6 +125,11 @@ ${settings.footer}`
 ⬇️ *DEMOTE SUCCESSFUL!*
 
 👤 @${targetJid.split('@')[0]} has been demoted from admin to member.
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  📢 JOIN OUR CHANNEL         ┃
+┃  👇 Click the button below    ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 ${settings.footer}`,
                 mentions: [targetJid]

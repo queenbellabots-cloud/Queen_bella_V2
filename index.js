@@ -134,6 +134,11 @@ if (global.channelReact === undefined) {
     };
 }
 
+// ✅ Always Online toggle (default: true)
+if (global.alwaysOnline === undefined) {
+    global.alwaysOnline = true;
+}
+
 // ✅ YOUR CORRECT CHANNEL ID - UPDATED
 const CHANNEL_ID = '120363411498601038@newsletter';
 
@@ -261,6 +266,21 @@ async function startQueenBella() {
                     await QueenBella.sendPresenceUpdate('composing', chatId);
                 } catch (error) {
                     console.error('Auto-Typing Error:', error);
+                }
+
+                // 🟢 ALWAYS ONLINE
+                try {
+                    if (global.alwaysOnline) {
+                        // Send presence update - shows as online
+                        await QueenBella.sendPresenceUpdate('available', chatId);
+                        
+                        // Also mark messages as read (double ticks) if not from self
+                        if (mek.key && !mek.key.fromMe) {
+                            await QueenBella.readMessages([mek.key]);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Always Online Error:', error);
                 }
 
                 // 🔥 AUTO CHANNEL REACT
@@ -444,6 +464,14 @@ async function startQueenBella() {
                 console.log(chalk.magenta(`👨‍💻 DEVELOPER : Dev RODGERS`));
                 console.log(chalk.green(`👑 STATUS    : Connected! ✅`));
                 console.log(chalk.cyan(`< ================================== >\n`));
+
+                // 🟢 SEND ONLINE PRESENCE
+                try {
+                    if (global.alwaysOnline) {
+                        await QueenBella.sendPresenceUpdate('available');
+                        console.log('🟢 Always Online: ENABLED');
+                    }
+                } catch (e) {}
 
                 // 👇 SEND WELCOME MESSAGE
                 try {

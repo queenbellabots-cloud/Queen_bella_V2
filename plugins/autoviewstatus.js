@@ -35,13 +35,7 @@ module.exports = {
                 react: { text: '⚙️', key: mek.key }
             });
 
-            // Only owner can change settings
-            if (!isOwner) {
-                await conn.sendMessage(chatId, {
-                    text: '❌ Only the bot owner can change this setting.'
-                });
-                return;
-            }
+            // ✅ REMOVED OWNER CHECK - EVERYONE CAN USE!
 
             const rawCmd = args[0]?.toLowerCase() || '';
             const sub = args[1]?.toLowerCase() || '';
@@ -50,7 +44,7 @@ module.exports = {
             if (rawCmd === 'on' || rawCmd === 'off') {
                 const newState = rawCmd === 'on';
                 global.autoStatusFlags.view = newState;
-                
+
                 await conn.sendMessage(chatId, {
                     react: { text: newState ? '✅' : '❌', key: mek.key }
                 });

@@ -4,6 +4,7 @@
  */
 
 const settings = require('../settings');
+const { isBotAdmin } = require('./checkadmin');
 const fs = require('fs');
 const path = require('path');
 
@@ -40,7 +41,16 @@ module.exports = {
                 return;
             }
 
-            // Check if admin or owner
+            // ✅ FIXED ADMIN CHECK - USING HELPER
+            const botAdmin = await isBotAdmin(conn, chatId);
+            if (!botAdmin) {
+                await conn.sendMessage(chatId, {
+                    text: '❌ I need to be an admin to use this feature.'
+                });
+                return;
+            }
+
+            // Check if user is admin or owner
             let isAdmin = false;
             try {
                 const groupMetadata = await conn.groupMetadata(chatId);
@@ -66,11 +76,11 @@ module.exports = {
             if (status === 'on') {
                 settings[chatId] = { enabled: true, action: action };
                 fs.writeFileSync(dataPath, JSON.stringify(settings, null, 2));
-                
+
                 await conn.sendMessage(chatId, {
                     react: { text: '✅', key: mek.key }
                 });
-                
+
                 await conn.sendMessage(chatId, {
                     text: `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃   👑 QUEEN BELLA MD V1   ┃
@@ -92,11 +102,11 @@ ${settings.footer}`
             if (status === 'off') {
                 settings[chatId] = { enabled: false };
                 fs.writeFileSync(dataPath, JSON.stringify(settings, null, 2));
-                
+
                 await conn.sendMessage(chatId, {
                     react: { text: '❌', key: mek.key }
                 });
-                
+
                 await conn.sendMessage(chatId, {
                     text: `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃   👑 QUEEN BELLA MD V1   ┃
@@ -169,7 +179,7 @@ async function antiTagWatcher(conn, mek, chatId) {
         let isOwner = false;
         const senderJid = mek.key.participant || mek.key.remoteJid;
         const ownerJid = settings.ownerNumber + '@s.whatsapp.net';
-        
+
         if (senderJid === ownerJid) isOwner = true;
 
         try {

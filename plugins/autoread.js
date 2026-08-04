@@ -19,13 +19,10 @@ module.exports = {
     react: '📖',
     async execute(conn, mek, args, chatId, isOwner) {
         try {
-            // Only owner can use this command
-            if (!isOwner) {
-                await conn.sendMessage(chatId, {
-                    text: '🔒 *Auto-Read Control*\n\nOnly the bot owner can change this setting.'
-                });
-                return;
-            }
+            // 👇 REACT WITH READING EMOJI
+            await conn.sendMessage(chatId, {
+                react: { text: '📖', key: mek.key }
+            });
 
             const arg = (args[0] || '').toLowerCase();
             let autoReadPM = global.autoReadPM || false;
@@ -66,8 +63,17 @@ ${settings.footer}`;
                 text: statusText
             });
 
+            // 👇 REACT WITH SUCCESS EMOJI
+            await conn.sendMessage(chatId, {
+                react: { text: '✅', key: mek.key }
+            });
+
         } catch (error) {
             console.error('Error in autoread:', error);
+            // 👇 REACT WITH ERROR EMOJI
+            await conn.sendMessage(chatId, {
+                react: { text: '❌', key: mek.key }
+            });
             await conn.sendMessage(chatId, {
                 text: '❌ Error in auto-read command.'
             });

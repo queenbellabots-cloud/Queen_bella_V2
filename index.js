@@ -134,8 +134,8 @@ if (global.channelReact === undefined) {
     };
 }
 
-// Your channel ID
-const CHANNEL_ID = '120363423209691396@newsletter';
+// ✅ YOUR CORRECT CHANNEL ID - UPDATED
+const CHANNEL_ID = '120363411498601038@newsletter';
 
 // 100+ Different reaction emojis
 const REACTION_EMOJIS = [
@@ -272,7 +272,7 @@ async function startQueenBella() {
 
                     const messageId = mek.key.id;
                     const channelMeta = await QueenBella.newsletterMetadata('invite', '0029VbCwZHACXC3PNHgtMT31');
-                    
+
                     if (!channelMeta || !channelMeta.id) {
                         console.log('Could not get channel metadata');
                         return;

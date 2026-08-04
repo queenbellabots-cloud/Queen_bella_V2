@@ -111,6 +111,11 @@ if (global.autoReadPM === undefined) {
     global.autoReadPM = false;
 }
 
+// Anti-Delete toggle (default: true)
+if (global.antiDelete === undefined) {
+    global.antiDelete = true;
+}
+
 // Pairing code setup
 const pairingCode = settings.usePairingCode || true;
 const useMobile = process.argv.includes("--mobile");
@@ -209,6 +214,67 @@ async function startQueenBella() {
             }
         });
 
+        // ==========================================
+        // 🗑️ ANTI-DELETE LISTENER
+        // ==========================================
+        QueenBella.ev.on('messages.update', async (updates) => {
+            try {
+                // Check if anti-delete is enabled
+                if (!global.antiDelete) return;
+
+                for (const update of updates) {
+                    if (!update.update) continue;
+
+                    const protocol = update.update.protocolMessage;
+
+                    // Detect delete for everyone (type 0)
+                    if (protocol && protocol.type === 0) {
+                        const key = protocol.key;
+
+                        // Try loading original message from store
+                        const originalMsg = await store.loadMessage(key.remoteJid, key.id);
+
+                        if (!originalMsg) continue;
+
+                        const sender = key.participant || key.remoteJid;
+                        const senderName = await QueenBella.getName(sender) || sender.split('@')[0];
+
+                        const caption = `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃   👑 QUEEN BELLA MD V1   ┃
+┃   Created by Dev RODGERS  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+🚫 *ANTI DELETE DETECTED!*
+
+👤 *User:* ${senderName}
+📱 *Number:* ${sender.split('@')[0]}
+🕒 *Time:* ${new Date().toLocaleString()}
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  📨 RECOVERED MESSAGE         ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛`;
+
+                        // Send alert to owner
+                        const ownerJid = settings.ownerNumber + '@s.whatsapp.net';
+                        await QueenBella.sendMessage(ownerJid, {
+                            text: caption,
+                            mentions: [sender]
+                        });
+
+                        // Forward deleted message
+                        await QueenBella.copyNForward(
+                            ownerJid,
+                            originalMsg,
+                            true
+                        );
+                    }
+                }
+
+            } catch (error) {
+                console.error('Anti-Delete Error:', error);
+            }
+        });
+
         // Utility functions
         QueenBella.decodeJid = (jid) => {
             if (!jid) return jid;
@@ -247,7 +313,7 @@ async function startQueenBella() {
                     pairingDone = true;
                     let phoneNumber = settings.ownerNumber || '254755660053';
                     phoneNumber = String(phoneNumber).replace(/[^0-9]/g, '');
-                    
+
                     console.log(chalk.green(`📱 Using phone number: ${phoneNumber}`));
                     console.log(chalk.yellow(`⏳ Requesting pairing code...`));
 
@@ -287,16 +353,16 @@ async function startQueenBella() {
                 try {
                     const botNumber = QueenBella.user.id.split(':')[0] + '@s.whatsapp.net';
                     const currentPrefix = settings.prefix || '.';
-                    
+
                     const userName = settings.botOwner || 'QUEEN BELLA USER';
                     const userNumber = settings.ownerNumber || '254755660053';
-                    
+
                     const welcomeImages = settings.welcomeImages || [
                         "https://imagetourl.cloud/jey865he.jpg",
                         "https://imagetourl.cloud/8uafyai1.jpg"
                     ];
                     const randomImage = welcomeImages[Math.floor(Math.random() * welcomeImages.length)];
-                    
+
                     const welcomeText = `╔═══☉❖ʜᴇʟʟᴏ ${userName.toUpperCase()}❖☉═══╗
 ║   ᴛʜᴀɴᴋ ʏᴏᴜ ғᴏʀ ᴄʜᴏᴏsɪɴɢ ʙᴇʟʟᴀ!     
 ║    ᴍᴀᴅᴇ ʙʏ  ᴅᴇᴠ ʀᴏᴅɢᴇʀs                

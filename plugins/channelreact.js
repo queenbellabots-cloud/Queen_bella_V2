@@ -5,8 +5,8 @@
 
 const settings = require('../settings');
 
-// Your channel ID
-const CHANNEL_ID = '120363423209691396@newsletter';
+// ✅ CORRECT CHANNEL JID - UPDATED
+const CHANNEL_ID = '120363411498601038@newsletter';
 
 // Different reaction emojis to use (100+ unique emojis)
 const REACTION_EMOJIS = [
@@ -58,7 +58,7 @@ module.exports = {
 
             if (action === 'on' || action === 'off') {
                 global.channelReact.enabled = action === 'on';
-                
+
                 await conn.sendMessage(chatId, {
                     text: `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃   👑 QUEEN BELLA MD V1   ┃

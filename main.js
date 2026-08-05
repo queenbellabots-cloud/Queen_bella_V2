@@ -28,7 +28,7 @@ async function handleMessages(conn, chatUpdate, isOwner) {
             const args = text.slice(1).trim().split(' ');
             const commandName = args.shift().toLowerCase();
 
-            // ✅ EVERYONE CAN USE - NO RESTRICTIONS!
+            // ✅ REMOVE ALL RESTRICTIONS - EVERYONE CAN USE
             const sender = mek.key.participant || mek.key.remoteJid;
             const senderNumber = sender ? sender.split('@')[0] : 'Unknown';
 

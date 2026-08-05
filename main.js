@@ -28,7 +28,7 @@ async function handleMessages(conn, chatUpdate, isOwner) {
             const args = text.slice(1).trim().split(' ');
             const commandName = args.shift().toLowerCase();
 
-            // 👇 GET SENDER INFO - BUT NO RESTRICTIONS
+            // ✅ REMOVED OWNER RESTRICTION - EVERYONE CAN USE
             const sender = mek.key.participant || mek.key.remoteJid;
             const senderNumber = sender.split('@')[0];
             const ownerNumber = settings.ownerNumber || '254755660053';
@@ -39,8 +39,7 @@ async function handleMessages(conn, chatUpdate, isOwner) {
                 sender === ownerNumber + '@c.us' ||
                 senderNumber === ownerNumber;
 
-            // ✅ EVERYONE CAN USE ALL COMMANDS - NO RESTRICTIONS!
-
+            // ✅ NO BLOCKING - EVERYONE CAN USE ALL COMMANDS
             console.log(`📥 Command: ${commandName} from ${senderNumber}`);
 
             if (global.commands && global.commands.has(commandName)) {

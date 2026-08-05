@@ -28,18 +28,10 @@ async function handleMessages(conn, chatUpdate, isOwner) {
             const args = text.slice(1).trim().split(' ');
             const commandName = args.shift().toLowerCase();
 
-            // ✅ REMOVED OWNER RESTRICTION - EVERYONE CAN USE
+            // ✅ EVERYONE CAN USE - NO RESTRICTIONS!
             const sender = mek.key.participant || mek.key.remoteJid;
-            const senderNumber = sender.split('@')[0];
-            const ownerNumber = settings.ownerNumber || '254755660053';
+            const senderNumber = sender ? sender.split('@')[0] : 'Unknown';
 
-            // Check if sender is owner (for commands that need it)
-            const isOwner = 
-                sender === ownerNumber + '@s.whatsapp.net' || 
-                sender === ownerNumber + '@c.us' ||
-                senderNumber === ownerNumber;
-
-            // ✅ NO BLOCKING - EVERYONE CAN USE ALL COMMANDS
             console.log(`📥 Command: ${commandName} from ${senderNumber}`);
 
             if (global.commands && global.commands.has(commandName)) {

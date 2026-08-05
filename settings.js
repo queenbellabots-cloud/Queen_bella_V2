@@ -1,26 +1,53 @@
 const settings = {
-  prefix: ".",
+
+  // ═══════════════════════════════════════════════
+  // 🤖 BOT IDENTITY
+  // ═══════════════════════════════════════════════
   botName: "𝗤𝗨𝗘𝗘𝗡 𝗕𝗘𝗟𝗟𝗔 𝗩𝟭",
-  
-  // DEVELOPER
-  developerName: "𝐑𝐎𝐃𝐆𝐄𝐑𝐒",
-  developerNumber: "254755660053",
-  developerChannel: "https://whatsapp.com/channel/0029VbCwZHACXC3PNHgtMT31",
-  
-  // BOT OWNER
-  botOwner: "𝐑𝐎𝐃𝐆𝐄𝐑𝐒", // Enter your name
-  ownerNumber: "25475566xxxx",  // Enter your number
-  
+  botOwner: "𝐑𝐎𝐃𝐆𝐄𝐑𝐒",
+  authorName: "Dev RODGERS",
+  timeZone: "Africa/Nairobi",
+
+  // ═══════════════════════════════════════════════
+  // 👤 OWNER & SUDO USERS| PLEASE ENTER YOUR NUMBER(S) 
+  // ═══════════════════════════════════════════════
+  ownerNumber: "254755660053", //Bot number
+  sudoUsers: [
+    "254755660053",
+    "2547XXXXXXXX",
+    "2547XXXXXXXX"
+  ],
+
+  // ═══════════════════════════════════════════════
+  // ⚙️ COMMAND SETTINGS
+  // ═══════════════════════════════════════════════
+  prefix: ".",
   commandMode: "public",
+
+  // ═══════════════════════════════════════════════
+  // 📱 PAIRING & AUTO READ
+  // ═══════════════════════════════════════════════
   usePairingCode: true,
   autoRead: true,
 
-  // Channel Info
+  // ═══════════════════════════════════════════════
+  // 📢 CHANNEL INFO  | JOIN US FOR DAILY UPDATES
+  // ═══════════════════════════════════════════════
   channelId: "120363411498601038@newsletter",
   channelName: "QUEEN BELLA MD",
   channelLink: "https://whatsapp.com/channel/0029VbCwZHACXC3PNHgtMT31",
 
-  // Images
+  // ═══════════════════════════════════════════════
+  // ❤️ AUTO STATUS REACTIONS
+  // ═══════════════════════════════════════════════
+  statusReactions: [
+    '🔥', '❤️', '😍', '👑', '✨', '🌟', '💯', '🎉', '💪', '👏',
+    '🙌', '🤩', '😎', '💥', '⭐', '🌈', '🎊', '🎈', '💖', '💗'
+  ],
+
+  // ═══════════════════════════════════════════════
+  // 🖼️ BOT IMAGES
+  // ═══════════════════════════════════════════════
   botImage: "https://imagetourl.cloud/jey865he.jpg",
   menuImage: "https://imagetourl.cloud/9eumy3kr.jpg",
   ownerImage: "https://imagetourl.cloud/jey865he.jpg",
@@ -34,7 +61,11 @@ const settings = {
     "https://imagetourl.cloud/8uafyai1.jpg"
   ],
 
+  // ═══════════════════════════════════════════════
+  // WUOD MIN LYNNE CEE
+  // ═══════════════════════════════════════════════
   footer: "© A BELLA BOTS PRODUCTIONS"
+
 };
 
 global.prefix = settings.prefix;

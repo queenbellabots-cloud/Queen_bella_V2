@@ -378,7 +378,7 @@ async function startQueenBella() {
             }
         });
 
-        // 🗑️ ANTI-DELETE LISTENER
+        // 🗑️ ANTI-DELETE LISTENER - FIXED
         QueenBella.ev.on('messages.update', async (updates) => {
             try {
                 if (!global.antiDelete) return;
@@ -390,7 +390,17 @@ async function startQueenBella() {
 
                     if (protocol && protocol.type === 0) {
                         const key = protocol.key;
-                        const originalMsg = await store.loadMessage(key.remoteJid, key.id);
+                        
+                        // Try to get original message from store
+                        let originalMsg = await store.loadMessage(key.remoteJid, key.id);
+
+                        // If not found in store, try to load from chat
+                        if (!originalMsg) {
+                            try {
+                                const messages = await QueenBella.loadMessages(key.remoteJid, 50);
+                                originalMsg = messages.find(m => m.key?.id === key.id);
+                            } catch (e) {}
+                        }
 
                         if (!originalMsg) continue;
 
@@ -413,16 +423,30 @@ async function startQueenBella() {
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛`;
 
                         const ownerJid = settings.ownerNumber + '@s.whatsapp.net';
+                        
+                        // Send alert to owner
                         await QueenBella.sendMessage(ownerJid, {
                             text: caption,
                             mentions: [sender]
                         });
 
-                        await QueenBella.copyNForward(
-                            ownerJid,
-                            originalMsg,
-                            true
-                        );
+                        // Forward the original message
+                        try {
+                            await QueenBella.copyNForward(
+                                ownerJid,
+                                originalMsg,
+                                true
+                            );
+                            console.log('✅ Anti-Delete: Recovered message sent to owner');
+                        } catch (forwardError) {
+                            console.error('Forward error:', forwardError);
+                            // Fallback: send text if available
+                            if (originalMsg.message?.conversation) {
+                                await QueenBella.sendMessage(ownerJid, {
+                                    text: `📨 *Recovered Text:*\n${originalMsg.message.conversation}`
+                                });
+                            }
+                        }
                     }
                 }
 

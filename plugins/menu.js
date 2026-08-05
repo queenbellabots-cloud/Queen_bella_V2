@@ -20,7 +20,7 @@ module.exports = {
             const pushName = mek.pushName || 'User';
             const userName = pushName || "User";
 
-            // 👇 REACT WITH RANDOM EMOJI FROM LIST
+            // 👇 REACT WITH RANDOM EMOJI
             const randomReact = MENU_REACTIONS[Math.floor(Math.random() * MENU_REACTIONS.length)];
             await conn.sendMessage(chatId, {
                 react: { text: randomReact, key: mek.key }
@@ -56,6 +56,11 @@ module.exports = {
             const userNameDisplay = settings.botOwner || 'QUEEN BELLA USER';
             const userNumber = settings.ownerNumber || '254755660053';
             const mode = settings.commandMode ? settings.commandMode.toUpperCase() : 'PUBLIC';
+            const authorName = settings.authorName || 'DEV RODGERS';
+
+            // Get sudo users
+            const sudoUsers = settings.sudoUsers || [];
+            const sudoList = sudoUsers.length > 0 ? sudoUsers.join(', ') : 'None';
 
             // Pick random menu image
             const menuImages = settings.menuImages || [
@@ -65,40 +70,43 @@ module.exports = {
             ];
             const randomImage = menuImages[Math.floor(Math.random() * menuImages.length)];
 
-            // ✅ CORRECT CHANNEL JID - Using settings.channelId
+            // ✅ CORRECT CHANNEL JID
             const channelJid = settings.channelId || '120363411498601038@newsletter';
 
-            // Build menu - CLEAN VERSION
-            let menu = '╔═══════════════════════════════════════╗\n';
-            menu += '║       QUEEN BELLA V1                  ║\n';
-            menu += '║   POWERED BY DEV RODGERS              ║\n';
-            menu += '╚═══════════════════════════════════════╝\n';
+            // ============================================================
+            // BUILD MENU - WITH SUDO USERS
+            // ============================================================
+            let menu = '═══════════════════════════════════════════════════\n';
+            menu += '       QUEEN BELLA V1                          \n';
+            menu += '   POWERED BY DEV RODGERS                      \n';
+            menu += '═══════════════════════════════════════════════════\n';
             menu += '                    BOT INFO\n';
-            menu += '╠═══════════════════════════════════════╣\n';
+            menu += '═══════════════════════════════════════════════════\n';
             menu += '👤 User: ' + userName + '\n';
             menu += '👑 Owner: ' + userNameDisplay + '\n';
-            menu += '👨‍💻 Developer: DEV RODGERS\n';
+            menu += '👨‍💻 Developer: ' + authorName + '\n';
             menu += '📱 Number: ' + userNumber + '\n';
             menu += '⚡ Prefix: ' + (settings.prefix || '.') + '\n';
             menu += '📊 Commands: ' + totalCommands + '\n';
-            menu += '🔒 Mode: ' + mode + '\n\n';
+            menu += '🔒 Mode: ' + mode + '\n';
+            menu += '👥 Sudo Users: ' + sudoList + '\n\n';
 
-            menu += '┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n';
-            menu += '┃     COMMAND LIST                     ┃\n';
-            menu += '┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n';
+            menu += '═══════════════════════════════════════════════════\n';
+            menu += '     COMMAND LIST                              \n';
+            menu += '═══════════════════════════════════════════════════\n';
 
             for (const category of sortedCategories) {
                 menu += '\n╦══════' + category + ' MENU═════╦\n';
                 for (const cmdName of categories[category].sort()) {
                     menu += '╠  .' + cmdName + '\n';
                 }
-                menu += '╚═══════════════════════╩\n';
+                menu += '╚═══════════════════════════════════════════╩\n';
             }
 
-            menu += '\n╔═══════════════════════════════════════╗\n';
-            menu += '║  📢 JOIN OUR CHANNEL                   ║\n';
-            menu += '║  👇 Click the button below              ║\n';
-            menu += '╚═══════════════════════════════════════╝\n\n';
+            menu += '\n═══════════════════════════════════════════════════\n';
+            menu += '  📢 JOIN OUR CHANNEL                          \n';
+            menu += '  👇 Click the button below                     \n';
+            menu += '═══════════════════════════════════════════════════\n\n';
             menu += '© A BELLA BOTS PRODUCTIONS';
 
             await conn.sendMessage(chatId, {
@@ -109,7 +117,7 @@ module.exports = {
                     forwardingScore: 999,
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
-                        newsletterJid: channelJid,  // ✅ Using correct channel JID
+                        newsletterJid: channelJid,
                         newsletterName: settings.channelName || 'QUEEN BELLA MD',
                         serverMessageId: 1
                     }

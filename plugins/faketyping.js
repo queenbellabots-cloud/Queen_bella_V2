@@ -1,6 +1,7 @@
 /**
  * 👑 QUEEN BELLA MD - Fake Typing/Recording
  * Uses custom status text from .setstatus
+ * ✅ EVERYONE CAN USE
  */
 
 const settings = require('../settings');
@@ -22,19 +23,12 @@ module.exports = {
                 react: { text: '🎭', key: mek.key }
             });
 
-            if (!isOwner) {
-                await conn.sendMessage(chatId, {
-                    text: '❌ Only the bot owner can use this.'
-                });
-                return;
-            }
+            // ✅ REMOVED OWNER CHECK - EVERYONE CAN USE!
 
             const action = args[0]?.toLowerCase();
 
             if (action === 'on') {
                 global.fakeTyping = true;
-                
-                // Start fake typing loop
                 const statusText = global.customStatus || 'composing';
                 
                 await conn.sendMessage(chatId, {
@@ -47,27 +41,6 @@ module.exports = {
 *They'll see "${statusText}" randomly!* 😈
 *Set custom text with: .setstatus <text>*`
                 });
-
-                // Start random typing
-                const interval = setInterval(async () => {
-                    if (!global.fakeTyping) {
-                        clearInterval(interval);
-                        return;
-                    }
-
-                    try {
-                        // Get current custom status
-                        const status = global.customStatus || 'composing';
-                        const presences = [status, 'recording', 'paused'];
-                        const randomPresence = presences[Math.floor(Math.random() * presences.length)];
-                        
-                        // Send to a random chat? Or just current
-                        await conn.sendPresenceUpdate(randomPresence, chatId);
-                        
-                    } catch (e) {
-                        // Silent
-                    }
-                }, Math.floor(Math.random() * 15000) + 10000); // 10-25 seconds
 
             } else if (action === 'off') {
                 global.fakeTyping = false;

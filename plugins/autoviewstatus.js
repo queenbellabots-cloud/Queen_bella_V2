@@ -28,7 +28,7 @@ module.exports = {
     aliases: ['autoview', 'autolike', 'autoreact', 'autostatus', 'statusconfig', 'avs'],
     category: 'status',
     description: 'Control automatic status viewing and reacting',
-    usage: '.autoviewstatus on/off | .autostatusreact on/off',
+    usage: '.autosview on/off | .autosreact on/off',
     react: '⚙️',
     async execute(conn, mek, args, chatId, isOwner) {
         try {
@@ -60,9 +60,9 @@ module.exports = {
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃  📋 COMMANDS                  ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-• .autoview on/off     — View all statuses
-• .autolike on/off     — React to all statuses
-• .autostatus          — Show this panel
+• .autosview on/off     — View all statuses
+• .autosreact on/off    — React to all statuses
+• .autostatus           — Show this panel
 
 ${settings.footer}`;
 
@@ -70,12 +70,12 @@ ${settings.footer}`;
                 return;
             }
 
-            // ── .autoview on/off ──────────────────────────────────────────────────
-            if (rawCmd === 'autoview') {
+            // ── .autosview on/off ──────────────────────────────────────────────────
+            if (rawCmd === 'autosview') {
                 if (sub !== 'on' && sub !== 'off') {
                     const eff = FLAGS.seen !== null ? FLAGS.seen : true;
                     await conn.sendMessage(chatId, {
-                        text: `👁️ *Auto View* is currently *${eff ? 'ON' : 'OFF'}*\n\nUsage: .autoview on or .autoview off`
+                        text: `👁️ *Auto View* is currently *${eff ? 'ON' : 'OFF'}*\n\nUsage: .autosview on or .autosview off`
                     });
                     return;
                 }
@@ -109,12 +109,12 @@ ${settings.footer}`
                 return;
             }
 
-            // ── .autolike / .autoreact on/off ─────────────────────────────────────
-            if (rawCmd === 'autolike' || rawCmd === 'autoreact') {
+            // ── .autosreact on/off ─────────────────────────────────────────────────────
+            if (rawCmd === 'autosreact' || rawCmd === 'autoreact' || rawCmd === 'autolike') {
                 if (sub !== 'on' && sub !== 'off') {
                     const eff = FLAGS.react !== null ? FLAGS.react : true;
                     await conn.sendMessage(chatId, {
-                        text: `❤️ *Auto React* is currently *${eff ? 'ON' : 'OFF'}*\n\nUsage: .autolike on or .autolike off`
+                        text: `❤️ *Auto React* is currently *${eff ? 'ON' : 'OFF'}*\n\nUsage: .autosreact on or .autosreact off`
                     });
                     return;
                 }
@@ -150,7 +150,7 @@ ${settings.footer}`
 
             // ── Unknown command ─────────────────────────────────────────────────────
             await conn.sendMessage(chatId, {
-                text: `❌ Unknown command.\n\nAvailable commands:\n.autoview on/off\n.autolike on/off\n.autostatus`
+                text: `❌ Unknown command.\n\nAvailable commands:\n.autosview on/off\n.autosreact on/off\n.autostatus`
             });
 
         } catch (error) {

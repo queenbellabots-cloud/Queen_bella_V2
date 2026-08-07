@@ -14,16 +14,12 @@ async function handleMessages(conn, chatUpdate, isOwner) {
         const chatId = mek.key.remoteJid;
 
         // ✅ ALLOW ALL MESSAGES - Including private DMs from anyone
-        // Check if it's a private DM (not a group, not status, not channel)
         const isGroup = chatId.endsWith('@g.us');
         const isStatus = chatId === 'status@broadcast';
         const isChannel = chatId.includes('@newsletter');
 
         // ✅ ONLY SKIP status and channel messages
         if (isStatus || isChannel) return;
-
-        // ✅ DON'T SKIP private DMs - ALLOW ALL
-        // Even if it's a private DM from an unknown contact, process it!
 
         // Get text from message
         let text = '';
@@ -48,7 +44,7 @@ async function handleMessages(conn, chatUpdate, isOwner) {
             const senderNumber = sender ? sender.split('@')[0] : 'Unknown';
             const ownerNumber = settings.ownerNumber || '254755660053';
 
-            // 🔐 Check if sender is owner
+            // 🔐 Check if sender is the bot owner
             const isOwner = 
                 sender === ownerNumber + '@s.whatsapp.net' || 
                 sender === ownerNumber + '@c.us' ||
@@ -71,6 +67,8 @@ Only the bot owner can use commands.
 
 👑 *Owner:* ${settings.botOwner || 'QUEEN BELLA USER'}
 📱 *Number:* ${ownerNumber}
+
+📌 *Contact the owner to request access.*
 
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃  📢 JOIN OUR CHANNEL         ┃

@@ -1,7 +1,7 @@
 /**
  * 👑 QUEEN BELLA MD - ULTIMATE GHOST MODE
  * Reads messages but shows ONLY ONE TICK (✓)
- * Message looks like it was never delivered!
+ * ✅ EVERYONE CAN USE
  */
 
 const settings = require('../settings');
@@ -23,12 +23,7 @@ module.exports = {
                 react: { text: '👻', key: mek.key }
             });
 
-            if (!isOwner) {
-                await conn.sendMessage(chatId, {
-                    text: '❌ Only the bot owner can use this.'
-                });
-                return;
-            }
+            // ✅ REMOVED OWNER CHECK - EVERYONE CAN USE!
 
             const action = args[0]?.toLowerCase();
 
@@ -46,7 +41,6 @@ module.exports = {
 
 *They'll think their message never arrived!* 😈
 *You see EVERYTHING. They see NOTHING.* 👻
-
 *This is the ultimate stealth mode!* 🔥`
                 });
             } else if (action === 'off') {
@@ -64,17 +58,6 @@ module.exports = {
                     text: `👻 *ULTIMATE GHOST MODE*
 
 Status: ${status}
-
-📌 How it works:
-• Bot reads messages: ✅ YES
-• Shows double ticks (✓✓): ❌ NO
-• Shows single tick (✓): ✅ YES
-• Shows "delivered": ❌ NO
-• Shows "read": ❌ NO
-• Shows "online": ❌ NO
-• Shows "typing": ❌ NO
-
-*You are INVISIBLE!* 👻
 
 Usage: .ghostmode on/off`
                 });

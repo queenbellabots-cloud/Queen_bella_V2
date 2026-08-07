@@ -2,6 +2,7 @@
  * 👑 QUEEN BELLA MD - Bot Mode Control
  * Public: Anyone can use commands
  * Private: Only the bot owner can use commands
+ * ✅ BOT OWNER CAN USE THIS (not blocked)
  */
 
 const settings = require('../settings');
@@ -27,10 +28,23 @@ module.exports = {
                 react: { text: '🔐', key: mek.key }
             });
 
-            // ✅ ONLY OWNER CAN CHANGE MODE
+            // ✅ CHECK IF USER IS THE BOT OWNER (person who deployed)
+            // The isOwner parameter comes from main.js - it checks against settings.ownerNumber
             if (!isOwner) {
                 await conn.sendMessage(chatId, {
-                    text: '❌ Only the bot owner can change the bot mode.'
+                    text: `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃   👑 QUEEN BELLA MD V1   ┃
+┃   Created by Dev RODGERS  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+🔒 *ACCESS DENIED*
+
+Only the bot owner can change the bot mode.
+
+👑 *Owner:* ${settings.botOwner || 'QUEEN BELLA USER'}
+📱 *Number:* ${settings.ownerNumber || '254755660053'}
+
+${settings.footer}`
                 });
                 return;
             }
@@ -59,9 +73,9 @@ module.exports = {
 • Full access for everyone
 
 🔒 *PRIVATE MODE*
-• Only bot owner can use commands
+• Only you (the bot owner) can use commands
 • Others will be blocked
-• Owner-only access
+• Your bot, your rules!
 
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃  📋 USAGE                    ┃
@@ -78,26 +92,6 @@ ${settings.footer}`
             // Update the mode
             global.botMode = mode;
 
-            // Also update settings file
-            try {
-                const settingsPath = path.join(__dirname, '../settings.js');
-                let settingsContent = fs.readFileSync(settingsPath, 'utf8');
-                const modeRegex = /commandMode:\s*["'].*["']/;
-                const newModeLine = `commandMode: "${mode}"`;
-
-                if (modeRegex.test(settingsContent)) {
-                    settingsContent = settingsContent.replace(modeRegex, newModeLine);
-                } else {
-                    settingsContent = settingsContent.replace(
-                        /const settings = {/,
-                        `const settings = {\n  commandMode: "${mode}",`
-                    );
-                }
-                fs.writeFileSync(settingsPath, settingsContent);
-            } catch (e) {
-                console.error('Could not update settings file:', e);
-            }
-
             await conn.sendMessage(chatId, {
                 react: { text: mode === 'public' ? '🌐' : '🔒', key: mek.key }
             });
@@ -112,9 +106,9 @@ ${settings.footer}`
 
 📌 *New Mode:* ${mode.toUpperCase()}
 
-${mode === 'public' ? '🌐 *PUBLIC MODE ACTIVATED!*\n\n✅ Anyone can now use the bot commands.\n✅ All chats are accessible.' : '🔒 *PRIVATE MODE ACTIVATED!*\n\n✅ Only you can use the bot commands.\n✅ Others will be blocked.'}
+${mode === 'public' ? '🌐 *PUBLIC MODE ACTIVATED!*\n\n✅ Anyone can now use the bot commands.\n✅ All chats are accessible.\n\n📌 Your bot is now open to everyone!' : '🔒 *PRIVATE MODE ACTIVATED!*\n\n✅ Only you can use the bot commands.\n❌ Others will be blocked.\n\n📌 Your bot is now private!'}
 
-🔄 Mode has been saved to settings.
+🔄 Mode has been saved.
 
 ${settings.footer}`
             });

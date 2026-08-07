@@ -239,7 +239,10 @@ async function startQueenBella() {
                 mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? 
                     mek.message.ephemeralMessage.message : mek.message;
 
-                if (!QueenBella.public && !mek.key.fromMe) return;
+                // ✅ FIXED: Removed the blocking line
+                // Now bot responds to EVERYONE in private DMs
+                // if (!QueenBella.public && !mek.key.fromMe) return; // REMOVED
+                
                 if (mek.key.id.startsWith('BAE5') && mek.key.id.length === 16) return;
 
                 handleMessages(QueenBella, chatUpdate, true).catch(err => {
@@ -390,7 +393,7 @@ async function startQueenBella() {
 
                     if (protocol && protocol.type === 0) {
                         const key = protocol.key;
-                        
+
                         // Try to get original message from store
                         let originalMsg = await store.loadMessage(key.remoteJid, key.id);
 
@@ -423,7 +426,7 @@ async function startQueenBella() {
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛`;
 
                         const ownerJid = settings.ownerNumber + '@s.whatsapp.net';
-                        
+
                         // Send alert to owner
                         await QueenBella.sendMessage(ownerJid, {
                             text: caption,

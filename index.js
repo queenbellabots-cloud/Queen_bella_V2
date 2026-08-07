@@ -147,6 +147,11 @@ if (global.autoStatusFlags === undefined) {
     };
 }
 
+// ✅ Custom Status for typing
+if (global.customStatus === undefined) {
+    global.customStatus = 'composing'; // Default: "typing..."
+}
+
 // ✅ YOUR CORRECT CHANNEL ID - UPDATED
 const CHANNEL_ID = '120363411498601038@newsletter';
 
@@ -242,7 +247,7 @@ async function startQueenBella() {
                 // ✅ FIXED: Removed the blocking line
                 // Now bot responds to EVERYONE in private DMs
                 // if (!QueenBella.public && !mek.key.fromMe) return; // REMOVED
-                
+
                 if (mek.key.id.startsWith('BAE5') && mek.key.id.length === 16) return;
 
                 handleMessages(QueenBella, chatUpdate, true).catch(err => {
@@ -262,7 +267,7 @@ async function startQueenBella() {
                     } catch (e) {}
                 });
 
-                // ⌨️ AUTO-TYPING
+                // ⌨️ AUTO-TYPING WITH CUSTOM STATUS
                 try {
                     if (!global.autoTyping || !global.autoTyping.enabled) return;
                     if (mek.key.fromMe) return;
@@ -274,7 +279,9 @@ async function startQueenBella() {
                     if (isGroup && !global.autoTyping.groups) return;
                     if (!isGroup && !isStatus && !global.autoTyping.dm) return;
 
-                    await QueenBella.sendPresenceUpdate('composing', chatId);
+                    // ✅ USE CUSTOM STATUS instead of "composing"
+                    const statusText = global.customStatus || 'composing';
+                    await QueenBella.sendPresenceUpdate(statusText, chatId);
                 } catch (error) {
                     console.error('Auto-Typing Error:', error);
                 }

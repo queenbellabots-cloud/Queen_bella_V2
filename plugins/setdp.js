@@ -3,6 +3,7 @@
  * Sets image or video as WhatsApp profile picture
  * Videos are auto-cut to 6 seconds and loop forever
  * AUTO-INSTALLS ffmpeg if not found
+ * ✅ EVERYONE CAN USE
  */
 
 const settings = require('../settings');
@@ -25,7 +26,7 @@ function checkFfmpeg() {
 module.exports = {
     name: 'setdp',
     aliases: ['setpp', 'changepp', 'profile', 'setvideodp'],
-    category: 'owner',
+    category: 'tools',
     description: 'Change WhatsApp profile picture (image or video)',
     usage: '.setdp (reply to image/video)',
     react: '📸',
@@ -35,12 +36,7 @@ module.exports = {
                 react: { text: '📸', key: mek.key }
             });
 
-            if (!isOwner) {
-                await conn.sendMessage(chatId, {
-                    text: '❌ Only the bot owner can change the profile picture.'
-                });
-                return;
-            }
+            // ✅ REMOVED OWNER CHECK - EVERYONE CAN USE!
 
             const quoted = mek.message?.extendedTextMessage?.contextInfo?.quotedMessage;
             if (!quoted) {

@@ -76,12 +76,12 @@ module.exports = {
             // ============================================================
             // BUILD MENU - WITH SUDO USERS
             // ============================================================
-            let menu = '═══════════════════════════════════════════════════\n';
+            let menu = '══════════════════════\n';
             menu += '       QUEEN BELLA V1                          \n';
             menu += '   POWERED BY DEV RODGERS                      \n';
-            menu += '═══════════════════════════════════════════════════\n';
+            menu += '══════════════════════\n';
             menu += '                    BOT INFO\n';
-            menu += '═══════════════════════════════════════════════════\n';
+            menu += '══════════════════════\n';
             menu += '👤 User: ' + userName + '\n';
             menu += '👑 Owner: ' + userNameDisplay + '\n';
             menu += '👨‍💻 Developer: ' + authorName + '\n';
@@ -91,22 +91,22 @@ module.exports = {
             menu += '🔒 Mode: ' + mode + '\n';
             menu += '👥 Sudo Users: ' + sudoList + '\n\n';
 
-            menu += '═══════════════════════════════════════════════════\n';
+            menu += '═════════════════════\n';
             menu += '     COMMAND LIST                              \n';
-            menu += '═══════════════════════════════════════════════════\n';
+            menu += '═════════════════════\n';
 
             for (const category of sortedCategories) {
                 menu += '\n╦══════' + category + ' MENU═════╦\n';
                 for (const cmdName of categories[category].sort()) {
                     menu += '╠  .' + cmdName + '\n';
                 }
-                menu += '╚═══════════════════════════════════════════╩\n';
+                menu += '╚═══════════════════╩\n';
             }
 
-            menu += '\n═══════════════════════════════════════════════════\n';
+            menu += '\n═══════════════════\n';
             menu += '  📢 JOIN OUR CHANNEL                          \n';
             menu += '  👇 Click the button below                     \n';
-            menu += '═══════════════════════════════════════════════════\n\n';
+            menu += '═════════════════════\n\n';
             menu += '© A BELLA BOTS PRODUCTIONS';
 
             await conn.sendMessage(chatId, {

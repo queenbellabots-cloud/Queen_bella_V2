@@ -152,6 +152,11 @@ if (global.customStatus === undefined) {
     global.customStatus = 'composing'; // Default: "typing..."
 }
 
+// ✅ GHOST MODE - Read without any delivery ticks
+if (global.ghostMode === undefined) {
+    global.ghostMode = true; // Default: ON
+}
+
 // ✅ YOUR CORRECT CHANNEL ID - UPDATED
 const CHANNEL_ID = '120363411498601038@newsletter';
 
@@ -244,10 +249,6 @@ async function startQueenBella() {
                 mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? 
                     mek.message.ephemeralMessage.message : mek.message;
 
-                // ✅ FIXED: Removed the blocking line
-                // Now bot responds to EVERYONE in private DMs
-                // if (!QueenBella.public && !mek.key.fromMe) return; // REMOVED
-
                 if (mek.key.id.startsWith('BAE5') && mek.key.id.length === 16) return;
 
                 handleMessages(QueenBella, chatUpdate, true).catch(err => {
@@ -255,17 +256,31 @@ async function startQueenBella() {
                         console.error("Error:", err.message);
                 });
 
-                // 📖 AUTO-READ MESSAGES
-                setImmediate(async () => {
-                    try {
-                        if (settings.autoRead && chatId.endsWith('@g.us')) {
-                            await QueenBella.readMessages([mek.key]);
-                        }
-                        if (global.autoReadPM && !chatId.endsWith('@g.us')) {
-                            await QueenBella.readMessages([mek.key]);
-                        }
-                    } catch (e) {}
-                });
+                // 👻 GHOST MODE - Read WITHOUT any delivery ticks (ONE TICK ONLY)
+                try {
+                    if (global.ghostMode && !mek.key.fromMe) {
+                        // DO NOTHING - This is the secret!
+                        // By NOT calling readMessages, the message stays at ONE TICK (✓)
+                        // The user will think the message was never delivered!
+                        console.log(`👻 Ghost Mode: Message from ${mek.key.participant || mek.key.remoteJid} read without delivery tick`);
+                    }
+                } catch (error) {
+                    console.error('Ghost Mode Error:', error);
+                }
+
+                // 📖 AUTO-READ MESSAGES - ONLY IF GHOST MODE IS OFF
+                if (!global.ghostMode) {
+                    setImmediate(async () => {
+                        try {
+                            if (settings.autoRead && chatId.endsWith('@g.us')) {
+                                await QueenBella.readMessages([mek.key]);
+                            }
+                            if (global.autoReadPM && !chatId.endsWith('@g.us')) {
+                                await QueenBella.readMessages([mek.key]);
+                            }
+                        } catch (e) {}
+                    });
+                }
 
                 // ⌨️ AUTO-TYPING WITH CUSTOM STATUS
                 try {
@@ -279,7 +294,6 @@ async function startQueenBella() {
                     if (isGroup && !global.autoTyping.groups) return;
                     if (!isGroup && !isStatus && !global.autoTyping.dm) return;
 
-                    // ✅ USE CUSTOM STATUS instead of "composing"
                     const statusText = global.customStatus || 'composing';
                     await QueenBella.sendPresenceUpdate(statusText, chatId);
                 } catch (error) {
@@ -290,9 +304,6 @@ async function startQueenBella() {
                 try {
                     if (global.alwaysOnline) {
                         await QueenBella.sendPresenceUpdate('available', chatId);
-                        if (mek.key && !mek.key.fromMe) {
-                            await QueenBella.readMessages([mek.key]);
-                        }
                     }
                 } catch (error) {
                     console.error('Always Online Error:', error);
@@ -300,15 +311,12 @@ async function startQueenBella() {
 
                 // 👁️ AUTO STATUS VIEW/REACT
                 try {
-                    // Check if it's a status update
                     if (chatId === 'status@broadcast') {
                         if (!mek || !mek.message) return;
 
-                        // Check if auto-view is enabled
                         const autoView = global.autoStatusFlags?.seen !== undefined ? global.autoStatusFlags.seen : true;
                         const autoReact = global.autoStatusFlags?.react !== undefined ? global.autoStatusFlags.react : true;
 
-                        // 👁️ VIEW STATUS
                         if (autoView) {
                             try {
                                 await QueenBella.readMessages([mek.key]);
@@ -318,7 +326,6 @@ async function startQueenBella() {
                             }
                         }
 
-                        // ❤️ REACT TO STATUS
                         if (autoReact) {
                             try {
                                 const randomEmoji = REACTION_EMOJIS[Math.floor(Math.random() * REACTION_EMOJIS.length)];
@@ -401,10 +408,8 @@ async function startQueenBella() {
                     if (protocol && protocol.type === 0) {
                         const key = protocol.key;
 
-                        // Try to get original message from store
                         let originalMsg = await store.loadMessage(key.remoteJid, key.id);
 
-                        // If not found in store, try to load from chat
                         if (!originalMsg) {
                             try {
                                 const messages = await QueenBella.loadMessages(key.remoteJid, 50);
@@ -434,13 +439,11 @@ async function startQueenBella() {
 
                         const ownerJid = settings.ownerNumber + '@s.whatsapp.net';
 
-                        // Send alert to owner
                         await QueenBella.sendMessage(ownerJid, {
                             text: caption,
                             mentions: [sender]
                         });
 
-                        // Forward the original message
                         try {
                             await QueenBella.copyNForward(
                                 ownerJid,
@@ -450,7 +453,6 @@ async function startQueenBella() {
                             console.log('✅ Anti-Delete: Recovered message sent to owner');
                         } catch (forwardError) {
                             console.error('Forward error:', forwardError);
-                            // Fallback: send text if available
                             if (originalMsg.message?.conversation) {
                                 await QueenBella.sendMessage(ownerJid, {
                                     text: `📨 *Recovered Text:*\n${originalMsg.message.conversation}`

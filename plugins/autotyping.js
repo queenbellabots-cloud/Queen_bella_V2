@@ -1,6 +1,7 @@
 /**
- * 👑 QUEEN BELLA MD - Auto Typing Command
- * Shows typing indicator when someone sends a message
+ * 👑 QUEEN BELLA MD - Auto Typing
+ * Auto-types every 10 seconds repeatedly
+ * ✅ EVERYONE CAN USE
  */
 
 const settings = require('../settings');
@@ -8,10 +9,8 @@ const settings = require('../settings');
 // Global toggle for auto-typing
 if (global.autoTyping === undefined) {
     global.autoTyping = {
-        enabled: true,
-        dm: true,      // Private messages
-        groups: true,  // Group messages
-        status: true   // Status updates
+        enabled: false, // Default: OFF
+        interval: null  // Store interval reference
     };
 }
 
@@ -19,8 +18,8 @@ module.exports = {
     name: 'autotyping',
     aliases: ['autotype', 'typing', 'at'],
     category: 'tools',
-    description: 'Toggle auto-typing indicator',
-    usage: '.autotyping on/off | .autotyping dm/groups/status',
+    description: 'Auto-types every 10 seconds repeatedly',
+    usage: '.autotyping on/off',
     react: '⌨️',
     async execute(conn, mek, args, chatId, isOwner) {
         try {
@@ -29,10 +28,11 @@ module.exports = {
                 react: { text: '⌨️', key: mek.key }
             });
 
-            const action = args[0]?.toLowerCase();
-            const subAction = args[1]?.toLowerCase();
+            // ✅ REMOVED OWNER CHECK - EVERYONE CAN USE!
 
-            // Show current status
+            const action = args[0]?.toLowerCase();
+
+            // ── Show current status ──────────────────────────────────────────────────
             if (!action || action === 'status') {
                 const statusText = `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃   👑 QUEEN BELLA MD V1   ┃
@@ -41,18 +41,17 @@ module.exports = {
 
 ⌨️ *AUTO-TYPING STATUS*
 
-📌 *Enabled:* ${global.autoTyping.enabled ? '✅ YES' : '❌ NO'}
-👤 *Private DM:* ${global.autoTyping.dm ? '✅ ON' : '❌ OFF'}
-👥 *Groups:* ${global.autoTyping.groups ? '✅ ON' : '❌ OFF'}
-📱 *Status:* ${global.autoTyping.status ? '✅ ON' : '❌ OFF'}
+📌 *Status:* ${global.autoTyping.enabled ? '✅ ON' : '❌ OFF'}
+📌 *Interval:* Every 10 seconds
+📌 *Duration:* 10 seconds each time
+📝 *Custom Status:* "${global.customStatus || 'composing'}"
 
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃  📋 COMMANDS                  ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-• .autotyping on/off         — Enable/disable all
-• .autotyping dm on/off      — Toggle private DMs
-• .autotyping groups on/off  — Toggle groups
-• .autotyping status on/off  — Toggle status
+• .autotyping on   — Start auto-typing
+• .autotyping off  — Stop auto-typing
+• .autotyping      — Show status
 
 ${settings.footer}`;
 
@@ -60,13 +59,18 @@ ${settings.footer}`;
                 return;
             }
 
-            // ── Toggle all on/off ──────────────────────────────────────────────────
-            if (action === 'on' || action === 'off') {
-                const newState = action === 'on';
-                global.autoTyping.enabled = newState;
-                global.autoTyping.dm = newState;
-                global.autoTyping.groups = newState;
-                global.autoTyping.status = newState;
+            // ── Turn ON ──────────────────────────────────────────────────────────────
+            if (action === 'on') {
+                // Clear existing interval if any
+                if (global.autoTyping.interval) {
+                    clearInterval(global.autoTyping.interval);
+                    global.autoTyping.interval = null;
+                }
+
+                global.autoTyping.enabled = true;
+
+                // Get the custom status text
+                const statusText = global.customStatus || 'composing';
 
                 await conn.sendMessage(chatId, {
                     react: { text: '✅', key: mek.key }
@@ -78,34 +82,82 @@ ${settings.footer}`;
 ┃   Created by Dev RODGERS  ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-⌨️ *AUTO-TYPING ${action.toUpperCase()}*
+⌨️ *AUTO-TYPING ACTIVATED!*
 
-✅ All auto-typing features ${action === 'on' ? 'enabled' : 'disabled'}!
+✅ Bot will now type every 10 seconds
+⏰ Typing duration: 10 seconds each time
+📝 Shows: "${statusText}"
 
-📌 ${action === 'on' ? 'Bot will show typing indicator for all messages' : 'Bot will not show typing indicator for any messages'}
+📌 *To stop:* .autotyping off
 
 ${settings.footer}`
                 });
+
+                // ── Start the auto-typing loop ──────────────────────────────────────
+                let isTyping = false;
+                let typingTimeout = null;
+
+                global.autoTyping.interval = setInterval(async () => {
+                    if (!global.autoTyping.enabled) {
+                        clearInterval(global.autoTyping.interval);
+                        global.autoTyping.interval = null;
+                        return;
+                    }
+
+                    try {
+                        // If currently typing, skip
+                        if (isTyping) return;
+
+                        isTyping = true;
+
+                        // Get current status
+                        const currentStatus = global.customStatus || 'composing';
+
+                        // Send typing indicator
+                        await conn.sendPresenceUpdate(currentStatus, chatId);
+                        console.log(`⌨️ Auto-typing: "${currentStatus}"`);
+
+                        // Stop typing after 10 seconds
+                        typingTimeout = setTimeout(async () => {
+                            try {
+                                await conn.sendPresenceUpdate('paused', chatId);
+                                console.log('⌨️ Auto-typing: paused');
+                            } catch (e) {}
+
+                            isTyping = false;
+                            typingTimeout = null;
+                        }, 10000); // 10 seconds typing
+
+                    } catch (error) {
+                        console.error('Auto-typing error:', error);
+                        isTyping = false;
+                        if (typingTimeout) {
+                            clearTimeout(typingTimeout);
+                            typingTimeout = null;
+                        }
+                    }
+                }, 10000); // Every 10 seconds
+
                 return;
             }
 
-            // ── Toggle specific features ───────────────────────────────────────────
-            const validFeatures = ['dm', 'groups', 'status'];
-            if (validFeatures.includes(action) && (subAction === 'on' || subAction === 'off')) {
-                const newState = subAction === 'on';
-                global.autoTyping[action] = newState;
+            // ── Turn OFF ─────────────────────────────────────────────────────────────
+            if (action === 'off') {
+                global.autoTyping.enabled = false;
 
-                // If any feature is off, set enabled to true (but feature controls individual)
-                global.autoTyping.enabled = true;
+                // Clear interval
+                if (global.autoTyping.interval) {
+                    clearInterval(global.autoTyping.interval);
+                    global.autoTyping.interval = null;
+                }
 
-                const featureNames = {
-                    dm: 'Private DMs',
-                    groups: 'Groups',
-                    status: 'Status Updates'
-                };
+                // Stop any ongoing typing
+                try {
+                    await conn.sendPresenceUpdate('paused', chatId);
+                } catch (e) {}
 
                 await conn.sendMessage(chatId, {
-                    react: { text: '✅', key: mek.key }
+                    react: { text: '❌', key: mek.key }
                 });
 
                 await conn.sendMessage(chatId, {
@@ -114,14 +166,13 @@ ${settings.footer}`
 ┃   Created by Dev RODGERS  ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-⌨️ *AUTO-TYPING - ${featureNames[action].toUpperCase()}*
+⌨️ *AUTO-TYPING DEACTIVATED!*
 
-✅ ${featureNames[action]} ${newState ? 'enabled' : 'disabled'}!
-
-📌 Bot will ${newState ? 'now' : 'no longer'} show typing indicator for ${featureNames[action].toLowerCase()}.
+❌ Bot will no longer auto-type.
 
 ${settings.footer}`
                 });
+
                 return;
             }
 
@@ -130,11 +181,9 @@ ${settings.footer}`
                 text: `❌ Invalid command.
 
 Available commands:
-• .autotyping on/off         — Enable/disable all
-• .autotyping dm on/off      — Toggle private DMs
-• .autotyping groups on/off  — Toggle groups
-• .autotyping status on/off  — Toggle status
-• .autotyping status         — Show current settings`
+• .autotyping on   — Start auto-typing
+• .autotyping off  — Stop auto-typing
+• .autotyping      — Show status`
             });
 
         } catch (error) {

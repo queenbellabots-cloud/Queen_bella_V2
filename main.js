@@ -1,6 +1,7 @@
 /**
  * QUEEN BELLA MD - Main Handlers
  * Fixed to respond to ALL private messages
+ * Added Public/Private Mode Control
  */
 
 const settings = require('./settings');
@@ -11,7 +12,7 @@ async function handleMessages(conn, chatUpdate, isOwner) {
         if (!mek || !mek.message) return;
 
         const chatId = mek.key.remoteJid;
-        
+
         // ✅ ALLOW ALL MESSAGES - Including private DMs from anyone
         // Check if it's a private DM (not a group, not status, not channel)
         const isGroup = chatId.endsWith('@g.us');
@@ -45,6 +46,41 @@ async function handleMessages(conn, chatUpdate, isOwner) {
 
             const sender = mek.key.participant || mek.key.remoteJid;
             const senderNumber = sender ? sender.split('@')[0] : 'Unknown';
+            const ownerNumber = settings.ownerNumber || '254755660053';
+
+            // 🔐 Check if sender is owner
+            const isOwner = 
+                sender === ownerNumber + '@s.whatsapp.net' || 
+                sender === ownerNumber + '@c.us' ||
+                senderNumber === ownerNumber;
+
+            // 🔐 BOT MODE CHECK (Public/Private)
+            const botMode = global.botMode || 'public';
+            
+            // If bot is in private mode, only owner can use commands
+            if (botMode === 'private' && !isOwner) {
+                await conn.sendMessage(mek.key.remoteJid, {
+                    text: `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃   👑 QUEEN BELLA MD V1   ┃
+┃   Created by Dev RODGERS  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+🔒 *BOT IS IN PRIVATE MODE*
+
+Only the bot owner can use commands.
+
+👑 *Owner:* ${settings.botOwner || 'QUEEN BELLA USER'}
+📱 *Number:* ${ownerNumber}
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  📢 JOIN OUR CHANNEL         ┃
+┃  👇 Click the button below    ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+${settings.footer}`
+                });
+                return;
+            }
 
             console.log(`📥 Command: ${commandName} from ${senderNumber} in ${isGroup ? 'GROUP' : 'PRIVATE DM'}`);
 
@@ -52,7 +88,7 @@ async function handleMessages(conn, chatUpdate, isOwner) {
                 const command = global.commands.get(commandName);
                 try {
                     console.log(`✅ Executing: ${commandName}`);
-                    await command.execute(conn, mek, args, mek.key.remoteJid, false);
+                    await command.execute(conn, mek, args, mek.key.remoteJid, isOwner);
                     console.log(`✅ Command executed: ${commandName}`);
                 } catch (error) {
                     console.error(`❌ Error executing ${commandName}:`, error);

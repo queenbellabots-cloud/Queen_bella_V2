@@ -1,6 +1,7 @@
 /**
  * 👑 QUEEN BELLA MD - Set Custom Status / Typing Text
  * Changes the "typing..." text to anything you want
+ * ✅ EVERYONE CAN USE
  */
 
 const settings = require('../settings');
@@ -14,20 +15,12 @@ module.exports = {
     react: '📝',
     async execute(conn, mek, args, chatId, isOwner) {
         try {
-            // 👇 REACT WITH PEN EMOJI
             await conn.sendMessage(chatId, {
                 react: { text: '📝', key: mek.key }
             });
 
-            // Only owner can use
-            if (!isOwner) {
-                await conn.sendMessage(chatId, {
-                    text: '❌ Only the bot owner can change the status.'
-                });
-                return;
-            }
+            // ✅ REMOVED OWNER CHECK - EVERYONE CAN USE!
 
-            // Get the status text
             let statusText = args.join(' ');
             
             if (!statusText) {
@@ -55,7 +48,6 @@ ${settings.footer}`
                 return;
             }
 
-            // Save custom status
             global.customStatus = statusText;
 
             await conn.sendMessage(chatId, {

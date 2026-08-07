@@ -15,17 +15,9 @@ if (global.autoStatusFlags === undefined) {
 
 const FLAGS = global.autoStatusFlags;
 
-// Random reaction emojis from settings
-const REACTION_EMOJIS = settings.statusReactions || [
-    '🔥', '❤️', '😍', '👑', '✨', '🌟', '💯', '🎉', '💪', '👏',
-    '🙌', '🤩', '😎', '💥', '⭐', '🌈', '🎊', '🎈', '💖', '💗',
-    '💝', '💟', '❣️', '💕', '💞', '💓', '🧡', '💛', '💚', '💙',
-    '💜', '🖤', '🤍', '🤎', '❤️‍🔥', '💘', '💌', '💋', '🫶', '💫'
-];
-
 module.exports = {
     name: 'autoviewstatus',
-    aliases: ['autoview', 'autolike', 'autoreact', 'autostatus', 'statusconfig', 'avs'],
+    aliases: ['autosview', 'autosreact', 'autolike', 'autoreact', 'autostatus', 'statusconfig', 'avs'],
     category: 'status',
     description: 'Control automatic status viewing and reacting',
     usage: '.autosview on/off | .autosreact on/off',

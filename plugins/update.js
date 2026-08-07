@@ -1,6 +1,6 @@
 /**
  * 👑 QUEEN BELLA MD - Auto Update Command
- * Updates the bot to the latest version and shows new features
+ * Updates the bot to the latest version - PUBLIC
  */
 
 const settings = require('../settings');
@@ -9,22 +9,59 @@ const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
 
+// Check if adm-zip is installed, if not, install it
+function ensureAdmZip() {
+    try {
+        require.resolve('adm-zip');
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
 module.exports = {
     name: 'update',
     aliases: ['upgrade', 'pull', 'sync'],
-    category: 'owner',
+    category: 'main',
     description: 'Update the bot to the latest version',
     usage: '.update',
     react: '🔄',
     async execute(conn, mek, args, chatId, isOwner) {
         try {
+            // 👇 REACT WITH SPINNING EMOJI
             await conn.sendMessage(chatId, {
                 react: { text: '🔄', key: mek.key }
             });
 
-            if (!isOwner) {
+            // ✅ REMOVED OWNER CHECK - EVERYONE CAN UPDATE THEIR OWN BOT!
+
+            // Check if adm-zip is installed
+            if (!ensureAdmZip()) {
                 await conn.sendMessage(chatId, {
-                    text: '❌ Only the bot owner can update the bot.'
+                    text: '📦 *Installing required package...*\n\n⏳ Please wait...'
+                });
+
+                // Install adm-zip
+                const installCmd = exec('npm install adm-zip --save', { 
+                    cwd: path.join(__dirname, '..') 
+                });
+
+                await new Promise((resolve) => {
+                    installCmd.on('close', (code) => {
+                        resolve(code === 0);
+                    });
+                });
+
+                // Check again
+                if (!ensureAdmZip()) {
+                    await conn.sendMessage(chatId, {
+                        text: '❌ *Failed to install required package.*\n\nPlease run: npm install adm-zip'
+                    });
+                    return;
+                }
+
+                await conn.sendMessage(chatId, {
+                    text: '✅ *Package installed successfully!*\n\n🔄 Please try .update again.'
                 });
                 return;
             }
@@ -34,15 +71,17 @@ module.exports = {
             });
 
             // Get current version
-            const currentPackage = require('../package.json');
-            const currentVersion = currentPackage.version || '1.0.0';
+            let currentVersion = '1.0.0';
+            try {
+                const currentPackage = require('../package.json');
+                currentVersion = currentPackage.version || '1.0.0';
+            } catch (e) {}
 
             // Fetch latest repo info from GitHub
             const repoUrl = 'https://api.github.com/repos/queenbellabots-cloud/Queen_bella_V2/commits/main';
             
             let latestCommit = '';
             let newFeatures = [];
-            let newCommands = [];
 
             try {
                 const response = await axios.get(repoUrl, {
@@ -58,27 +97,9 @@ module.exports = {
                     newFeatures.push(features[1]);
                 }
 
-                // Check for new commands in the latest commit
-                const filesChanged = response.data?.files || [];
-                const newPluginFiles = filesChanged
-                    .filter(f => f.filename?.startsWith('plugins/') && f.status === 'added')
-                    .map(f => {
-                        const name = path.basename(f.filename, '.js');
-                        return name;
-                    });
-
-                if (newPluginFiles.length > 0) {
-                    newCommands = newPluginFiles;
-                }
-
             } catch (e) {
                 console.log('Could not fetch commit info:', e.message);
             }
-
-            // Check for new commands by scanning plugins folder (after update)
-            const currentPlugins = fs.readdirSync(path.join(__dirname, '..', 'plugins'))
-                .filter(f => f.endsWith('.js'))
-                .map(f => path.basename(f, '.js'));
 
             // Build update message
             let updateMessage = `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
@@ -86,7 +107,7 @@ module.exports = {
 ┃   Created by Dev RODGERS  ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-🔄 *UPDATE AVAILABLE!*
+🔄 *UPDATE CHECK*
 
 📌 *Current Version:* v${currentVersion}
 📌 *Latest Commit:* ${latestCommit}
@@ -103,18 +124,8 @@ module.exports = {
                 updateMessage += '\n';
             }
 
-            if (newCommands.length > 0) {
-                updateMessage += `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃  📋 NEW COMMANDS              ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n`;
-                newCommands.forEach(cmd => {
-                    updateMessage += `✅ .${cmd}\n`;
-                });
-                updateMessage += '\n';
-            }
-
-            if (newFeatures.length === 0 && newCommands.length === 0) {
-                updateMessage += `📌 No new features or commands found.\n\n`;
+            if (newFeatures.length === 0) {
+                updateMessage += `📌 No new features found.\n\n`;
             }
 
             updateMessage += `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
@@ -122,6 +133,8 @@ module.exports = {
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 • .update now    — Start update
 • .update info   — Check again
+
+📌 *Everyone can update their own bot!*
 
 ${settings.footer}`;
 
@@ -153,7 +166,7 @@ ${settings.footer}`;
 
                 fs.writeFileSync(zipPath, response2.data);
 
-                // Extract
+                // Extract using adm-zip
                 const AdmZip = require('adm-zip');
                 const zip = new AdmZip(zipPath);
                 zip.extractAllTo(extractPath, true);
@@ -163,8 +176,8 @@ ${settings.footer}`;
                 );
                 const sourceFolder = path.join(extractPath, extractedFolders[0]);
 
-                // Copy files
-                const filesToCopy = ['index.js', 'main.js', 'settings.js', 'package.json'];
+                // Copy files (skip settings.js to keep user's config)
+                const filesToCopy = ['index.js', 'main.js', 'package.json'];
                 const foldersToCopy = ['plugins', 'lib'];
 
                 for (const file of filesToCopy) {
@@ -189,13 +202,6 @@ ${settings.footer}`;
                 // Clean up
                 fs.rmSync(tempDir, { recursive: true, force: true });
 
-                // Get new commands after update
-                const newPlugins = fs.readdirSync(path.join(__dirname, '..', 'plugins'))
-                    .filter(f => f.endsWith('.js'))
-                    .map(f => path.basename(f, '.js'));
-
-                const newCommandsList = newPlugins.filter(p => !currentPlugins.includes(p));
-
                 let successMessage = `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃   👑 QUEEN BELLA MD V1   ┃
 ┃   Created by Dev RODGERS  ┃
@@ -206,19 +212,10 @@ ${settings.footer}`;
 📌 *New Version:* v${currentVersion}
 📌 *Commit:* ${latestCommit}
 
-`;
+${newFeatures.length > 0 ? '✨ New features added!\n' : ''}
+🔄 Restarting the bot...
 
-                if (newCommandsList.length > 0) {
-                    successMessage += `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃  📋 NEW COMMANDS ADDED      ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n`;
-                    newCommandsList.forEach(cmd => {
-                        successMessage += `✅ .${cmd}\n`;
-                    });
-                    successMessage += '\n';
-                }
-
-                successMessage += `🔄 Restarting the bot...\n\n${settings.footer}`;
+${settings.footer}`;
 
                 await conn.sendMessage(chatId, {
                     text: successMessage
@@ -227,11 +224,6 @@ ${settings.footer}`;
                 await new Promise(resolve => setTimeout(resolve, 3000));
                 process.exit(0);
 
-            } else {
-                // If just checking, show info
-                await conn.sendMessage(chatId, {
-                    text: `📌 *To update, type:* .update now`
-                });
             }
 
         } catch (error) {

@@ -2,6 +2,7 @@
  * 👑 QUEEN BELLA MD - Text Maker Commands
  * All text effect commands with MULTI-API FALLBACK
  * ✅ EVERYONE CAN USE
+ * ✅ APPEARS IN MENU
  */
 
 const settings = require('../settings');
@@ -11,7 +12,6 @@ const axios = require('axios');
 // 📌 API CONFIGURATION
 // ==========================================
 
-// Multiple APIs for each effect (will try in order)
 const API_SOURCES = [
     {
         name: 'GiftedTech',
@@ -39,67 +39,25 @@ const API_SOURCES = [
 // 🎨 TEXT EFFECTS LIST
 // ==========================================
 
-const EFFECTS = {
-    'luxurygold': 'luxurygold',
-    'advancedglow': 'advancedglow',
-    'blackpinklogo': 'blackpinklogo',
-    'blackpinkstyle': 'blackpinkstyle',
-    'cartoonstyle': 'cartoonstyle',
-    'deadpool': 'deadpool',
-    'effectclouds': 'effectclouds',
-    'flagtext': 'flagtext',
-    'freecreate': 'freecreate',
-    'galaxystyle': 'galaxystyle',
-    'galaxywallpaper': 'galaxywallpaper',
-    'makingneon': 'makingneon',
-    'matrixfx': 'matrixfx',
-    'royaltext': 'royaltext',
-    'sandfx': 'sandfx',
-    'summerbeach': 'summerbeach',
-    'topography': 'topography',
-    'typography': 'typography',
-    'flag3dtext': 'flag3dtext',
-    'glitchtext': 'glitchtext',
-    'dragonball': 'dragonball',
-    'multicoloredneon': 'multicoloredneon',
-    'neonglitch': 'neonglitch',
-    'papercutstyle': 'papercutstyle',
-    'pixelglitch': 'pixelglitch',
-    'glowingtext': 'glowingtext',
-    'gradienttext': 'gradienttext',
-    'graffiti': 'graffiti',
-    'incandescent': 'incandescent',
-    'lighteffects': 'lighteffects',
-    'logomaker': 'logomaker',
-    'royal': 'royal',
-    'textonwetglass': 'textonwetglass',
-    'bear': 'bear',
-    'papercut': 'papercut',
-    'hologram': 'hologram',
-    '1917': '1917',
-    'arena': 'arena',
-    'devil': 'devil',
-    'fire': 'fire',
-    'glitch': 'glitch',
-    'hacker': 'hacker',
-    'ice': 'ice',
-    'impressive': 'impressive',
-    'leaves': 'leaves',
-    'light': 'light',
-    'matrix': 'matrix',
-    'metallic': 'metallic',
-    'neon': 'neon',
-    'purple': 'purple',
-    'sand': 'sand',
-    'snow': 'snow',
-    'thunder': 'thunder'
-};
+const EFFECTS = [
+    'luxurygold', 'advancedglow', 'blackpinklogo', 'blackpinkstyle',
+    'cartoonstyle', 'deadpool', 'effectclouds', 'flagtext',
+    'freecreate', 'galaxystyle', 'galaxywallpaper', 'makingneon',
+    'matrixfx', 'royaltext', 'sandfx', 'summerbeach',
+    'topography', 'typography', 'flag3dtext', 'glitchtext',
+    'dragonball', 'multicoloredneon', 'neonglitch', 'papercutstyle',
+    'pixelglitch', 'glowingtext', 'gradienttext', 'graffiti',
+    'incandescent', 'lighteffects', 'logomaker', 'royal',
+    'textonwetglass', 'bear', 'papercut', 'hologram',
+    '1917', 'arena', 'devil', 'fire',
+    'glitch', 'hacker', 'ice', 'impressive',
+    'leaves', 'light', 'matrix', 'metallic',
+    'neon', 'purple', 'sand', 'snow', 'thunder'
+];
 
 // ==========================================
-// 🚀 GENERATE COMMANDS
+// 🚀 FETCH FUNCTION
 // ==========================================
-
-const commands = {};
 
 async function fetchWithFallback(effect, text) {
     let lastError = null;
@@ -117,42 +75,26 @@ async function fetchWithFallback(effect, text) {
                 }
             });
 
-            // Check if response has image
             if (response.data && response.data.result) {
-                return {
-                    success: true,
-                    imageUrl: response.data.result
-                };
+                return { success: true, imageUrl: response.data.result };
             }
             
             if (response.data && response.data.image) {
-                return {
-                    success: true,
-                    imageUrl: response.data.image
-                };
+                return { success: true, imageUrl: response.data.image };
             }
             
             if (response.data && response.data.url) {
-                return {
-                    success: true,
-                    imageUrl: response.data.url
-                };
+                return { success: true, imageUrl: response.data.url };
             }
             
             if (response.data && Buffer.isBuffer(response.data)) {
-                return {
-                    success: true,
-                    imageBuffer: response.data
-                };
+                return { success: true, imageBuffer: response.data };
             }
 
             if (response.data && typeof response.data === 'string' && response.data.startsWith('data:image')) {
                 const base64Data = response.data.replace(/^data:image\/\w+;base64,/, '');
                 const imageBuffer = Buffer.from(base64Data, 'base64');
-                return {
-                    success: true,
-                    imageBuffer: imageBuffer
-                };
+                return { success: true, imageBuffer: imageBuffer };
             }
 
             throw new Error('No valid image data from API');
@@ -167,21 +109,16 @@ async function fetchWithFallback(effect, text) {
     throw new Error(`All APIs failed: ${lastError?.message || 'Unknown error'}`);
 }
 
-// Generate commands for each effect
-Object.keys(EFFECTS).forEach(effect => {
-    commands[effect] = {
-        name: effect,
-        aliases: [effect],
-        category: 'textmaker',
-        description: `Create ${effect} text effect`,
-        usage: `.${effect} <text>`,
-        react: '✨',
-        async execute(conn, mek, args, chatId, isOwner) {
-            try {
-                const text = args.join(' ');
-                if (!text) {
-                    await conn.sendMessage(chatId, {
-                        text: `✨ *${effect.toUpperCase()} TEXT EFFECT*
+// ==========================================
+// 📦 COMMAND EXECUTOR
+// ==========================================
+
+async function executeTextEffect(conn, mek, args, chatId, effect) {
+    try {
+        const text = args.join(' ');
+        if (!text) {
+            await conn.sendMessage(chatId, {
+                text: `✨ *${effect.toUpperCase()} TEXT EFFECT*
 
 ❌ Please provide text.
 
@@ -189,18 +126,17 @@ Object.keys(EFFECTS).forEach(effect => {
 📌 *Example:* .${effect} QUEEN BELLA
 
 © A BELLA BOTS PRODUCTIONS`
-                    });
-                    return;
-                }
+            });
+            return;
+        }
 
-                await conn.sendMessage(chatId, {
-                    react: { text: '⏳', key: mek.key }
-                });
+        await conn.sendMessage(chatId, {
+            react: { text: '⏳', key: mek.key }
+        });
 
-                const result = await fetchWithFallback(effect, text);
+        const result = await fetchWithFallback(effect, text);
 
-                // Clean caption - NO API OWNER
-                const caption = `✨ *${effect.toUpperCase()} TEXT EFFECT*
+        const caption = `✨ *${effect.toUpperCase()} TEXT EFFECT*
 
 📌 *Text:* ${text}
 👤 *Requested by:* ${mek.pushName || 'User'}
@@ -212,39 +148,58 @@ Object.keys(EFFECTS).forEach(effect => {
 
 ${settings.footer}`;
 
-                let messageOptions = {
-                    caption: caption,
-                    contextInfo: {
-                        forwardingScore: 999,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: settings.channelId,
-                            newsletterName: settings.channelName,
-                            serverMessageId: 1
-                        }
-                    }
-                };
-
-                if (result.imageBuffer) {
-                    messageOptions.image = result.imageBuffer;
-                } else if (result.imageUrl) {
-                    messageOptions.image = { url: result.imageUrl };
-                } else {
-                    throw new Error('No image data received');
+        let messageOptions = {
+            caption: caption,
+            contextInfo: {
+                forwardingScore: 999,
+                isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: settings.channelId,
+                    newsletterName: settings.channelName,
+                    serverMessageId: 1
                 }
-
-                await conn.sendMessage(chatId, messageOptions);
-
-            } catch (error) {
-                console.error(`Error in ${effect}:`, error);
-                await conn.sendMessage(chatId, {
-                    react: { text: '❌', key: mek.key }
-                });
-                
-                await conn.sendMessage(chatId, {
-                    text: `❌ Error creating ${effect} text.\n\n📌 Please try again later or use a different effect.\n\n${settings.footer}`
-                });
             }
+        };
+
+        if (result.imageBuffer) {
+            messageOptions.image = result.imageBuffer;
+        } else if (result.imageUrl) {
+            messageOptions.image = { url: result.imageUrl };
+        } else {
+            throw new Error('No image data received');
+        }
+
+        await conn.sendMessage(chatId, messageOptions);
+
+    } catch (error) {
+        console.error(`Error in ${effect}:`, error);
+        await conn.sendMessage(chatId, {
+            react: { text: '❌', key: mek.key }
+        });
+        
+        await conn.sendMessage(chatId, {
+            text: `❌ Error creating ${effect} text.\n\n📌 Please try again later or use a different effect.\n\n${settings.footer}`
+        });
+    }
+}
+
+// ==========================================
+// 📦 GENERATE COMMANDS - EACH AS SEPARATE
+// ==========================================
+
+const commands = {};
+
+// Create a command for each effect
+EFFECTS.forEach(effect => {
+    commands[effect] = {
+        name: effect,
+        aliases: [effect],
+        category: 'textmaker',
+        description: `✨ Create ${effect} text effect`,
+        usage: `.${effect} <text>`,
+        react: '✨',
+        async execute(conn, mek, args, chatId, isOwner) {
+            await executeTextEffect(conn, mek, args, chatId, effect);
         }
     };
 });
@@ -257,7 +212,7 @@ commands['textmakerhelp'] = {
     name: 'textmakerhelp',
     aliases: ['tmhelp', 'texteffects'],
     category: 'textmaker',
-    description: 'Show all text effect commands',
+    description: '📋 Show all text effect commands',
     usage: '.textmakerhelp',
     react: '📋',
     async execute(conn, mek, args, chatId, isOwner) {
@@ -266,7 +221,6 @@ commands['textmakerhelp'] = {
                 react: { text: '📋', key: mek.key }
             });
 
-            const effectNames = Object.keys(EFFECTS);
             let message = `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃   👑 QUEEN BELLA MD V1   ┃
 ┃   Created by Dev RODGERS  ┃
@@ -274,26 +228,24 @@ commands['textmakerhelp'] = {
 
 📋 *TEXT EFFECT COMMANDS*
 
-📌 *Total Effects:* ${effectNames.length}
+📌 *Total Effects:* ${EFFECTS.length}
 
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃  🎨 AVAILABLE EFFECTS        ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n`;
 
-            // Group effects in columns
-            let col1 = [], col2 = [], col3 = [];
-            effectNames.forEach((name, i) => {
-                if (i % 3 === 0) col1.push(name);
-                else if (i % 3 === 1) col2.push(name);
-                else col3.push(name);
-            });
-
-            const maxLen = Math.max(col1.length, col2.length, col3.length);
-            for (let i = 0; i < maxLen; i++) {
-                const c1 = col1[i] || '';
-                const c2 = col2[i] || '';
-                const c3 = col3[i] || '';
-                message += `• .${c1}${c1 ? ' ' : ''}${c2 ? '• .' + c2 : ''}${c3 ? '• .' + c3 : ''}\n`;
+            // Show in columns
+            const cols = 3;
+            const rows = Math.ceil(EFFECTS.length / cols);
+            for (let i = 0; i < rows; i++) {
+                let line = '';
+                for (let j = 0; j < cols; j++) {
+                    const index = i + (j * rows);
+                    if (index < EFFECTS.length) {
+                        line += `• .${EFFECTS[index].padEnd(15)}`;
+                    }
+                }
+                message += line + '\n';
             }
 
             message += `\n📌 *Usage:* .<effect> <text>
@@ -317,5 +269,8 @@ ${settings.footer}`;
     }
 };
 
-// Export all commands
+// ==========================================
+// 📦 EXPORT ALL COMMANDS
+// ==========================================
+
 module.exports = commands;

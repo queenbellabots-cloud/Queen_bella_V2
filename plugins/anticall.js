@@ -1,6 +1,6 @@
 /**
- * 👑 QUEEN BELLA MD - Anti-Call Message Command
- * Set custom message for rejected calls
+ * 👑 QUEEN BELLA MD - Anti-Call Command
+ * Auto-rejects calls with custom message
  * ✅ EVERYONE CAN USE
  */
 
@@ -8,7 +8,14 @@ const settings = require('../settings');
 const fs = require('fs');
 const path = require('path');
 
+// Store custom messages per user
 const CALL_MESSAGES_PATH = './data/call_messages.json';
+
+// Ensure data directory exists
+if (!fs.existsSync('./data')) fs.mkdirSync('./data');
+if (!fs.existsSync(CALL_MESSAGES_PATH)) {
+    fs.writeFileSync(CALL_MESSAGES_PATH, JSON.stringify({}, null, 2));
+}
 
 // Load call messages
 function loadCallMessages() {
@@ -29,25 +36,27 @@ function saveCallMessages(data) {
 }
 
 module.exports = {
-    name: 'anticallmsg',
-    aliases: ['setcallmsg', 'callmsg', 'setcallmessage'],
+    name: 'anticall',
+    aliases: ['ac', 'callblock', 'rejectcalls'],
     category: 'tools',
-    description: 'Set custom message for rejected calls',
-    usage: '.anticallmsg <message>',
-    react: '📝',
+    description: 'Auto-reject calls with custom message',
+    usage: '.anticall on/off | .anticallmsg <message>',
+    react: '📞',
     async execute(conn, mek, args, chatId, isOwner) {
         try {
             await conn.sendMessage(chatId, {
-                react: { text: '📝', key: mek.key }
+                react: { text: '📞', key: mek.key }
             });
 
             // ✅ REMOVED OWNER CHECK - EVERYONE CAN USE!
 
-            const message = args.join(' ');
+            const action = args[0]?.toLowerCase();
 
-            if (!message) {
+            // ── Show current status ──────────────────────────────────────────────────
+            if (!action || action === 'status') {
                 const callMessages = loadCallMessages();
-                const currentMsg = callMessages[chatId] || settings.callMessage || '📞 Call rejected. Please message instead.';
+                const userMsg = callMessages[chatId] || settings.callMessage || '📞 Call rejected. Please message instead.';
+                const status = global.antiCall ? '✅ ON' : '❌ OFF';
 
                 await conn.sendMessage(chatId, {
                     text: `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
@@ -55,50 +64,87 @@ module.exports = {
 ┃   Created by Dev RODGERS  ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-📝 *CURRENT CALL MESSAGE*
+📞 *ANTI-CALL SETTINGS*
 
-"${currentMsg}"
+📌 *Status:* ${status}
+📝 *Your Custom Message:*
+"${userMsg}"
 
-📋 *Usage:* .anticallmsg <your message>
-📌 *Example:* .anticallmsg Sorry, I'm busy. Please text me.
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  📋 COMMANDS                  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+• .anticall on/off       — Enable/disable
+• .anticallmsg <text>    — Set custom message
+• .anticall              — Show status
 
 ${settings.footer}`
                 });
                 return;
             }
 
-            // Save custom message for this user
-            const callMessages = loadCallMessages();
-            callMessages[chatId] = message;
-            saveCallMessages(callMessages);
-
-            await conn.sendMessage(chatId, {
-                react: { text: '✅', key: mek.key }
-            });
-
-            await conn.sendMessage(chatId, {
-                text: `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+            // ── Toggle on/off ──────────────────────────────────────────────────────
+            if (action === 'on') {
+                global.antiCall = true;
+                await conn.sendMessage(chatId, {
+                    react: { text: '✅', key: mek.key }
+                });
+                await conn.sendMessage(chatId, {
+                    text: `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃   👑 QUEEN BELLA MD V1   ┃
 ┃   Created by Dev RODGERS  ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-✅ *CALL MESSAGE UPDATED!*
+✅ *ANTI-CALL ENABLED!*
 
-📝 *New Message:*
-"${message}"
+📞 All incoming calls will be automatically rejected.
 
-📌 When someone calls, they will see this message.
+📝 *Current Message:*
+"${loadCallMessages()[chatId] || settings.callMessage || '📞 Call rejected. Please message instead.'}"
+
+📌 To change message: .anticallmsg <text>
 
 ${settings.footer}`
+                });
+                return;
+            }
+
+            if (action === 'off') {
+                global.antiCall = false;
+                await conn.sendMessage(chatId, {
+                    react: { text: '❌', key: mek.key }
+                });
+                await conn.sendMessage(chatId, {
+                    text: `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃   👑 QUEEN BELLA MD V1   ┃
+┃   Created by Dev RODGERS  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+❌ *ANTI-CALL DISABLED!*
+
+📞 Calls will no longer be automatically rejected.
+
+${settings.footer}`
+                });
+                return;
+            }
+
+            // ── Unknown command ─────────────────────────────────────────────────────
+            await conn.sendMessage(chatId, {
+                text: `❌ Unknown command.
+
+Available commands:
+• .anticall on/off       — Enable/disable
+• .anticallmsg <text>    — Set custom message
+• .anticall              — Show status`
             });
 
         } catch (error) {
-            console.error('Error in anticallmsg:', error);
+            console.error('Error in anticall:', error);
             await conn.sendMessage(chatId, {
                 react: { text: '❌', key: mek.key }
             });
             await conn.sendMessage(chatId, {
-                text: `❌ Error setting call message: ${error.message}`
+                text: '❌ Error in anti-call command.'
             });
         }
     }

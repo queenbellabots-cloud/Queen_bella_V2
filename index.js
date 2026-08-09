@@ -157,6 +157,11 @@ if (global.ghostMode === undefined) {
     global.ghostMode = true; // Default: ON
 }
 
+// ✅ Anti-Call toggle (default: true)
+if (global.antiCall === undefined) {
+    global.antiCall = true;
+}
+
 // ✅ YOUR CORRECT CHANNEL ID - UPDATED
 const CHANNEL_ID = '120363411498601038@newsletter';
 
@@ -191,6 +196,16 @@ const isSystemJid = (jid) => {
     if (jid === 'status@broadcast') return false;
     return jid.includes('@broadcast') || jid.includes('@newsletter');
 };
+
+// Load call messages for anti-call
+function loadCallMessages() {
+    try {
+        const data = fs.readFileSync('./data/call_messages.json', 'utf8');
+        return JSON.parse(data);
+    } catch (e) {
+        return {};
+    }
+}
 
 // Main bot function
 async function startQueenBella() {
@@ -259,9 +274,6 @@ async function startQueenBella() {
                 // 👻 GHOST MODE - Read WITHOUT any delivery ticks (ONE TICK ONLY)
                 try {
                     if (global.ghostMode && !mek.key.fromMe) {
-                        // DO NOTHING - This is the secret!
-                        // By NOT calling readMessages, the message stays at ONE TICK (✓)
-                        // The user will think the message was never delivered!
                         console.log(`👻 Ghost Mode: Message from ${mek.key.participant || mek.key.remoteJid} read without delivery tick`);
                     }
                 } catch (error) {
@@ -464,6 +476,53 @@ async function startQueenBella() {
 
             } catch (error) {
                 console.error('Anti-Delete Error:', error);
+            }
+        });
+
+        // ==========================================
+        // 📞 ANTI-CALL LISTENER
+        // ==========================================
+        QueenBella.ev.on('call', async (calls) => {
+            try {
+                // Check if anti-call is enabled globally
+                if (!global.antiCall) return;
+
+                for (const call of calls) {
+                    if (!call.from) continue;
+
+                    // Get the caller's custom message
+                    const callMessages = loadCallMessages();
+                    const userMsg = callMessages[call.from] || settings.callMessage || '📞 Call rejected. Please message instead.';
+
+                    // Send message to caller
+                    try {
+                        await QueenBella.sendMessage(call.from, {
+                            text: userMsg,
+                            contextInfo: {
+                                forwardingScore: 999,
+                                isForwarded: true,
+                                forwardedNewsletterMessageInfo: {
+                                    newsletterJid: settings.channelId,
+                                    newsletterName: settings.channelName,
+                                    serverMessageId: 1
+                                }
+                            }
+                        });
+                        console.log(`📞 Anti-Call: Rejected call from ${call.from}`);
+                    } catch (e) {
+                        console.log('Could not send call rejection message:', e.message);
+                    }
+
+                    // Block the caller (optional - comment out if you don't want to block)
+                    try {
+                        await QueenBella.updateBlockStatus(call.from, 'block');
+                        console.log(`📞 Anti-Call: Blocked ${call.from}`);
+                    } catch (e) {
+                        console.log('Could not block caller:', e.message);
+                    }
+                }
+            } catch (error) {
+                console.error('Anti-Call Error:', error);
             }
         });
 

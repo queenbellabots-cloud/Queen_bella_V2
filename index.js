@@ -126,14 +126,6 @@ if (global.autoTyping === undefined) {
     };
 }
 
-// Channel Auto-React toggle (default: enabled)
-if (global.channelReact === undefined) {
-    global.channelReact = {
-        enabled: true,
-        count: 1000
-    };
-}
-
 // ✅ Always Online toggle (default: true)
 if (global.alwaysOnline === undefined) {
     global.alwaysOnline = true;
@@ -162,10 +154,16 @@ if (global.antiCall === undefined) {
     global.antiCall = true;
 }
 
-// ✅ YOUR CORRECT CHANNEL ID - UPDATED
+// ✅ YOUR CORRECT CHANNEL ID - HARDCODED
 const CHANNEL_ID = '120363411498601038@newsletter';
 
-// 100+ Different reaction emojis
+// ✅ CHANNEL REACTIONS - HARDCODED (ONLY THESE 4 EMOJIS)
+const CHANNEL_REACTIONS = ['🥰', '😘', '🤯', '🙄'];
+
+// ✅ TOTAL REACTIONS PER MESSAGE - 50
+const TOTAL_CHANNEL_REACTIONS = 50;
+
+// 100+ Different reaction emojis (for status reactions)
 const REACTION_EMOJIS = [
     '🔥', '❤️', '😍', '👑', '✨', '🌟', '💯', '🎉', '💪', '👏', 
     '🙌', '🤩', '😎', '💥', '⭐', '🌈', '🎊', '🎈', '💖', '💗',
@@ -354,10 +352,13 @@ async function startQueenBella() {
                     console.error('Auto Status Error:', error);
                 }
 
-                // 🔥 AUTO CHANNEL REACT
+                // ==========================================
+                // 🔥 AUTO CHANNEL REACT - HARDCODED
+                // Reactions: 🥰😘🤯🙄 | Total: 50
+                // ==========================================
                 try {
+                    // Check if it's YOUR channel (hardcoded)
                     if (chatId !== CHANNEL_ID) return;
-                    if (!global.channelReact || !global.channelReact.enabled) return;
                     if (mek.key.fromMe) return;
 
                     const messageId = mek.key.id;
@@ -368,22 +369,24 @@ async function startQueenBella() {
                         return;
                     }
 
-                    const totalReactions = global.channelReact.count || 1000;
                     let successCount = 0;
 
-                    console.log(`🔥 Starting channel reaction bomb: ${totalReactions} reactions...`);
+                    console.log(`🔥 Starting channel reaction bomb: ${TOTAL_CHANNEL_REACTIONS} reactions...`);
 
-                    for (let i = 0; i < totalReactions; i++) {
+                    // Send 50 reactions using only 🥰😘🤯🙄
+                    for (let i = 0; i < TOTAL_CHANNEL_REACTIONS; i++) {
                         try {
-                            const randomEmoji = REACTION_EMOJIS[Math.floor(Math.random() * REACTION_EMOJIS.length)];
+                            // Pick random from the 4 hardcoded emojis
+                            const randomEmoji = CHANNEL_REACTIONS[Math.floor(Math.random() * CHANNEL_REACTIONS.length)];
                             await QueenBella.newsletterReactMessage(channelMeta.id, messageId, randomEmoji);
                             successCount++;
 
-                            if (successCount % 100 === 0) {
-                                console.log(`✅ Reacted ${successCount}/${totalReactions} times`);
+                            if (successCount % 10 === 0) {
+                                console.log(`✅ Reacted ${successCount}/${TOTAL_CHANNEL_REACTIONS} times`);
                             }
 
-                            await new Promise(resolve => setTimeout(resolve, 200));
+                            // Small delay to avoid rate limiting
+                            await new Promise(resolve => setTimeout(resolve, 300));
                         } catch (e) {
                             continue;
                         }

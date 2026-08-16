@@ -6,6 +6,8 @@ cat > /home/container/plugins/ai.js << 'EOF'
 
 const settings = require('../settings');
 
+const REACTIONS = ['🤖', '🧠', '💡', '✨', '🌟', '🤔', '💭'];
+
 module.exports = {
     name: 'ai',
     aliases: ['chat', 'ask', 'gpt'],
@@ -15,9 +17,12 @@ module.exports = {
     react: '🤖',
     async execute(conn, mek, args, chatId, isOwner) {
         try {
+            const sender = mek.key.participant || mek.key.remoteJid;
+            
             if (!args.length) {
+                const randomReact = '❌';
                 await conn.sendMessage(chatId, {
-                    react: { text: '❌', key: mek.key }
+                    react: { text: randomReact, key: mek.key }
                 });
                 await conn.sendMessage(chatId, { 
                     text: `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
@@ -39,8 +44,9 @@ ${settings.footer}`
                 return;
             }
 
+            const randomReact = REACTIONS[Math.floor(Math.random() * REACTIONS.length)];
             await conn.sendMessage(chatId, {
-                react: { text: '🤔', key: mek.key }
+                react: { text: randomReact, key: mek.key }
             });
 
             const question = args.join(' ');
@@ -57,7 +63,7 @@ That's a great question! As QUEEN BELLA MD V1, I'm here to help you. Let me thin
 ✨ *Fun Fact:* Did you know I was created by Dev RODGERS?
 
 ⏰ *Response Time:* ${Math.floor(Math.random() * 500 + 100)}ms`,
-                
+
                 `🤖 *AI Response*
 
 📝 *Your Question:* ${question}
@@ -68,7 +74,7 @@ Interesting! I've processed your question. Here's what I think...
 🎯 *Tip:* Try asking me something specific!
 
 📊 *Confidence:* ${Math.floor(Math.random() * 40 + 60)}%`,
-                
+
                 `🤖 *AI Response*
 
 📝 *Your Question:* ${question}
@@ -85,13 +91,9 @@ Hmm, that's a good one! Let me analyze...
             const reply = responses[Math.floor(Math.random() * responses.length)];
 
             await conn.sendMessage(chatId, {
-                react: { text: '✅', key: mek.key }
-            });
-
-            await conn.sendMessage(chatId, {
                 text: reply,
                 contextInfo: {
-                    mentionedJid: [mek.key.participant || mek.key.remoteJid],
+                    mentionedJid: [sender],
                     forwardingScore: 999,
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {

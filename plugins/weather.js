@@ -1,4 +1,3 @@
-cat > /home/container/plugins/weather.js << 'EOF'
 /**
  * 👑 QUEEN BELLA MD - Weather Info
  * Get weather information
@@ -48,7 +47,6 @@ ${settings.footer}`
 
             const city = args.join(' ');
             
-            // Mock weather (Replace with actual API later)
             const temps = ['15°C', '22°C', '28°C', '31°C', '18°C', '25°C', '20°C'];
             const conditions = ['Sunny ☀️', 'Cloudy ☁️', 'Rainy 🌧️', 'Clear 🌤️', 'Windy 🌬️', 'Partly Cloudy ⛅', 'Foggy 🌫️'];
             const humidity = ['45%', '62%', '78%', '55%', '70%', '50%', '65%'];
@@ -93,4 +91,3 @@ ${settings.footer}`;
         }
     }
 };
-EOF

@@ -1,4 +1,3 @@
-cat > /home/container/plugins/meme.js << 'EOF'
 /**
  * 👑 QUEEN BELLA MD - Random Meme
  * Get a random meme
@@ -68,4 +67,3 @@ ${settings.footer}`,
         }
     }
 };
-EOF

@@ -1,5 +1,5 @@
 /**
- * 👑 QUEEN BELLA MD V1 - Settings
+ *    QUEEN BELLA MD V1 - Settings
  * ✏️ EDIT THE SECTIONS BELOW TO CUSTOMIZE YOUR BOT
  * ==================================================
  */

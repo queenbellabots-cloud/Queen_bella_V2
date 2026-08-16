@@ -1,4 +1,3 @@
-cat > /home/container/plugins/poll.js << 'EOF'
 /**
  * 👑 QUEEN BELLA MD - Create Poll
  * Create a poll in groups
@@ -93,4 +92,3 @@ ${settings.footer}`
         }
     }
 };
-EOF

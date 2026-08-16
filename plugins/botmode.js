@@ -1,125 +1,154 @@
 /**
- * 👑 QUEEN BELLA MD - Bot Mode Control
- * Public: Anyone can use commands
- * Private: Only the bot owner can use commands
- * ✅ BOT OWNER CAN USE THIS (not blocked)
+ * 👑 QUEEN BELLA MD - Bot Mode
+ * Switch between Public/Private mode
+ * PRIVATE MODE = SILENT (no response to non-owners)
  */
 
 const settings = require('../settings');
-const fs = require('fs');
-const path = require('path');
 
-// Global bot mode
-if (global.botMode === undefined) {
-    global.botMode = 'public'; // Default: public
-}
+const REACTIONS = ['🔒', '🌍', '🔓', '🛡️', '⚙️'];
 
 module.exports = {
     name: 'botmode',
-    aliases: ['mode', 'setmode', 'public', 'private'],
+    aliases: ['mode', 'public', 'private'],
     category: 'owner',
-    description: 'Set bot to public or private mode',
-    usage: '.botmode public/private',
-    react: '🔐',
+    description: 'Switch bot between Public/Private mode',
+    usage: '.botmode <public|private>',
+    react: '⚙️',
     async execute(conn, mek, args, chatId, isOwner) {
         try {
-            // 👇 REACT WITH LOCK EMOJI
-            await conn.sendMessage(chatId, {
-                react: { text: '🔐', key: mek.key }
-            });
+            const sender = mek.key.participant || mek.key.remoteJid;
+            const senderNumber = sender ? sender.split('@')[0] : '';
+            const ownerNumber = settings.ownerNumber || '254755660053';
 
-            // ✅ CHECK IF USER IS THE BOT OWNER (person who deployed)
-            // The isOwner parameter comes from main.js - it checks against settings.ownerNumber
-            if (!isOwner) {
+            // Check if user is owner
+            if (senderNumber !== ownerNumber && !isOwner) {
+                await conn.sendMessage(chatId, {
+                    react: { text: '⛔', key: mek.key }
+                });
                 await conn.sendMessage(chatId, {
                     text: `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃   👑 QUEEN BELLA MD V1   ┃
-┃   Created by Dev RODGERS  ┃
+┃   ⛔ ACCESS DENIED           ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-🔒 *ACCESS DENIED*
-
-Only the bot owner can change the bot mode.
+❌ *This command is only for the bot owner!*
 
 👑 *Owner:* ${settings.botOwner || 'QUEEN BELLA USER'}
-📱 *Number:* ${settings.ownerNumber || '254755660053'}
 
 ${settings.footer}`
                 });
                 return;
             }
 
-            const mode = args[0]?.toLowerCase();
-
-            if (!mode || (mode !== 'public' && mode !== 'private')) {
+            // Check if args provided
+            if (!args.length) {
                 const currentMode = global.botMode || 'public';
+                const modeEmoji = currentMode === 'private' ? '🔒' : '🌍';
+                const modeStatus = currentMode === 'private' ? 'PRIVATE (Owner Only - SILENT)' : 'PUBLIC (Everyone)';
+                
+                await conn.sendMessage(chatId, {
+                    react: { text: 'ℹ️', key: mek.key }
+                });
                 await conn.sendMessage(chatId, {
                     text: `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃   👑 QUEEN BELLA MD V1   ┃
-┃   Created by Dev RODGERS  ┃
+┃   ⚙️ BOT MODE STATUS         ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-🔐 *BOT MODE CONTROL*
+${modeEmoji} *Current Mode:* ${modeStatus}
 
-📌 *Current Mode:* ${currentMode.toUpperCase()}
+📝 *What each mode does:*
 
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃  📋 MODES                     ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+🌍 *PUBLIC MODE*
+• Everyone can use commands
+• Bot responds to all users
+• Works in groups and DMs
 
-🌐 *PUBLIC MODE*
-• Anyone can use commands
-• Works in all chats
-• Full access for everyone
+🔒 *PRIVATE MODE* (SILENT)
+• ONLY owner can use commands
+• Non-owners get NO RESPONSE
+• Commands are silently ignored
 
-🔒 *PRIVATE MODE*
-• Only you (the bot owner) can use commands
-• Others will be blocked
-• Your bot, your rules!
-
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃  📋 USAGE                    ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-• .botmode public   — Set to public mode
-• .botmode private  — Set to private mode
-• .botmode          — Check current mode
+📌 *Change mode:*
+.botmode public   → Everyone can use
+.botmode private  → Only owner (SILENT)
 
 ${settings.footer}`
                 });
                 return;
             }
 
-            // Update the mode
+            const mode = args[0].toLowerCase();
+
+            // Validate mode
+            if (mode !== 'public' && mode !== 'private') {
+                await conn.sendMessage(chatId, {
+                    react: { text: '❌', key: mek.key }
+                });
+                await conn.sendMessage(chatId, {
+                    text: `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃   ❌ INVALID MODE            ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+❌ *Invalid mode!*
+
+📝 *Valid modes:*
+• public  → Everyone can use bot
+• private → Only owner (SILENT)
+
+📌 *Example:*
+.botmode public
+
+${settings.footer}`
+                });
+                return;
+            }
+
+            // Set the mode
+            const randomReact = REACTIONS[Math.floor(Math.random() * REACTIONS.length)];
+            await conn.sendMessage(chatId, {
+                react: { text: randomReact, key: mek.key }
+            });
+
+            // Store mode globally
             global.botMode = mode;
 
-            await conn.sendMessage(chatId, {
-                react: { text: mode === 'public' ? '🌐' : '🔒', key: mek.key }
-            });
+            const modeEmoji = mode === 'private' ? '🔒' : '🌍';
+            const modeStatus = mode === 'private' ? 'PRIVATE (SILENT)' : 'PUBLIC';
+            const modeDescription = mode === 'private' 
+                ? '🔒 ONLY owner can use commands. Non-owners get NO RESPONSE.' 
+                : '🌍 Everyone can use the bot.';
 
             await conn.sendMessage(chatId, {
                 text: `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃   👑 QUEEN BELLA MD V1   ┃
-┃   Created by Dev RODGERS  ┃
+┃   ✅ BOT MODE UPDATED        ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-🔐 *BOT MODE CHANGED!*
+${modeEmoji} *Mode:* ${modeStatus}
 
-📌 *New Mode:* ${mode.toUpperCase()}
+📝 *Description:* ${modeDescription}
 
-${mode === 'public' ? '🌐 *PUBLIC MODE ACTIVATED!*\n\n✅ Anyone can now use the bot commands.\n✅ All chats are accessible.\n\n📌 Your bot is now open to everyone!' : '🔒 *PRIVATE MODE ACTIVATED!*\n\n✅ Only you can use the bot commands.\n❌ Others will be blocked.\n\n📌 Your bot is now private!'}
+👑 *Changed by:* @${senderNumber}
 
-🔄 Mode has been saved.
+🕐 *Updated:* ${new Date().toLocaleString()}
 
-${settings.footer}`
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  📢 JOIN OUR CHANNEL         ┃
+┃  👇 Click the button below    ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+${settings.footer}`,
+                contextInfo: {
+                    mentionedJid: [sender]
+                }
             });
+
+            // Log the change
+            console.log(`✅ Bot mode changed to: ${mode.toUpperCase()} by ${senderNumber}`);
 
         } catch (error) {
-            console.error('Error in botmode:', error);
-            await conn.sendMessage(chatId, {
-                react: { text: '❌', key: mek.key }
-            });
-            await conn.sendMessage(chatId, {
-                text: `❌ Error changing bot mode: ${error.message}`
+            console.error('Error in botmode command:', error);
+            await conn.sendMessage(chatId, { 
+                text: '❌ Error changing bot mode.'
             });
         }
     }

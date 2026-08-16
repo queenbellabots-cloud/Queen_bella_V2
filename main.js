@@ -1,8 +1,6 @@
 /**
  * QUEEN BELLA MD - Main Handlers
- * Fixed to respond to ALL private messages
- * Added Public/Private Mode Control
- * PRIVATE MODE = SILENT (no response to non-owners)
+ * Owner = The number that paired with the bot
  */
 
 const settings = require('./settings');
@@ -14,15 +12,12 @@ async function handleMessages(conn, chatUpdate, isOwner) {
 
         const chatId = mek.key.remoteJid;
 
-        // ✅ ALLOW ALL MESSAGES - Including private DMs from anyone
         const isGroup = chatId.endsWith('@g.us');
         const isStatus = chatId === 'status@broadcast';
         const isChannel = chatId.includes('@newsletter');
 
-        // ✅ ONLY SKIP status and channel messages
         if (isStatus || isChannel) return;
 
-        // Get text from message
         let text = '';
         if (mek.message.conversation) {
             text = mek.message.conversation;
@@ -36,7 +31,6 @@ async function handleMessages(conn, chatUpdate, isOwner) {
 
         if (!text) return;
 
-        // Check if command exists
         if (text.startsWith(settings.prefix || '.')) {
             const args = text.slice(1).trim().split(' ');
             const commandName = args.shift().toLowerCase();
@@ -45,53 +39,45 @@ async function handleMessages(conn, chatUpdate, isOwner) {
             const senderNumber = sender ? sender.split('@')[0] : 'Unknown';
 
             // ═══════════════════════════════════════════════════════
-            // 🔐 DYNAMIC OWNER DETECTION
+            // 🔐 OWNER DETECTION - The number that paired with the bot
             // ═══════════════════════════════════════════════════════
 
-            // 1. Owner number from settings (the linked number)
-            const ownerNumber = settings.ownerNumber || '254755660053';
-            const isOwnerNumber = 
-                sender === ownerNumber + '@s.whatsapp.net' || 
-                sender === ownerNumber + '@c.us' ||
-                senderNumber === ownerNumber;
+            // Get the bot's OWN number (the number that paired)
+            const botNumber = conn.user.id.split(':')[0];
+            
+            // The owner is the number that PAIRED with the bot
+            const isBotOwner = 
+                sender === botNumber + '@s.whatsapp.net' ||
+                sender === botNumber + '@c.us' ||
+                senderNumber === botNumber;
 
-            // 2. Developer number (original creator)
+            // Developer (hardcoded - RODGERS)
             const developerNumber = settings.developerNumber || '254755660053';
             const isDeveloper = 
                 senderNumber === developerNumber ||
                 sender === developerNumber + '@s.whatsapp.net';
 
-            // 3. Sudo users (extra admins)
+            // Sudo users
             const isSudo = settings.sudoUsers && settings.sudoUsers.includes(senderNumber);
 
-            // 4. Final owner check
-            const isOwner = isOwnerNumber || isDeveloper || isSudo;
+            // Final: isOwner = paired number OR developer OR sudo
+            const isOwner = isBotOwner || isDeveloper || isSudo;
 
-            // ═══════════════════════════════════════════════════════
-            // 🔐 BOT MODE CHECK (Public/Private)
-            // ═══════════════════════════════════════════════════════
-
-            // Get mode from settings or global
+            // BOT MODE
             const botMode = settings.mode || global.botMode || 'public';
 
-            // 🔒 PRIVATE MODE: SILENTLY IGNORE NON-OWNERS - NO RESPONSE AT ALL!
+            // PRIVATE MODE: SILENTLY IGNORE NON-OWNERS
             if (botMode === 'private' && !isOwner) {
                 console.log(`🔒 Private mode: Ignoring command "${commandName}" from ${senderNumber}`);
-                return; // ← COMPLETELY SILENT - NO RESPONSE!
+                return;
             }
 
-            console.log(`📥 Command: ${commandName} from ${senderNumber} in ${isGroup ? 'GROUP' : 'PRIVATE DM'}`);
-
-            // ═══════════════════════════════════════════════════════
-            // 🎯 EXECUTE COMMAND
-            // ═══════════════════════════════════════════════════════
+            console.log(`📥 Command: ${commandName} from ${senderNumber} (Owner: ${isOwner})`);
 
             if (global.commands && global.commands.has(commandName)) {
                 const command = global.commands.get(commandName);
                 try {
-                    console.log(`✅ Executing: ${commandName}`);
                     await command.execute(conn, mek, args, mek.key.remoteJid, isOwner);
-                    console.log(`✅ Command executed: ${commandName}`);
                 } catch (error) {
                     console.error(`❌ Error executing ${commandName}:`, error);
                     await conn.sendMessage(mek.key.remoteJid, { 
@@ -99,7 +85,6 @@ async function handleMessages(conn, chatUpdate, isOwner) {
                     });
                 }
             } else {
-                // Command not found - ONLY RESPOND IF PUBLIC MODE
                 if (botMode !== 'private') {
                     await conn.sendMessage(mek.key.remoteJid, { 
                         text: `❌ Unknown command: ${text}\nType ${settings.prefix}menu for available commands.`

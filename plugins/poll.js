@@ -6,6 +6,8 @@ cat > /home/container/plugins/poll.js << 'EOF'
 
 const settings = require('../settings');
 
+const REACTIONS = ['📊', '📈', '📉', '📋', '🗳️', '🎯'];
+
 module.exports = {
     name: 'poll',
     aliases: ['vote', 'survey'],
@@ -15,6 +17,8 @@ module.exports = {
     react: '📊',
     async execute(conn, mek, args, chatId, isOwner) {
         try {
+            const sender = mek.key.participant || mek.key.remoteJid;
+            
             if (!args.length) {
                 await conn.sendMessage(chatId, {
                     react: { text: '❌', key: mek.key }
@@ -37,8 +41,9 @@ ${settings.footer}`
                 return;
             }
 
+            const randomReact = REACTIONS[Math.floor(Math.random() * REACTIONS.length)];
             await conn.sendMessage(chatId, {
-                react: { text: '📊', key: mek.key }
+                react: { text: randomReact, key: mek.key }
             });
 
             const text = args.join(' ');
@@ -69,7 +74,7 @@ ${settings.footer}`
 
             await conn.sendPoll(chatId, question, options, {
                 contextInfo: {
-                    mentionedJid: [mek.key.participant || mek.key.remoteJid],
+                    mentionedJid: [sender],
                     forwardingScore: 999,
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {

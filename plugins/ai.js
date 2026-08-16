@@ -1,4 +1,3 @@
-cat > /home/container/plugins/ai.js << 'EOF'
 /**
  * 👑 QUEEN BELLA MD - AI Chat
  * Chat with AI assistant
@@ -20,9 +19,8 @@ module.exports = {
             const sender = mek.key.participant || mek.key.remoteJid;
             
             if (!args.length) {
-                const randomReact = '❌';
                 await conn.sendMessage(chatId, {
-                    react: { text: randomReact, key: mek.key }
+                    react: { text: '❌', key: mek.key }
                 });
                 await conn.sendMessage(chatId, { 
                     text: `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
@@ -51,16 +49,14 @@ ${settings.footer}`
 
             const question = args.join(' ');
             
-            // AI Responses (You can replace with actual API later)
             const responses = [
                 `🤖 *AI Response*
 
 📝 *Your Question:* ${question}
 
-💭 *My Answer:* 
-That's a great question! As QUEEN BELLA MD V1, I'm here to help you. Let me think about that...
+💭 *My Answer:* That's a great question! As QUEEN BELLA MD V1, I'm here to help you.
 
-✨ *Fun Fact:* Did you know I was created by Dev RODGERS?
+✨ *Fun Fact:* Created by Dev RODGERS
 
 ⏰ *Response Time:* ${Math.floor(Math.random() * 500 + 100)}ms`,
 
@@ -68,24 +64,11 @@ That's a great question! As QUEEN BELLA MD V1, I'm here to help you. Let me thin
 
 📝 *Your Question:* ${question}
 
-💭 *My Answer:* 
-Interesting! I've processed your question. Here's what I think...
+💭 *My Answer:* Interesting! I've processed your question.
 
 🎯 *Tip:* Try asking me something specific!
 
-📊 *Confidence:* ${Math.floor(Math.random() * 40 + 60)}%`,
-
-                `🤖 *AI Response*
-
-📝 *Your Question:* ${question}
-
-💭 *My Answer:* 
-Hmm, that's a good one! Let me analyze...
-
-🔍 *Searching database...*
-✅ *Result found!*
-
-💡 *Suggestion:* Ask me about anything!`
+📊 *Confidence:* ${Math.floor(Math.random() * 40 + 60)}%`
             ];
 
             const reply = responses[Math.floor(Math.random() * responses.length)];
@@ -112,4 +95,3 @@ Hmm, that's a good one! Let me analyze...
         }
     }
 };
-EOF

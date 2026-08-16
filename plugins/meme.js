@@ -6,6 +6,8 @@ cat > /home/container/plugins/meme.js << 'EOF'
 
 const settings = require('../settings');
 
+const REACTIONS = ['😂', '🤣', '😄', '😅', '😆', '🎭', '🃏'];
+
 module.exports = {
     name: 'meme',
     aliases: ['funny', 'lol', 'haha'],
@@ -15,8 +17,11 @@ module.exports = {
     react: '😂',
     async execute(conn, mek, args, chatId, isOwner) {
         try {
+            const sender = mek.key.participant || mek.key.remoteJid;
+            
+            const randomReact = REACTIONS[Math.floor(Math.random() * REACTIONS.length)];
             await conn.sendMessage(chatId, {
-                react: { text: '😂', key: mek.key }
+                react: { text: randomReact, key: mek.key }
             });
 
             const memes = [
@@ -44,7 +49,7 @@ module.exports = {
 
 ${settings.footer}`,
                 contextInfo: {
-                    mentionedJid: [mek.key.participant || mek.key.remoteJid],
+                    mentionedJid: [sender],
                     forwardingScore: 999,
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {

@@ -1,7 +1,6 @@
 /**
  * 👑 QUEEN BELLA MD - Bot Mode
- * Switch between Public/Private mode
- * PRIVATE MODE = SILENT (no response to non-owners)
+ * Owner = The number that paired with the bot
  */
 
 const settings = require('../settings');
@@ -21,23 +20,28 @@ module.exports = {
             const senderNumber = sender ? sender.split('@')[0] : '';
 
             // ═══════════════════════════════════════════════════════
-            // 🔐 OWNER CHECK
+            // 🔐 OWNER DETECTION - The number that paired with the bot
             // ═══════════════════════════════════════════════════════
 
-            const ownerNumber = settings.ownerNumber || '254755660053';
+            // Get the bot's OWN number (the number that paired)
+            const botNumber = conn.user.id.split(':')[0];
+            
+            // The owner is the number that PAIRED with the bot
+            const isBotOwner = 
+                senderNumber === botNumber ||
+                sender === botNumber + '@s.whatsapp.net';
+
+            // Developer (hardcoded - RODGERS)
             const developerNumber = settings.developerNumber || '254755660053';
-
-            const isOwnerNumber = 
-                senderNumber === ownerNumber ||
-                sender === ownerNumber + '@s.whatsapp.net';
-
             const isDeveloper = 
                 senderNumber === developerNumber ||
                 sender === developerNumber + '@s.whatsapp.net';
 
+            // Sudo users
             const isSudo = settings.sudoUsers && settings.sudoUsers.includes(senderNumber);
 
-            const isAuthorized = isOwnerNumber || isDeveloper || isSudo || isOwner;
+            // Final authorization
+            const isAuthorized = isBotOwner || isDeveloper || isSudo || isOwner;
 
             if (!isAuthorized) {
                 await conn.sendMessage(chatId, {
@@ -50,17 +54,17 @@ module.exports = {
 
 ❌ *This command is only for the bot owner!*
 
-👑 *Owner:* ${ownerNumber}
+👑 *Owner (Paired Number):* ${botNumber}
+📱 *Your Number:* ${senderNumber}
+
+💡 *The owner is the number that paired with the bot.*
 
 ${settings.footer}`
                 });
                 return;
             }
 
-            // ═══════════════════════════════════════════════════════
-            // 📊 SHOW CURRENT MODE
-            // ═══════════════════════════════════════════════════════
-
+            // If no args, show current mode
             if (!args.length) {
                 const currentMode = settings.mode || global.botMode || 'public';
                 const modeEmoji = currentMode === 'private' ? '🔒' : '🌍';
@@ -90,17 +94,13 @@ ${modeEmoji} *Current Mode:* ${modeStatus}
 .botmode public   → Everyone can use
 .botmode private  → Only owner (SILENT)
 
-👑 *Owner:* ${ownerNumber}
+👑 *Owner (Paired Number):* ${botNumber}
 👨‍💻 *Developer:* ${developerNumber}
 
 ${settings.footer}`
                 });
                 return;
             }
-
-            // ═══════════════════════════════════════════════════════
-            // 🔄 CHANGE MODE
-            // ═══════════════════════════════════════════════════════
 
             const mode = args[0].toLowerCase();
 
@@ -114,14 +114,14 @@ ${settings.footer}`
                 return;
             }
 
-            // Update both settings and global
-            settings.mode = mode;
-            global.botMode = mode;
-
             const randomReact = REACTIONS[Math.floor(Math.random() * REACTIONS.length)];
             await conn.sendMessage(chatId, {
                 react: { text: randomReact, key: mek.key }
             });
+
+            // Update mode
+            settings.mode = mode;
+            global.botMode = mode;
 
             const modeEmoji = mode === 'private' ? '🔒' : '🌍';
             const modeStatus = mode === 'private' ? 'PRIVATE (SILENT)' : 'PUBLIC';
@@ -138,7 +138,7 @@ ${modeEmoji} *Mode:* ${modeStatus}
 
 📝 *Description:* ${modeDescription}
 
-👑 *Owner:* ${ownerNumber}
+👑 *Owner (Paired Number):* ${botNumber}
 👨‍💻 *Developer:* ${developerNumber}
 
 🕐 *Updated:* ${new Date().toLocaleString()}

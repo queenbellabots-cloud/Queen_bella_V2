@@ -2,6 +2,7 @@
  * QUEEN BELLA MD - Main Handlers
  * Fixed to respond to ALL private messages
  * Added Public/Private Mode Control
+ * PRIVATE MODE = SILENT (no response to non-owners)
  */
 
 const settings = require('./settings');
@@ -52,32 +53,11 @@ async function handleMessages(conn, chatUpdate, isOwner) {
 
             // 🔐 BOT MODE CHECK (Public/Private)
             const botMode = global.botMode || 'public';
-            
-            // If bot is in private mode, only owner can use commands
+
+            // 🔒 PRIVATE MODE: SILENTLY IGNORE NON-OWNERS - NO RESPONSE AT ALL!
             if (botMode === 'private' && !isOwner) {
-                await conn.sendMessage(mek.key.remoteJid, {
-                    text: `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃   👑 QUEEN BELLA MD V1   ┃
-┃   Created by Dev RODGERS  ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-
-🔒 *BOT IS IN PRIVATE MODE*
-
-Only the bot owner can use commands.
-
-👑 *Owner:* ${settings.botOwner || 'QUEEN BELLA USER'}
-📱 *Number:* ${ownerNumber}
-
-📌 *Contact the owner to request access.*
-
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃  📢 JOIN OUR CHANNEL         ┃
-┃  👇 Click the button below    ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-
-${settings.footer}`
-                });
-                return;
+                console.log(`🔒 Private mode: Ignoring command "${commandName}" from ${senderNumber}`);
+                return; // ← COMPLETELY SILENT - NO RESPONSE!
             }
 
             console.log(`📥 Command: ${commandName} from ${senderNumber} in ${isGroup ? 'GROUP' : 'PRIVATE DM'}`);
@@ -95,10 +75,12 @@ ${settings.footer}`
                     });
                 }
             } else {
-                // Command not found
-                await conn.sendMessage(mek.key.remoteJid, { 
-                    text: `❌ Unknown command: ${text}\nType ${settings.prefix}menu for available commands.`
-                });
+                // Command not found - ONLY RESPOND IF PUBLIC MODE
+                if (botMode !== 'private') {
+                    await conn.sendMessage(mek.key.remoteJid, { 
+                        text: `❌ Unknown command: ${text}\nType ${settings.prefix}menu for available commands.`
+                    });
+                }
             }
         }
     } catch (error) {

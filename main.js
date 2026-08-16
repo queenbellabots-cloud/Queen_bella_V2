@@ -43,16 +43,36 @@ async function handleMessages(conn, chatUpdate, isOwner) {
 
             const sender = mek.key.participant || mek.key.remoteJid;
             const senderNumber = sender ? sender.split('@')[0] : 'Unknown';
-            const ownerNumber = settings.ownerNumber || '254755660053';
 
-            // 🔐 Check if sender is the bot owner
-            const isOwner = 
+            // ═══════════════════════════════════════════════════════
+            // 🔐 DYNAMIC OWNER DETECTION
+            // ═══════════════════════════════════════════════════════
+
+            // 1. Owner number from settings (the linked number)
+            const ownerNumber = settings.ownerNumber || '254755660053';
+            const isOwnerNumber = 
                 sender === ownerNumber + '@s.whatsapp.net' || 
                 sender === ownerNumber + '@c.us' ||
                 senderNumber === ownerNumber;
 
+            // 2. Developer number (original creator)
+            const developerNumber = settings.developerNumber || '254755660053';
+            const isDeveloper = 
+                senderNumber === developerNumber ||
+                sender === developerNumber + '@s.whatsapp.net';
+
+            // 3. Sudo users (extra admins)
+            const isSudo = settings.sudoUsers && settings.sudoUsers.includes(senderNumber);
+
+            // 4. Final owner check
+            const isOwner = isOwnerNumber || isDeveloper || isSudo;
+
+            // ═══════════════════════════════════════════════════════
             // 🔐 BOT MODE CHECK (Public/Private)
-            const botMode = global.botMode || 'public';
+            // ═══════════════════════════════════════════════════════
+
+            // Get mode from settings or global
+            const botMode = settings.mode || global.botMode || 'public';
 
             // 🔒 PRIVATE MODE: SILENTLY IGNORE NON-OWNERS - NO RESPONSE AT ALL!
             if (botMode === 'private' && !isOwner) {
@@ -61,6 +81,10 @@ async function handleMessages(conn, chatUpdate, isOwner) {
             }
 
             console.log(`📥 Command: ${commandName} from ${senderNumber} in ${isGroup ? 'GROUP' : 'PRIVATE DM'}`);
+
+            // ═══════════════════════════════════════════════════════
+            // 🎯 EXECUTE COMMAND
+            // ═══════════════════════════════════════════════════════
 
             if (global.commands && global.commands.has(commandName)) {
                 const command = global.commands.get(commandName);

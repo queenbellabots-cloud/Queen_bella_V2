@@ -19,10 +19,27 @@ module.exports = {
         try {
             const sender = mek.key.participant || mek.key.remoteJid;
             const senderNumber = sender ? sender.split('@')[0] : '';
-            const ownerNumber = settings.ownerNumber || '254755660053';
 
-            // Check if user is owner
-            if (senderNumber !== ownerNumber && !isOwner) {
+            // ═══════════════════════════════════════════════════════
+            // 🔐 OWNER CHECK
+            // ═══════════════════════════════════════════════════════
+
+            const ownerNumber = settings.ownerNumber || '254755660053';
+            const developerNumber = settings.developerNumber || '254755660053';
+
+            const isOwnerNumber = 
+                senderNumber === ownerNumber ||
+                sender === ownerNumber + '@s.whatsapp.net';
+
+            const isDeveloper = 
+                senderNumber === developerNumber ||
+                sender === developerNumber + '@s.whatsapp.net';
+
+            const isSudo = settings.sudoUsers && settings.sudoUsers.includes(senderNumber);
+
+            const isAuthorized = isOwnerNumber || isDeveloper || isSudo || isOwner;
+
+            if (!isAuthorized) {
                 await conn.sendMessage(chatId, {
                     react: { text: '⛔', key: mek.key }
                 });
@@ -33,19 +50,22 @@ module.exports = {
 
 ❌ *This command is only for the bot owner!*
 
-👑 *Owner:* ${settings.botOwner || 'QUEEN BELLA USER'}
+👑 *Owner:* ${ownerNumber}
 
 ${settings.footer}`
                 });
                 return;
             }
 
-            // Check if args provided
+            // ═══════════════════════════════════════════════════════
+            // 📊 SHOW CURRENT MODE
+            // ═══════════════════════════════════════════════════════
+
             if (!args.length) {
-                const currentMode = global.botMode || 'public';
+                const currentMode = settings.mode || global.botMode || 'public';
                 const modeEmoji = currentMode === 'private' ? '🔒' : '🌍';
-                const modeStatus = currentMode === 'private' ? 'PRIVATE (Owner Only - SILENT)' : 'PUBLIC (Everyone)';
-                
+                const modeStatus = currentMode === 'private' ? 'PRIVATE (SILENT)' : 'PUBLIC';
+
                 await conn.sendMessage(chatId, {
                     react: { text: 'ℹ️', key: mek.key }
                 });
@@ -61,56 +81,47 @@ ${modeEmoji} *Current Mode:* ${modeStatus}
 🌍 *PUBLIC MODE*
 • Everyone can use commands
 • Bot responds to all users
-• Works in groups and DMs
 
 🔒 *PRIVATE MODE* (SILENT)
 • ONLY owner can use commands
 • Non-owners get NO RESPONSE
-• Commands are silently ignored
 
 📌 *Change mode:*
 .botmode public   → Everyone can use
 .botmode private  → Only owner (SILENT)
 
+👑 *Owner:* ${ownerNumber}
+👨‍💻 *Developer:* ${developerNumber}
+
 ${settings.footer}`
                 });
                 return;
             }
 
+            // ═══════════════════════════════════════════════════════
+            // 🔄 CHANGE MODE
+            // ═══════════════════════════════════════════════════════
+
             const mode = args[0].toLowerCase();
 
-            // Validate mode
             if (mode !== 'public' && mode !== 'private') {
                 await conn.sendMessage(chatId, {
                     react: { text: '❌', key: mek.key }
                 });
                 await conn.sendMessage(chatId, {
-                    text: `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃   ❌ INVALID MODE            ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-
-❌ *Invalid mode!*
-
-📝 *Valid modes:*
-• public  → Everyone can use bot
-• private → Only owner (SILENT)
-
-📌 *Example:*
-.botmode public
-
-${settings.footer}`
+                    text: `❌ Invalid mode!\n\nValid: public or private\nExample: .botmode public`
                 });
                 return;
             }
 
-            // Set the mode
+            // Update both settings and global
+            settings.mode = mode;
+            global.botMode = mode;
+
             const randomReact = REACTIONS[Math.floor(Math.random() * REACTIONS.length)];
             await conn.sendMessage(chatId, {
                 react: { text: randomReact, key: mek.key }
             });
-
-            // Store mode globally
-            global.botMode = mode;
 
             const modeEmoji = mode === 'private' ? '🔒' : '🌍';
             const modeStatus = mode === 'private' ? 'PRIVATE (SILENT)' : 'PUBLIC';
@@ -127,22 +138,14 @@ ${modeEmoji} *Mode:* ${modeStatus}
 
 📝 *Description:* ${modeDescription}
 
-👑 *Changed by:* @${senderNumber}
+👑 *Owner:* ${ownerNumber}
+👨‍💻 *Developer:* ${developerNumber}
 
 🕐 *Updated:* ${new Date().toLocaleString()}
 
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃  📢 JOIN OUR CHANNEL         ┃
-┃  👇 Click the button below    ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-
-${settings.footer}`,
-                contextInfo: {
-                    mentionedJid: [sender]
-                }
+${settings.footer}`
             });
 
-            // Log the change
             console.log(`✅ Bot mode changed to: ${mode.toUpperCase()} by ${senderNumber}`);
 
         } catch (error) {

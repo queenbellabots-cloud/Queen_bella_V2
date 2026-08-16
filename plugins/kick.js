@@ -6,6 +6,8 @@ cat > /home/container/plugins/kick.js << 'EOF'
 
 const settings = require('../settings');
 
+const REACTIONS = ['👢', '💥', '⚡', '🔥', '💫'];
+
 module.exports = {
     name: 'kick',
     aliases: ['remove', 'boot', 'expel'],
@@ -15,6 +17,8 @@ module.exports = {
     react: '👢',
     async execute(conn, mek, args, chatId, isOwner) {
         try {
+            const sender = mek.key.participant || mek.key.remoteJid;
+            
             // Check if it's a group
             if (!chatId.endsWith('@g.us')) {
                 await conn.sendMessage(chatId, {
@@ -34,7 +38,6 @@ ${settings.footer}`
 
             // Check if user is admin
             const groupMetadata = await conn.groupMetadata(chatId);
-            const sender = mek.key.participant || mek.key.remoteJid;
             const isAdmin = groupMetadata.participants.find(p => 
                 p.id === sender && p.admin !== null
             );
@@ -115,8 +118,9 @@ ${settings.footer}`
                 return;
             }
 
+            const randomReact = REACTIONS[Math.floor(Math.random() * REACTIONS.length)];
             await conn.sendMessage(chatId, {
-                react: { text: '👢', key: mek.key }
+                react: { text: randomReact, key: mek.key }
             });
 
             // Kick the member

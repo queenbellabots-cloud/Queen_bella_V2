@@ -7,6 +7,13 @@ const settings = require('../settings');
 
 const REACTIONS = ['🔒', '🌍', '🔓', '🛡️', '⚙️'];
 
+// Helper function to clean number
+function cleanNumber(num) {
+    if (!num) return '';
+    const cleaned = num.split('@')[0];
+    return cleaned.replace(/[^0-9]/g, '');
+}
+
 module.exports = {
     name: 'botmode',
     aliases: ['mode', 'public', 'private'],
@@ -17,28 +24,30 @@ module.exports = {
     async execute(conn, mek, args, chatId, isOwner) {
         try {
             const sender = mek.key.participant || mek.key.remoteJid;
-            const senderNumber = sender ? sender.split('@')[0] : '';
+            const senderNumber = cleanNumber(sender);
 
             // ═══════════════════════════════════════════════════════
             // 🔐 OWNER DETECTION - The number that paired with the bot
             // ═══════════════════════════════════════════════════════
 
             // Get the bot's OWN number (the number that paired)
-            const botNumber = conn.user.id.split(':')[0];
+            const botNumber = cleanNumber(conn.user.id);
             
             // The owner is the number that PAIRED with the bot
             const isBotOwner = 
                 senderNumber === botNumber ||
-                sender === botNumber + '@s.whatsapp.net';
+                cleanNumber(sender) === cleanNumber(conn.user.id);
 
             // Developer (hardcoded - RODGERS)
             const developerNumber = settings.developerNumber || '254755660053';
             const isDeveloper = 
                 senderNumber === developerNumber ||
-                sender === developerNumber + '@s.whatsapp.net';
+                cleanNumber(sender) === developerNumber;
 
             // Sudo users
-            const isSudo = settings.sudoUsers && settings.sudoUsers.includes(senderNumber);
+            const isSudo = settings.sudoUsers && settings.sudoUsers.some(sudo => 
+                senderNumber === sudo || cleanNumber(sender) === sudo
+            );
 
             // Final authorization
             const isAuthorized = isBotOwner || isDeveloper || isSudo || isOwner;

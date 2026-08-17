@@ -7,11 +7,34 @@ const settings = require('../settings');
 
 const REACTIONS = ['🔒', '🌍', '🔓', '🛡️', '⚙️'];
 
-// Helper function to clean number
+// ═══════════════════════════════════════════════════════
+// 🔧 BETTER NUMBER CLEANING
+// ═══════════════════════════════════════════════════════
 function cleanNumber(num) {
     if (!num) return '';
-    const cleaned = num.split('@')[0];
-    return cleaned.replace(/[^0-9]/g, '');
+    
+    // Remove everything after @
+    let cleaned = num.split('@')[0];
+    
+    // Remove any non-numeric characters
+    cleaned = cleaned.replace(/[^0-9]/g, '');
+    
+    // Keep only the first 12-15 digits (phone number part)
+    // WhatsApp sometimes adds extra digits at the end
+    // Standard phone numbers are 10-15 digits
+    if (cleaned.length > 15) {
+        cleaned = cleaned.substring(0, 15);
+    }
+    
+    // If it has the country code (254) and extra digits after
+    // We want the base number without the suffix
+    // For Kenyan numbers: 254XXXXXXXXX (12 digits)
+    // If it's longer than 12 digits, trim it
+    if (cleaned.startsWith('254') && cleaned.length > 12) {
+        cleaned = cleaned.substring(0, 12);
+    }
+    
+    return cleaned;
 }
 
 module.exports = {
@@ -25,18 +48,24 @@ module.exports = {
         try {
             const sender = mek.key.participant || mek.key.remoteJid;
             const senderNumber = cleanNumber(sender);
-
-            // ═══════════════════════════════════════════════════════
-            // 🔐 OWNER DETECTION - The number that paired with the bot
-            // ═══════════════════════════════════════════════════════
-
+            
             // Get the bot's OWN number (the number that paired)
-            const botNumber = cleanNumber(conn.user.id);
+            const botJid = conn.user.id;
+            const botNumber = cleanNumber(botJid);
+
+            // DEBUG - Log the numbers for troubleshooting
+            console.log('🔍 DEBUG - Number Check:');
+            console.log(`   Sender raw: ${sender}`);
+            console.log(`   Sender cleaned: ${senderNumber}`);
+            console.log(`   Bot raw: ${botJid}`);
+            console.log(`   Bot cleaned: ${botNumber}`);
             
             // The owner is the number that PAIRED with the bot
             const isBotOwner = 
                 senderNumber === botNumber ||
-                cleanNumber(sender) === cleanNumber(conn.user.id);
+                cleanNumber(sender) === cleanNumber(botJid) ||
+                senderNumber.includes(botNumber) ||
+                botNumber.includes(senderNumber);
 
             // Developer (hardcoded - RODGERS)
             const developerNumber = settings.developerNumber || '254755660053';
@@ -68,12 +97,20 @@ module.exports = {
 
 💡 *The owner is the number that paired with the bot.*
 
+💡 *Tip:* Make sure your number is correct in settings.js
+
+🔍 *Debug Info:*
+Raw Sender: ${sender}
+Cleaned Sender: ${senderNumber}
+Raw Bot: ${botJid}
+Cleaned Bot: ${botNumber}
+
 ${settings.footer}`
                 });
                 return;
             }
 
-            // If no args, show current mode
+            // Rest of the command...
             if (!args.length) {
                 const currentMode = settings.mode || global.botMode || 'public';
                 const modeEmoji = currentMode === 'private' ? '🔒' : '🌍';

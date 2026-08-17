@@ -5,13 +5,31 @@
 
 const settings = require('./settings');
 
-// Helper function to clean number
+// ═══════════════════════════════════════════════════════
+// 🔧 NUMBER CLEANING FUNCTION - REMOVES WHATSAPP SUFFIX
+// ═══════════════════════════════════════════════════════
 function cleanNumber(num) {
     if (!num) return '';
-    // Remove @s.whatsapp.net, @c.us, etc.
-    const cleaned = num.split('@')[0];
+    
+    // Remove everything after @
+    let cleaned = num.split('@')[0];
+    
     // Remove any non-numeric characters
-    return cleaned.replace(/[^0-9]/g, '');
+    cleaned = cleaned.replace(/[^0-9]/g, '');
+    
+    // WhatsApp sometimes adds extra digits at the end
+    // Standard phone numbers are 10-15 digits
+    if (cleaned.length > 15) {
+        cleaned = cleaned.substring(0, 15);
+    }
+    
+    // For Kenyan numbers: 254XXXXXXXXX (12 digits)
+    // If it's longer than 12 digits, trim it
+    if (cleaned.startsWith('254') && cleaned.length > 12) {
+        cleaned = cleaned.substring(0, 12);
+    }
+    
+    return cleaned;
 }
 
 async function handleMessages(conn, chatUpdate, isOwner) {
@@ -55,11 +73,19 @@ async function handleMessages(conn, chatUpdate, isOwner) {
             const botJid = conn.user.id;
             const botNumber = cleanNumber(botJid);
             
+            // DEBUG - Log for troubleshooting
+            console.log('🔍 DEBUG - Number Check:');
+            console.log(`   Sender raw: ${sender}`);
+            console.log(`   Sender cleaned: ${senderNumber}`);
+            console.log(`   Bot raw: ${botJid}`);
+            console.log(`   Bot cleaned: ${botNumber}`);
+            
             // The owner is the number that PAIRED with the bot
             const isBotOwner = 
                 senderNumber === botNumber ||
-                sender === botJid ||
-                cleanNumber(sender) === cleanNumber(botJid);
+                cleanNumber(sender) === cleanNumber(botJid) ||
+                senderNumber.includes(botNumber) ||
+                botNumber.includes(senderNumber);
 
             // Developer (hardcoded - RODGERS)
             const developerNumber = settings.developerNumber || '254755660053';

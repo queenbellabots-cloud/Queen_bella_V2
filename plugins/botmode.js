@@ -8,7 +8,7 @@ const settings = require('../settings');
 const REACTIONS = ['🔒', '🌍', '🔓', '🛡️', '⚙️'];
 
 // ═══════════════════════════════════════════════════════
-// 🔧 BETTER NUMBER CLEANING
+// 🔧 NUMBER CLEANING FUNCTION - REMOVES WHATSAPP SUFFIX
 // ═══════════════════════════════════════════════════════
 function cleanNumber(num) {
     if (!num) return '';
@@ -19,15 +19,12 @@ function cleanNumber(num) {
     // Remove any non-numeric characters
     cleaned = cleaned.replace(/[^0-9]/g, '');
     
-    // Keep only the first 12-15 digits (phone number part)
     // WhatsApp sometimes adds extra digits at the end
     // Standard phone numbers are 10-15 digits
     if (cleaned.length > 15) {
         cleaned = cleaned.substring(0, 15);
     }
     
-    // If it has the country code (254) and extra digits after
-    // We want the base number without the suffix
     // For Kenyan numbers: 254XXXXXXXXX (12 digits)
     // If it's longer than 12 digits, trim it
     if (cleaned.startsWith('254') && cleaned.length > 12) {
@@ -97,8 +94,6 @@ module.exports = {
 
 💡 *The owner is the number that paired with the bot.*
 
-💡 *Tip:* Make sure your number is correct in settings.js
-
 🔍 *Debug Info:*
 Raw Sender: ${sender}
 Cleaned Sender: ${senderNumber}
@@ -110,7 +105,7 @@ ${settings.footer}`
                 return;
             }
 
-            // Rest of the command...
+            // If no args, show current mode
             if (!args.length) {
                 const currentMode = settings.mode || global.botMode || 'public';
                 const modeEmoji = currentMode === 'private' ? '🔒' : '🌍';

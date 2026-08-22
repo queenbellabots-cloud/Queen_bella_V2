@@ -15,17 +15,22 @@ module.exports = {
     async execute(conn, mek, args, chatId, isOwner) {
         try {
             const sender = mek.key.participant || mek.key.remoteJid;
+            const senderNumber = sender ? sender.split('@')[0] : '';
             const ownerNumber = settings.ownerNumber || '254755660053';
-            const isBotOwner = sender === ownerNumber + '@s.whatsapp.net' || 
-                              sender === ownerNumber + '@c.us' ||
-                              senderNumber === ownerNumber;
 
-            if (!isBotOwner && !isOwner) {
+            // ✅ SIMPLE OWNER CHECK - WORKS!
+            const isOwner = 
+                sender === ownerNumber + '@s.whatsapp.net' || 
+                sender === ownerNumber + '@c.us' ||
+                senderNumber === ownerNumber;
+
+            // Check if user is authorized
+            if (!isOwner) {
                 await conn.sendMessage(chatId, {
                     react: { text: '⛔', key: mek.key }
                 });
                 await conn.sendMessage(chatId, {
-                    text: '⛔ Access Denied!'
+                    text: '⛔ Access Denied! Only the bot owner can use this command.'
                 });
                 return;
             }
@@ -37,7 +42,7 @@ module.exports = {
                     react: { text: '❌', key: mek.key }
                 });
                 await conn.sendMessage(chatId, { 
-                    text: '❌ Reply to a message!\n\n.fake <number> <message>'
+                    text: '❌ Reply to a message!\n\nUsage: .fake <number> <message>'
                 });
                 return;
             }
@@ -47,7 +52,7 @@ module.exports = {
                     react: { text: '❌', key: mek.key }
                 });
                 await conn.sendMessage(chatId, { 
-                    text: `❌ .fake <number> <message>\n\nExample: .fake 254755660053 Hello`
+                    text: `❌ Usage: .fake <number> <message>\n\nExample: .fake 254755660053 Hello`
                 });
                 return;
             }
@@ -68,11 +73,9 @@ module.exports = {
             }
 
             const fakeMessage = args.slice(1).join(' ');
-
-            // Get the original message
             const originalMsg = quoted.quotedMessage;
 
-            // Send as fake reply - JUST THE FAKE MESSAGE!
+            // Send as fake reply
             await conn.sendMessage(chatId, {
                 text: fakeMessage,
                 contextInfo: {
@@ -87,7 +90,7 @@ module.exports = {
         } catch (error) {
             console.error('Error in fake command:', error);
             await conn.sendMessage(chatId, { 
-                text: '❌ Error.'
+                text: '❌ Error creating fake message.'
             });
         }
     }

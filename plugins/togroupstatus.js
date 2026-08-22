@@ -1,177 +1,256 @@
 /**
- * 👑 QUEEN BELLA MD - Send to Group Status
- * Send text or quoted media to group status (without ffmpeg)
+ * 👑 QUEEN BELLA MD - Group Status
+ * Post status updates in groups (Admin only)
  */
 
 const settings = require('../settings');
-const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
-const fs = require('fs');
-const path = require('path');
-const os = require('os');
+const { PassThrough } = require("stream");
+const ffmpeg = require("fluent-ffmpeg");
+const { downloadContentFromMessage } = require("@whiskeysockets/baileys");
 
-// Different reaction emojis
-const STATUS_REACTIONS = ['📢', '📣', '🔊', '📨', '📤', '✅', '✨', '📡'];
+const PURPLE_COLOR = "#9C27B0";
+
+// Try to set ffmpeg path
+try {
+    const ffmpegInstaller = require("@ffmpeg-installer/ffmpeg");
+    ffmpeg.setFfmpegPath(ffmpegInstaller.path);
+} catch (error) {
+    console.warn("[GroupStatus] ffmpeg binary setup warning:", error.message);
+}
 
 module.exports = {
-    name: 'togroupstatus',
-    aliases: ['groupstatus', 'statusgroup', 'togcstatus', 'gstatus'],
-    category: 'group',
-    description: 'Send text or quoted media to group status',
-    usage: '.togroupstatus <text> or reply to media',
-    react: '📢',
+    name: 'groupstatus',
+    aliases: ['gcstatus', 'gstatus'],
+    category: 'admin',
+    description: 'Post a status in the group (Admin only)',
+    usage: '.groupstatus [caption] or reply to media',
+    react: '📣',
     async execute(conn, mek, args, chatId, isOwner) {
         try {
-            // 👇 REACT WITH RANDOM EMOJI
-            const randomReact = STATUS_REACTIONS[Math.floor(Math.random() * STATUS_REACTIONS.length)];
-            await conn.sendMessage(chatId, {
-                react: { text: randomReact, key: mek.key }
-            });
+            const sender = mek.key.participant || mek.key.remoteJid;
 
-            // Check if in a group
-            const isGroup = chatId.endsWith('@g.us');
-            if (!isGroup) {
-                await conn.sendMessage(chatId, {
-                    text: '❌ This command can only be used in a group!'
-                });
-                return;
-            }
-
-            // ✅ REMOVED OWNER CHECK - EVERYONE CAN USE!
-
-            // Get quoted message
-            const quoted = mek.message?.extendedTextMessage?.contextInfo?.quotedMessage;
-            const hasQuoted = !!quoted;
-            
-            // Get text
-            const q = args.join(' ').trim();
-
-            if (!q && !hasQuoted) {
-                await conn.sendMessage(chatId, {
-                    text: `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃   👑 QUEEN BELLA MD V1   ┃
-┃   Created by Dev RODGERS  ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-
-📌 *USAGE:*
-
-• .togroupstatus <text>
-• Reply to image/video/audio with .togroupstatus <caption>
-• Or just .togroupstatus to forward quoted media
-
-${settings.footer}`
-                });
-                return;
-            }
-
-            try {
-                let statusPayload = {};
-
-                if (hasQuoted) {
-                    // Handle image
-                    if (quoted.imageMessage) {
-                        const caption = q || quoted.imageMessage.caption || '';
-                        const buffer = await downloadMedia(quoted.imageMessage, 'image');
-                        statusPayload = { 
-                            image: buffer, 
-                            mimetype: 'image/jpeg' 
-                        };
-                        if (caption) statusPayload.caption = caption;
-                    }
-                    // Handle video
-                    else if (quoted.videoMessage) {
-                        const caption = q || quoted.videoMessage.caption || '';
-                        const buffer = await downloadMedia(quoted.videoMessage, 'video');
-                        statusPayload = { 
-                            video: buffer, 
-                            mimetype: 'video/mp4' 
-                        };
-                        if (caption) statusPayload.caption = caption;
-                    }
-                    // Handle audio
-                    else if (quoted.audioMessage) {
-                        const buffer = await downloadMedia(quoted.audioMessage, 'audio');
-                        statusPayload = { 
-                            audio: buffer, 
-                            mimetype: 'audio/mpeg', 
-                            ptt: true 
-                        };
-                    }
-                    // Handle text
-                    else if (quoted.conversation || quoted.extendedTextMessage?.text) {
-                        statusPayload.text = quoted.conversation || quoted.extendedTextMessage.text;
-                    }
-                    // Unsupported
-                    else {
-                        await conn.sendMessage(chatId, {
-                            text: '❌ Unsupported media type for group status.'
-                        });
-                        return;
-                    }
-
-                    // Add caption if provided
-                    if (q && !statusPayload.caption && !statusPayload.text) {
-                        statusPayload.caption = q;
-                    }
-                } else {
-                    statusPayload.text = q;
-                }
-
-                // Send as status to group
-                await conn.sendMessage('status@broadcast', statusPayload, {
-                    statusJidList: [chatId]
-                });
-
-                // 👇 REACT WITH SUCCESS
-                await conn.sendMessage(chatId, {
-                    react: { text: '✅', key: mek.key }
-                });
-
-                await conn.sendMessage(chatId, {
-                    text: `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃   👑 QUEEN BELLA MD V1   ┃
-┃   Created by Dev RODGERS  ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-
-📢 *GROUP STATUS SENT!*
-
-✅ Status has been sent to the group.
-
-${settings.footer}`
-                });
-
-            } catch (error) {
-                console.error('togroupstatus error:', error);
+            // Check if in group
+            if (!chatId.endsWith('@g.us')) {
                 await conn.sendMessage(chatId, {
                     react: { text: '❌', key: mek.key }
                 });
+                await conn.sendMessage(chatId, { 
+                    text: '❌ This command can only be used in groups!'
+                });
+                return;
+            }
+
+            // Check if user is admin or owner
+            const groupMeta = await conn.groupMetadata(chatId);
+            const isAdmin = groupMeta.participants.find(p => 
+                p.id === sender && p.admin !== null
+            );
+
+            // Check if bot is admin
+            const botJid = conn.user.id;
+            const isBotAdmin = groupMeta.participants.find(p => 
+                p.id === botJid && p.admin !== null
+            );
+
+            if (!isAdmin && !isOwner) {
                 await conn.sendMessage(chatId, {
-                    text: `❌ Error sending group status: ${error.message}`
+                    react: { text: '⛔', key: mek.key }
+                });
+                await conn.sendMessage(chatId, { 
+                    text: '⛔ Only group admins can post a group status!'
+                });
+                return;
+            }
+
+            if (!isBotAdmin) {
+                await conn.sendMessage(chatId, {
+                    react: { text: '❌', key: mek.key }
+                });
+                await conn.sendMessage(chatId, { 
+                    text: '❌ Please make the bot an admin before posting a group status!'
+                });
+                return;
+            }
+
+            const caption = args.join(' ').trim();
+            const quotedMessage = mek.message?.extendedTextMessage?.contextInfo?.quotedMessage ||
+                                 mek.message?.imageMessage?.contextInfo?.quotedMessage ||
+                                 mek.message?.videoMessage?.contextInfo?.quotedMessage;
+
+            // If no quoted message
+            if (!quotedMessage) {
+                if (!caption) {
+                    await conn.sendMessage(chatId, {
+                        react: { text: 'ℹ️', key: mek.key }
+                    });
+                    await conn.sendMessage(chatId, { 
+                        text: `📣 *Group Status Usage*
+
+• Reply to an image, video, audio, or sticker:
+  .groupstatus [optional caption]
+
+• Post a text status:
+  .groupstatus Your text here`
+                    });
+                    return;
+                }
+
+                // Post text status
+                await conn.sendMessage(chatId, { 
+                    text: '⏳ Posting text group status...' 
+                });
+
+                try {
+                    await postGroupStatus(conn, chatId, {
+                        text: caption,
+                        backgroundColor: PURPLE_COLOR
+                    });
+                    await conn.sendMessage(chatId, { 
+                        text: '✅ Text group story posted successfully!' 
+                    });
+                } catch (error) {
+                    console.error('[GroupStatus] text error:', error);
+                    await conn.sendMessage(chatId, { 
+                        text: `❌ Failed to post text group story: ${error.message || error}`
+                    });
+                }
+                return;
+            }
+
+            // Handle quoted media
+            const mediaPayload = unwrapQuotedMessage(quotedMessage);
+            const mediaType = detectMediaType(mediaPayload);
+            
+            if (!mediaType) {
+                await conn.sendMessage(chatId, {
+                    react: { text: '❌', key: mek.key }
+                });
+                await conn.sendMessage(chatId, { 
+                    text: '❌ Unsupported media. Reply to an image, video, audio, or sticker.'
+                });
+                return;
+            }
+
+            await conn.sendMessage(chatId, { 
+                text: `⏳ Preparing ${mediaType} group status...` 
+            });
+
+            try {
+                const buffer = await downloadMedia(mediaPayload, mediaType);
+                if (!buffer?.length) throw new Error("Media could not be downloaded.");
+
+                if (mediaType === "audio") {
+                    const voiceNote = await convertToVoiceNote(buffer);
+                    await postGroupStatus(conn, chatId, {
+                        audio: voiceNote,
+                        mimetype: "audio/ogg; codecs=opus",
+                        ptt: true
+                    });
+                } else if (mediaType === "sticker") {
+                    await postGroupStatus(conn, chatId, {
+                        sticker: buffer
+                    });
+                } else {
+                    await postGroupStatus(conn, chatId, {
+                        [mediaType]: buffer,
+                        caption: caption || ''
+                    });
+                }
+
+                await conn.sendMessage(chatId, { 
+                    text: `✅ ${mediaType[0].toUpperCase() + mediaType.slice(1)} group story posted successfully!` 
+                });
+
+            } catch (error) {
+                console.error(`[GroupStatus] ${mediaType} error:`, error);
+                await conn.sendMessage(chatId, { 
+                    text: `❌ Failed to post ${mediaType} group story: ${error.message || error}`
                 });
             }
 
         } catch (error) {
-            console.error('Error in togroupstatus:', error);
-            await conn.sendMessage(chatId, {
-                react: { text: '❌', key: mek.key }
-            });
-            await conn.sendMessage(chatId, {
-                text: '❌ Error in togroupstatus command.'
+            console.error('Error in groupstatus:', error);
+            await conn.sendMessage(chatId, { 
+                text: '❌ Error posting group status.'
             });
         }
     }
 };
 
-// Helper: download media from message
-async function downloadMedia(message, type) {
-    try {
-        const stream = await downloadContentFromMessage(message, type);
-        let buffer = Buffer.from([]);
-        for await (const chunk of stream) {
-            buffer = Buffer.concat([buffer, chunk]);
-        }
-        return buffer;
-    } catch (error) {
-        console.error('Download error:', error);
-        throw error;
+// Helper Functions
+function detectMediaType(message) {
+    if (!message || typeof message !== "object") return null;
+    if (message.imageMessage) return "image";
+    if (message.videoMessage) return "video";
+    if (message.audioMessage) return "audio";
+    if (message.stickerMessage) return "sticker";
+    return null;
+}
+
+function unwrapQuotedMessage(message) {
+    let current = message;
+    for (let i = 0; i < 4; i++) {
+        const wrapper = current?.viewOnceMessageV2 ||
+                        current?.viewOnceMessage ||
+                        current?.viewOnceMessageV2Extension ||
+                        current?.documentWithCaptionMessage;
+        if (!wrapper?.message) break;
+        current = wrapper.message;
     }
+    return current;
+}
+
+async function downloadMedia(message, type) {
+    const mediaMessage = message[`${type}Message`];
+    if (!mediaMessage) throw new Error(`Missing ${type} message payload.`);
+
+    const stream = await downloadContentFromMessage(mediaMessage, type);
+    const chunks = [];
+    for await (const chunk of stream) chunks.push(chunk);
+    return Buffer.concat(chunks);
+}
+
+async function postGroupStatus(client, jid, content) {
+    const statusSourceType = content.text
+        ? "TEXT"
+        : content.image
+            ? "IMAGE"
+            : content.video
+                ? "VIDEO"
+                : content.audio
+                    ? "AUDIO"
+                    : content.sticker
+                        ? "IMAGE"
+                        : "TEXT";
+
+    return client.sendMessage(jid, {
+        ...content,
+        contextInfo: {
+            ...(content.contextInfo || {}),
+            isGroupStatus: true,
+            statusSourceType,
+            statusAttributions: [{ type: 10 }],
+            statusAudienceMetadata: { audienceType: "CLOSE_FRIENDS" }
+        }
+    });
+}
+
+function convertToVoiceNote(buffer) {
+    return new Promise((resolve, reject) => {
+        const input = new PassThrough();
+        const output = new PassThrough();
+        const chunks = [];
+        input.end(buffer);
+
+        output.on("data", (chunk) => chunks.push(chunk));
+        ffmpeg(input)
+            .noVideo()
+            .audioCodec("libopus")
+            .format("ogg")
+            .audioChannels(1)
+            .audioFrequency(48000)
+            .on("error", reject)
+            .on("end", () => resolve(Buffer.concat(chunks)))
+            .pipe(output);
+    });
 }

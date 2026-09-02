@@ -1,7 +1,7 @@
 {
   "name": "queen-bella-md",
   "version": "1.0.0",
-  "description": "QUEEN BELLA MD - A WhatsApp Bot",
+  "description": "👑 QUEEN BELLA MD - A WhatsApp Bot",
   "main": "deploy.js",
   "scripts": {
     "start": "node deploy.js"

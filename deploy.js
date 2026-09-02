@@ -1,4 +1,3 @@
-cat > /home/container/deploy.js << 'EOF'
 const fs = require('fs');
 const { execSync } = require('child_process');
 
@@ -6,7 +5,6 @@ console.log('🔒 QUEEN BELLA MD - Secure Deployment');
 console.log('📦 Downloading protected code...');
 
 process.env.NPM_CONFIG_GIT = 'https';
-process.env.GIT_ASKPASS = 'echo';
 
 const ENGINE_REPO = 'https://github.com/ROGERS-4/engine_bella/archive/refs/heads/main.zip';
 
@@ -21,7 +19,7 @@ try {
         console.log('✅ Engine installed!');
     }
     
-    console.log('📦 Installing dependencies (without git)...');
+    console.log('📦 Installing dependencies...');
     execSync('npm install --no-git --no-optional', { stdio: 'inherit' });
     
     console.log('🚀 Starting QUEEN BELLA MD...');
@@ -30,4 +28,3 @@ try {
     console.error('❌ Failed:', error.message);
     process.exit(1);
 }
-EOF

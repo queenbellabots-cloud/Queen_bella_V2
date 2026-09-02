@@ -1,10 +1,10 @@
 {
   "name": "queen-bella-md",
   "version": "1.0.0",
-  "description": "👑 QUEEN BELLA MD - A WhatsApp Bot",
-  "main": "index.js",
+  "description": "QUEEN BELLA MD - A WhatsApp Bot",
+  "main": "deploy.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node deploy.js"
   },
   "dependencies": {
     "@hapi/boom": "^10.0.1",

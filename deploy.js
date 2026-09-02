@@ -9,15 +9,12 @@ const { execSync } = require('child_process');
 console.log('🔒 QUEEN BELLA MD - Secure Deployment');
 console.log('📦 Downloading protected code...');
 
-// ═══════════════════════════════════════════════════════
-// 🔧 ENGINE REPO URL - USING CORRECT GITHUB ZIP FORMAT
-// ═══════════════════════════════════════════════════════
 const ENGINE_REPO = 'https://github.com/ROGERS-4/engine_bella/archive/refs/heads/main.zip';
 
 try {
-    // Check if bot files already exist
-    if (!fs.existsSync('./index.js')) {
-        console.log('🔄 Downloading protected code from engine repo...');
+    // Check if engine already downloaded
+    if (!fs.existsSync('./engine_ready')) {
+        console.log('🔄 Downloading engine from repo...');
         
         // Download zip
         execSync(`curl -L ${ENGINE_REPO} -o engine.zip`, { stdio: 'inherit' });
@@ -25,15 +22,18 @@ try {
         // Extract
         execSync('unzip -o engine.zip', { stdio: 'inherit' });
         
-        // Move files (folder name: engine_bella-main)
+        // Move files to current directory
         execSync('cp -r engine_bella-main/* .', { stdio: 'inherit' });
         
         // Clean up
         execSync('rm -rf engine_bella-main engine.zip', { stdio: 'inherit' });
         
-        console.log('✅ Protected code installed successfully!');
+        // Mark as done
+        fs.writeFileSync('./engine_ready', 'done');
+        
+        console.log('✅ Engine installed successfully!');
     } else {
-        console.log('✅ Protected code already exists.');
+        console.log('✅ Engine already exists.');
     }
     
     console.log('🚀 Starting QUEEN BELLA MD...');

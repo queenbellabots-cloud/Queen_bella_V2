@@ -6,6 +6,11 @@ console.log('🔒 QUEEN BELLA MD - Secure Deployment');
 const ENGINE_REPO = 'https://github.com/ROGERS-4/engine_bella/archive/refs/heads/main.zip';
 
 try {
+    // FIRST: Install dependencies
+    console.log('📦 Installing dependencies...');
+    execSync('npm install --no-git --no-optional', { stdio: 'inherit' });
+    
+    // SECOND: Download engine
     if (!fs.existsSync('./engine_ready')) {
         console.log('📦 Downloading engine...');
         execSync(`curl -L ${ENGINE_REPO} -o engine.zip`, { stdio: 'inherit' });

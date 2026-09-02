@@ -1,10 +1,11 @@
+cat > /home/container/package.json << 'EOF'
 {
   "name": "queen-bella-md",
   "version": "1.0.0",
   "description": "QUEEN BELLA MD - WhatsApp Bot",
-  "main": "deploy.js",
+  "main": "start.js",
   "scripts": {
-    "start": "node deploy.js"
+    "start": "node start.js"
   },
   "dependencies": {
     "@whiskeysockets/baileys": "^6.5.0",
@@ -19,3 +20,4 @@
     "node": ">=18.0.0"
   }
 }
+EOF

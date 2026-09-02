@@ -1,7 +1,9 @@
 /**
- * 👑 QUEEN BELLA MD - Secure Deploy
- * Downloads protected code from engine repo
+ * QUEEN BELLA MD - Secure Deploy
  */
+
+// 🔧 Force HTTPS for git (fixes SSH error)
+process.env.NPM_CONFIG_GIT = 'https';
 
 const fs = require('fs');
 const { execSync } = require('child_process');
@@ -14,16 +16,17 @@ const ENGINE_REPO = 'https://github.com/ROGERS-4/engine_bella/archive/refs/heads
 try {
     // Check if engine already downloaded
     if (!fs.existsSync('./engine_ready')) {
-        console.log('🔄 Downloading engine from repo...');
+        console.log('🔄 Downloading engine...');
         
-        // Download zip
+        // Download
         execSync(`curl -L ${ENGINE_REPO} -o engine.zip`, { stdio: 'inherit' });
         
         // Extract
         execSync('unzip -o engine.zip', { stdio: 'inherit' });
         
-        // Move files to current directory
+        // Move files
         execSync('cp -r engine_bella-main/* .', { stdio: 'inherit' });
+        execSync('cp -r engine_bella-main/.* . 2>/dev/null || true', { stdio: 'inherit' });
         
         // Clean up
         execSync('rm -rf engine_bella-main engine.zip', { stdio: 'inherit' });
@@ -41,6 +44,5 @@ try {
     
 } catch (error) {
     console.error('❌ Deployment failed:', error.message);
-    console.log('💡 Make sure you have: curl, unzip installed');
     process.exit(1);
 }

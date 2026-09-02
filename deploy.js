@@ -1,9 +1,12 @@
 /**
- * QUEEN BELLA MD - Secure Deploy
+ * 👑 QUEEN BELLA MD - Secure Deploy
+ * Downloads protected code from engine repo
  */
 
-// 🔧 Force HTTPS for git (fixes SSH error)
+// 🔧 FIX: Force HTTPS for git (fixes SSH error on Katabump)
 process.env.NPM_CONFIG_GIT = 'https';
+process.env.GIT_ASKPASS = 'echo';
+process.env.GIT_SSH_COMMAND = 'ssh -o StrictHostKeyChecking=no';
 
 const fs = require('fs');
 const { execSync } = require('child_process');
@@ -16,15 +19,15 @@ const ENGINE_REPO = 'https://github.com/ROGERS-4/engine_bella/archive/refs/heads
 try {
     // Check if engine already downloaded
     if (!fs.existsSync('./engine_ready')) {
-        console.log('🔄 Downloading engine...');
+        console.log('🔄 Downloading engine from repo...');
         
-        // Download
+        // Download zip
         execSync(`curl -L ${ENGINE_REPO} -o engine.zip`, { stdio: 'inherit' });
         
         // Extract
         execSync('unzip -o engine.zip', { stdio: 'inherit' });
         
-        // Move files
+        // Move files to current directory
         execSync('cp -r engine_bella-main/* .', { stdio: 'inherit' });
         execSync('cp -r engine_bella-main/.* . 2>/dev/null || true', { stdio: 'inherit' });
         
@@ -38,6 +41,10 @@ try {
     } else {
         console.log('✅ Engine already exists.');
     }
+    
+    // 📦 INSTALL DEPENDENCIES
+    console.log('📦 Installing dependencies...');
+    execSync('npm install --no-git', { stdio: 'inherit' });
     
     console.log('🚀 Starting QUEEN BELLA MD...');
     require('./index.js');

@@ -7,7 +7,7 @@ const ENGINE_REPO = 'https://github.com/ROGERS-4/engine_bella/archive/refs/heads
 
 try {
     console.log('📦 Installing dependencies...');
-    execSync('npm install --no-git --no-optional', { stdio: 'inherit' });
+    execSync('npm install', { stdio: 'inherit' });
     
     if (!fs.existsSync('./engine_ready')) {
         console.log('📦 Downloading engine...');

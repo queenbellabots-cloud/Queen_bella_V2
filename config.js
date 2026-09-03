@@ -1,4 +1,3 @@
-cat > /home/container/config.js << 'EOF'
 global.APIs = {
     xteam: 'https://api.xteam.xyz',
     dzx: 'https://api.dhamzxploit.my.id',
@@ -23,4 +22,3 @@ global.APIKeys = {
 };
 
 module.exports = { APIs: global.APIs, APIKeys: global.APIKeys };
-EOF

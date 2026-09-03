@@ -1,10 +1,4 @@
-require('dotenv').config();
-
-// =============================================
-//  QUEEN BELLA MD - API CONFIGURATION
-//  Created by Dev RODGERS
-// =============================================
-
+cat > /home/container/config.js << 'EOF'
 global.APIs = {
     xteam: 'https://api.xteam.xyz',
     dzx: 'https://api.dhamzxploit.my.id',
@@ -28,18 +22,5 @@ global.APIKeys = {
     'https://api-fgmods.ddns.net': 'fg-dylux'
 };
 
-// QUEEN BELLA MD Settings
-global.prefix = process.env.PREFIX || '.';
-global.botName = "𝐐𝐔𝐄𝐄𝐍 𝐁𝐄𝐋𝐋𝐀 𝐌𝐃";
-global.ownerName = "𝐑𝐎𝐃𝐆𝐄𝐑𝐒 𝐎𝐍𝐘𝐀𝐍𝐆𝐎";
-global.ownerNumber = process.env.OWNER_NUMBER || "254755660053";
-global.developer = "𝐑𝐎𝐃𝐆𝐄𝐑𝐒 𝐎𝐍𝐘𝐀𝐍𝐆𝐎";
-global.botVersion = "1.0.0";
-global.botFooter = "> © MADE BY RODGERS";
-global.botImage = "https://i.imgur.com/687ZxLW.jpeg";
-
-module.exports = {
-    WARN_COUNT: 3,
-    APIs: global.APIs,
-    APIKeys: global.APIKeys
-};
+module.exports = { APIs: global.APIs, APIKeys: global.APIKeys };
+EOF

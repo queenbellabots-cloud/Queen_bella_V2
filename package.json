@@ -10,7 +10,10 @@
     "baileys": "^6.5.0",
     "chalk": "^4.1.2",
     "express": "^4.18.0",
-    "pino": "^8.15.0"
+    "pino": "^8.15.0",
+    "axios": "^1.6.0",
+    "node-cache": "^5.1.2",
+    "awesome-phonenumber": "^5.4.0"
   },
   "engines": {
     "node": ">=18.0.0"

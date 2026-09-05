@@ -3,6 +3,7 @@ const { execSync } = require('child_process');
 
 console.log('🔒 QUEEN BELLA MD - Secure Deployment');
 
+// ✅ THIS URL IS CORRECT
 const ENGINE_REPO = 'https://github.com/ROGERS-4/engine_bella/archive/refs/heads/main.zip';
 
 try {
@@ -14,7 +15,7 @@ try {
         execSync(`curl -L ${ENGINE_REPO} -o engine.zip`, { stdio: 'inherit' });
         execSync('unzip -o engine.zip', { stdio: 'inherit' });
         
-        // ✅ CORRECT FOLDER NAME: engine_bella-main
+        // ⚠️ FIXED: Use the correct folder name
         execSync('cp -r engine_bella-main/* .', { stdio: 'inherit' });
         execSync('cp -r engine_bella-main/.* . 2>/dev/null || true', { stdio: 'inherit' });
         

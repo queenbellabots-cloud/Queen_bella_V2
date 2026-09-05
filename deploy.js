@@ -14,11 +14,11 @@ try {
         execSync(`curl -L ${ENGINE_REPO} -o engine.zip`, { stdio: 'inherit' });
         execSync('unzip -o engine.zip', { stdio: 'inherit' });
         
-        // ⚠️ FIXED: Use the correct folder name
-        execSync('cp -r Queen_bella_V2-main/* .', { stdio: 'inherit' });
-        execSync('cp -r Queen_bella_V2-main/.* . 2>/dev/null || true', { stdio: 'inherit' });
+        // ✅ CORRECT FOLDER NAME: engine_bella-main
+        execSync('cp -r engine_bella-main/* .', { stdio: 'inherit' });
+        execSync('cp -r engine_bella-main/.* . 2>/dev/null || true', { stdio: 'inherit' });
         
-        execSync('rm -rf Queen_bella_V2-main engine.zip', { stdio: 'inherit' });
+        execSync('rm -rf engine_bella-main engine.zip', { stdio: 'inherit' });
         fs.writeFileSync('./engine_ready', 'done');
         console.log('✅ Engine installed!');
     }

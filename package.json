@@ -1,5 +1,4 @@
-
-  "name": "queen-bella-md",
+"name": "queen-bella-md",
   "version": "1.0.0",
   "description": "QUEEN BELLA MD - A WhatsApp Bot",
   "main": "index.js",
@@ -22,4 +21,3 @@
   "engines": {
     "node": ">=18.0.0"
   }
-}

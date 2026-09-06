@@ -603,6 +603,20 @@ async function startQueenBella() {
                 console.log(chalk.green(`👑 STATUS    : Connected! ✅`));
                 console.log(chalk.cyan(`< ================================== >\n`));
 
+                // ==========================================
+                // 💾 AUTO-SAVE OWNER TO data/owner.json
+                // ==========================================
+                try {
+                    const botNumber = QueenBella.user.id.split(':')[0];
+                    if (!fs.existsSync('./data')) {
+                        fs.mkdirSync('./data', { recursive: true });
+                    }
+                    fs.writeFileSync('./data/owner.json', JSON.stringify([botNumber]));
+                    console.log(chalk.green(`✅ Owner saved: ${botNumber}`));
+                } catch (e) {
+                    console.log('Could not save owner:', e.message);
+                }
+
                 // 🟢 SEND ONLINE PRESENCE
                 try {
                     if (global.alwaysOnline) {

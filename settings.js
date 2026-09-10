@@ -43,7 +43,7 @@ const settings = {
   channelName: "QUEEN BELLA MD",
 
   // ═══════════════════════════════════════════════
-  // 🖼️ MENU IMAGE (Optional)
+  // 🖼️ MENU IMAGE 
   // ═══════════════════════════════════════════════
   menuImage: "https://imagetourl.cloud/9eumy3kr.jpg",
 

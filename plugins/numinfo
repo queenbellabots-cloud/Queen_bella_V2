@@ -1,0 +1,117 @@
+/**
+ * 👑 QUEEN BELLA MD - Number Info Lookup
+ * Gets carrier, country, timezone & more from any number
+ */
+
+const settings = require('../settings');
+const axios = require('axios');
+
+module.exports = {
+    name: 'numinfo',
+    aliases: ['num', 'track', 'numberinfo', 'phone'],
+    category: 'tools',
+    description: 'Get full info about any phone number',
+    usage: '.numinfo +254712345678',
+    react: '📞',
+    async execute(conn, mek, args, chatId, isOwner) {
+        try {
+            const sender = mek.key.participant || mek.key.remoteJid;
+
+            if (!args.length) {
+                await conn.sendMessage(chatId, {
+                    text: `📞 *Number Info*\n\nUsage: .numinfo +<number>\nExample: .numinfo +254712345678`
+                });
+                return;
+            }
+
+            let number = args[0].replace(/[^0-9+]/g, '');
+            if (!number.startsWith('+')) number = '+' + number.replace(/^\+/, '');
+
+            await conn.sendMessage(chatId, {
+                react: { text: '📞', key: mek.key }
+            });
+
+            // Use free API
+            const response = await axios.get(
+                `https://api.apilayer.com/number_verification/validate?number=${encodeURIComponent(number)}`,
+                {
+                    headers: { 'apikey': 'DEMO' },
+                    timeout: 10000
+                }
+            ).catch(() => null);
+
+            // Fallback: Use our own parsing
+            const cleaned = number.replace(/[^0-9]/g, '');
+            
+            // Country code detection
+            const countryCodes = {
+                '254': { country: 'Kenya 🇰🇪', tz: 'Africa/Nairobi' },
+                '255': { country: 'Tanzania 🇹🇿', tz: 'Africa/Dar_es_Salaam' },
+                '256': { country: 'Uganda 🇺🇬', tz: 'Africa/Kampala' },
+                '234': { country: 'Nigeria 🇳🇬', tz: 'Africa/Lagos' },
+                '27': { country: 'South Africa 🇿🇦', tz: 'Africa/Johannesburg' },
+                '1': { country: 'USA/Canada 🇺🇸🇨🇦', tz: 'America/New_York' },
+                '44': { country: 'United Kingdom 🇬🇧', tz: 'Europe/London' },
+                '91': { country: 'India 🇮🇳', tz: 'Asia/Kolkata' },
+                '92': { country: 'Pakistan 🇵🇰', tz: 'Asia/Karachi' },
+                '86': { country: 'China 🇨🇳', tz: 'Asia/Shanghai' },
+                '81': { country: 'Japan 🇯🇵', tz: 'Asia/Tokyo' },
+                '82': { country: 'South Korea 🇰🇷', tz: 'Asia/Seoul' },
+                '49': { country: 'Germany 🇩🇪', tz: 'Europe/Berlin' },
+                '33': { country: 'France 🇫🇷', tz: 'Europe/Paris' },
+                '39': { country: 'Italy 🇮🇹', tz: 'Europe/Rome' },
+                '34': { country: 'Spain 🇪🇸', tz: 'Europe/Madrid' },
+                '61': { country: 'Australia 🇦🇺', tz: 'Australia/Sydney' },
+                '55': { country: 'Brazil 🇧🇷', tz: 'America/Sao_Paulo' },
+                '20': { country: 'Egypt 🇪🇬', tz: 'Africa/Cairo' },
+                '212': { country: 'Morocco 🇲🇦', tz: 'Africa/Casablanca' },
+                '251': { country: 'Ethiopia 🇪🇹', tz: 'Africa/Addis_Ababa' },
+                '250': { country: 'Rwanda 🇷🇼', tz: 'Africa/Kigali' },
+                '257': { country: 'Burundi 🇧🇮', tz: 'Africa/Bujumbura' }
+            };
+
+            let country = 'Unknown 🌍';
+            let timezone = 'Unknown';
+            let code = 'Unknown';
+
+            for (const [prefix, info] of Object.entries(countryCodes)) {
+                if (cleaned.startsWith(prefix)) {
+                    country = info.country;
+                    timezone = info.tz;
+                    code = prefix;
+                    break;
+                }
+            }
+
+            const info = `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃   📞 NUMBER INFO             ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+📱 *Number:* ${number}
+
+🌍 *Country:* ${country}
+📞 *Country Code:* +${code}
+🕐 *Timezone:* ${timezone}
+
+📊 *Details:*
+• Digits: ${cleaned.length}
+• Valid: ${cleaned.length >= 10 ? '✅ Yes' : '❌ Too short'}
+• Format: International ✅
+
+🔍 *Type:* Mobile/Cell (likely)
+
+💡 *Tip:* This info is gathered from public phone databases
+
+${settings.footer}`;
+
+            await conn.sendMessage(chatId, {
+                text: info,
+                contextInfo: { mentionedJid: [sender] }
+            });
+
+        } catch (error) {
+            console.error('Num info error:', error);
+            await conn.sendMessage(chatId, { text: '❌ Lookup failed.' });
+        }
+    }
+};

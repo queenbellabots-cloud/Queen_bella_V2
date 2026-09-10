@@ -26,7 +26,7 @@ const settings = {
   // ═══════════════════════════════════════════════
   // 👤 DEVELOPER 
   // ═══════════════════════════════════════════════
-  developerNumber: "254755660053",  // RODGERS - Original Creator
+  developerNumber: "254755660053",  // RODGERS - Dev
   developerName: "RODGERS",
 
   // ═══════════════════════════════════════════════
@@ -44,12 +44,16 @@ const settings = {
   channelName: "QUEEN BELLA MD",
 
   // ═══════════════════════════════════════════════
-  // 🖼️ MENU IMAGE - WORKING URLS
+  // 🖼️ MENU IMAGE
   // ═══════════════════════════════════════════════
   menuImage: "https://i.imgur.com/687ZxLW.jpeg",
-  
-  // Welcome images shown after connecting
+
+  // ═══════════════════════════════════════════════
+  // 🖼️ IMAGES 
+  // ═══════════════════════════════════════════════
   welcomeImages: [
+    "https://i.imgur.com/687ZxLW.jpeg",
+    "https://i.imgur.com/687ZxLW.jpeg",
     "https://i.imgur.com/687ZxLW.jpeg"
   ],
 

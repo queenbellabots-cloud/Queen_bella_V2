@@ -1,6 +1,7 @@
 /**
- * 👑 QUEEN BELLA MD - View Once Reveal Command
- * Reveals view-once images and videos
+ * 👑 QUEEN BELLA MD - View Once Revealer
+ * Privately reveals view-once media to the user's DM
+ * Usage: Reply to view-once with .😍 or any emoji after prefix
  */
 
 const settings = require('../settings');
@@ -10,12 +11,17 @@ module.exports = {
     name: 'vv',
     aliases: ['viewonce', 'reveal', 'vo'],
     category: 'tools',
-    description: 'Reveal view-once image or video',
-    usage: '.vv (reply to view-once media)',
+    description: 'Privately reveal view-once media',
+    usage: '.vv or .😍 (reply to view-once)',
     react: '👁️',
     async execute(conn, mek, args, chatId, isOwner) {
         try {
-            // Check if replying to a message
+            // Get the sender's JID (for private DM)
+            const sender = mek.key.participant || mek.key.remoteJid;
+            const senderNumber = sender.split('@')[0];
+            const senderJid = senderNumber + '@s.whatsapp.net';
+
+            // Get quoted message
             const quoted = mek.message?.extendedTextMessage?.contextInfo?.quotedMessage;
 
             if (!quoted) {
@@ -25,11 +31,11 @@ module.exports = {
                 return;
             }
 
-            // Get the actual media message (handles all view-once formats)
+            // Get the actual media message
             let mediaMessage = null;
             let mediaType = null;
 
-            // Check different view-once formats (Baileys v6+)
+            // Handle all view-once formats
             if (quoted.viewOnceMessageV2) {
                 mediaMessage = quoted.viewOnceMessageV2.message?.imageMessage ||
                               quoted.viewOnceMessageV2.message?.videoMessage;
@@ -42,51 +48,39 @@ module.exports = {
                 mediaMessage = quoted.videoMessage;
             }
 
-            // If still no media, try digging deeper
-            if (!mediaMessage) {
-                // Try to find any media in the quoted message
-                const possibleTypes = ['imageMessage', 'videoMessage'];
-                for (const type of possibleTypes) {
-                    if (quoted[type]) {
-                        mediaMessage = quoted[type];
-                        break;
-                    }
-                }
-            }
-
             if (!mediaMessage) {
                 await conn.sendMessage(chatId, { 
-                    text: '❌ Could not find media in the replied message. Make sure it\'s an image or video.'
+                    text: '❌ No media found in the replied message.'
+                });
+                return;
+            }
+
+            // Check if it's actually view-once
+            if (!mediaMessage.viewOnce) {
+                await conn.sendMessage(chatId, { 
+                    text: '❌ This is not a view-once message.'
                 });
                 return;
             }
 
             // Determine media type
-            const isImage = mediaMessage.mimetype?.startsWith("image") || 
+            const isImage = !!mediaMessage.mimetype?.startsWith("image") || 
                            mediaMessage.jpeg || 
-                           mediaMessage.imageMessage;
-            
-            const isVideo = mediaMessage.mimetype?.startsWith("video") || 
-                           mediaMessage.videoMessage;
+                           !!quoted.imageMessage;
+            const isVideo = !!mediaMessage.mimetype?.startsWith("video") || 
+                           !!quoted.videoMessage;
 
-            // Check if it's view-once
-            if (!mediaMessage.viewOnce) {
-                await conn.sendMessage(chatId, { 
-                    text: '❌ This is not a view-once media. The media is already visible.'
-                });
-                return;
-            }
+            const downloadType = isImage ? "image" : "video";
 
-            // React to command
-            const reactionEmojis = ['🔥', '⚡', '🚀', '💨', '🎯', '🎉', '🌟', '💥', '👁️'];
-            const reactEmoji = reactionEmojis[Math.floor(Math.random() * reactionEmojis.length)];
-
+            // React to the command
             await conn.sendMessage(chatId, {
-                react: { text: reactEmoji, key: mek.key }
+                react: { text: '👁️', key: mek.key }
             });
 
-            // Determine download type
-            const downloadType = isImage ? "image" : "video";
+            // Send a quick confirmation to the chat
+            await conn.sendMessage(chatId, {
+                text: `✅ *View-once revealed!*\n\n📩 Check your DM for the media.\n\n_${settings.footer}_`
+            });
 
             // Download media
             const stream = await downloadContentFromMessage(mediaMessage, downloadType);
@@ -99,14 +93,24 @@ module.exports = {
                 throw new Error('Downloaded media is empty');
             }
 
-            // Send revealed media (NOT view-once)
-            const caption = mediaMessage.caption || `👑 Revealed by QUEEN BELLA MD\n\n${settings.footer}`;
+            // Send to user's PRIVATE DM (not the current chat)
+            const caption = `╔══════════════════════╗
+║   👑 PRIVATE REVEAL   
+╚══════════════════════╝
 
-            await conn.sendMessage(chatId, {
+📱 *Revealed by:* QUEEN BELLA MD
+🕐 *Time:* ${new Date().toLocaleString()}
+
+${mediaMessage.caption ? `📝 *Original Caption:*\n${mediaMessage.caption}` : ''}
+
+⚠️ *This media was view-once in the chat.*
+
+${settings.footer}`;
+
+            await conn.sendMessage(senderJid, {
                 [downloadType]: buffer,
                 caption: caption,
                 contextInfo: {
-                    mentionedJid: [chatId],
                     forwardingScore: 999,
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
@@ -117,12 +121,12 @@ module.exports = {
                 }
             });
 
-            console.log(`✅ View-once revealed for ${chatId}`);
+            console.log(`✅ View-once revealed privately to ${senderNumber}`);
 
         } catch (error) {
-            console.error('VV Command Error:', error);
+            console.error('VV Error:', error);
             await conn.sendMessage(chatId, { 
-                text: `❌ Failed to reveal view-once media: ${error.message}\n\nMake sure you replied to a view-once message.`
+                text: `❌ Failed to reveal: ${error.message}`
             });
         }
     }

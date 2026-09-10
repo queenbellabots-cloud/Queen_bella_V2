@@ -1,0 +1,12 @@
+# Ignore owner data (auto-created per user)
+data/owner.json
+
+# Ignore session data
+session/
+
+# Ignore node modules
+node_modules/
+
+# Ignore logs
+*.log
+npm-debug.log*

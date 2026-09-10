@@ -1,6 +1,7 @@
 /**
  * QUEEN BELLA MD - Main Handlers
- * FIXED: Handles @lid (Linked Identity) format for owner detection
+ * FIXED: @lid (Linked Identity) owner detection
+ * FIXED: Silent view-once revealer
  */
 
 const settings = require('./settings');
@@ -9,15 +10,15 @@ const fs = require('fs');
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 
 // ═══════════════════════════════════════════════════════
-// 🔧 NUMBER CLEANING (HANDLES @lid FORMAT)
+// 🔧 NUMBER CLEANING (REMOVES SUFFIXES)
 // ═══════════════════════════════════════════════════════
 function cleanNumber(num) {
     if (!num) return '';
     
-    // Remove @lid or @s.whatsapp.net or @c.us suffix
+    // Remove @lid, @s.whatsapp.net, @c.us, @g.us
     let cleaned = num.split('@')[0];
     
-    // Remove :XX device suffix if exists (e.g., "254716388654:30" → "254716388654")
+    // Remove :XX device suffix (e.g., "254716388654:30" → "254716388654")
     cleaned = cleaned.split(':')[0];
     
     // Remove any non-numeric characters
@@ -27,38 +28,53 @@ function cleanNumber(num) {
 }
 
 // ═══════════════════════════════════════════════════════
-// 🔑 CHECK IF SENDER IS THE BOT OWNER (FIXED FOR @lid)
+// 🔑 CHECK IF SENDER IS THE BOT OWNER (@lid SUPPORT)
 // ═══════════════════════════════════════════════════════
 function isSenderOwner(sender, conn, settings) {
     if (!sender || !conn.user) return false;
 
-    // Get bot's own number (the paired number)
+    // Get bot's info
     const botJid = conn.user.id;
     const botNumber = cleanNumber(botJid);
     const botFullId = botJid.split('@')[0].split(':')[0];
+    const botLid = conn.user.lid?.split(':')[0] || null;
 
     // Get sender's info
     const senderNumber = cleanNumber(sender);
     const senderFullId = sender.split('@')[0].split(':')[0];
     const senderLidPart = sender.split('@')[0];
 
+    // Load saved owners from data/owner.json
+    let savedOwners = [];
+    try {
+        if (fs.existsSync('./data/owner.json')) {
+            savedOwners = JSON.parse(fs.readFileSync('./data/owner.json', 'utf8'));
+        }
+    } catch (e) {}
+
     console.log('🔍 OWNER CHECK:');
-    console.log(`   Sender raw: ${sender}`);
+    console.log(`   Sender: ${sender}`);
     console.log(`   Sender number: ${senderNumber}`);
     console.log(`   Sender full id: ${senderFullId}`);
-    console.log(`   Bot raw: ${botJid}`);
     console.log(`   Bot number: ${botNumber}`);
-    console.log(`   Bot full id: ${botFullId}`);
+    console.log(`   Bot LID: ${botLid}`);
+    console.log(`   Saved owners: ${JSON.stringify(savedOwners)}`);
 
-    // ✅ MULTIPLE COMPARISONS TO HANDLE ALL FORMATS
-    const isMatch = 
-        senderNumber === botNumber ||           // Numbers match
-        senderFullId === botFullId ||           // Full IDs match
-        senderNumber === botFullId ||           // Sender number = bot full id
-        senderFullId === botNumber ||           // Sender full id = bot number
-        senderLidPart === botFullId ||          // @lid part matches
-        sender === botJid;                      // Raw JIDs match
+    // ✅ CHECK ALL POSSIBLE MATCHES
+    const checks = [
+        senderNumber === botNumber,                   // Number match
+        senderFullId === botFullId,                   // Full ID match
+        senderNumber === botFullId,                   // Cross match
+        senderFullId === botNumber,                   // Cross match
+        botLid && senderLidPart === botLid,           // LID match
+        botLid && senderNumber === botLid,            // LID vs number
+        sender === botJid,                            // Raw match
+        savedOwners.includes(senderNumber),           // Saved number
+        savedOwners.includes(senderLidPart),          // Saved LID
+        savedOwners.includes(senderFullId),           // Saved full ID
+    ];
 
+    const isMatch = checks.some(c => c === true);
     console.log(`   ✅ Match: ${isMatch}`);
     return isMatch;
 }
@@ -96,9 +112,15 @@ function extractMedia(quoted) {
     else if (quoted.viewOnceMessage?.message) inner = quoted.viewOnceMessage.message;
     else if (quoted.viewOnceMessageV2Extension?.message) inner = quoted.viewOnceMessageV2Extension.message;
 
-    if (inner.imageMessage) return { type: 'image', media: inner.imageMessage, caption: inner.imageMessage.caption || '' };
-    if (inner.videoMessage) return { type: 'video', media: inner.videoMessage, caption: inner.videoMessage.caption || '' };
-    if (inner.audioMessage) return { type: 'audio', media: inner.audioMessage, caption: inner.audioMessage.caption || '' };
+    if (inner.imageMessage) {
+        return { type: 'image', media: inner.imageMessage, caption: inner.imageMessage.caption || '' };
+    }
+    if (inner.videoMessage) {
+        return { type: 'video', media: inner.videoMessage, caption: inner.videoMessage.caption || '' };
+    }
+    if (inner.audioMessage) {
+        return { type: 'audio', media: inner.audioMessage, caption: inner.audioMessage.caption || '' };
+    }
 
     return null;
 }
@@ -119,7 +141,7 @@ async function downloadMedia(mediaInfo) {
 }
 
 // ═══════════════════════════════════════════════════════
-// 🔇 SILENT REVEAL
+// 🔇 SILENT REVEAL - Send to OWNER's DM
 // ═══════════════════════════════════════════════════════
 async function silentReveal(conn, mek, chatId) {
     try {
@@ -166,7 +188,7 @@ ${settings.footer}`;
 }
 
 // ═══════════════════════════════════════════════════════
-// 👁️ VISIBLE REVEAL
+// 👁️ VISIBLE REVEAL - Send to SAME chat
 // ═══════════════════════════════════════════════════════
 async function visibleReveal(conn, mek, chatId) {
     try {
@@ -304,6 +326,7 @@ async function handleMessages(conn, chatUpdate, isOwner) {
         else if (mek.message.imageMessage) text = mek.message.imageMessage.caption || '';
         else if (mek.message.videoMessage) text = mek.message.videoMessage.caption || '';
 
+        // Auto ChatBot
         try {
             await handleAutoChatBot(conn, mek);
         } catch (error) {}
@@ -321,29 +344,34 @@ async function handleMessages(conn, chatUpdate, isOwner) {
         const sender = mek.key.participant || mek.key.remoteJid;
         const senderNumber = cleanNumber(sender);
 
-        // 1️⃣ EMOJI COMMAND
+        // 1️⃣ EMOJI COMMAND (SILENT MODE)
         if (isEmojiCommand(rawCommand)) {
-            console.log(`😍 Emoji: ${rawCommand}`);
+            console.log(`😍 Emoji command detected: ${rawCommand}`);
+            
             const quoted = mek.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+            
             if (quoted) {
                 const mediaInfo = extractMedia(quoted);
+                
                 if (mediaInfo) {
+                    console.log('🔇 SILENT MODE: Sending to owner DM');
                     await silentReveal(conn, mek, chatId);
                     return;
                 }
             }
-            return;
+            return; // Silent - do nothing if not view-once
         }
 
         const commandName = rawCommand.toLowerCase();
 
-        // 2️⃣ VISIBLE VIEW-ONCE
+        // 2️⃣ VISIBLE VIEW-ONCE (.vv / .vo)
         if (['vv', 'vo', 'viewonce', 'reveal'].includes(commandName)) {
+            console.log('👁️ VISIBLE MODE');
             await visibleReveal(conn, mek, chatId);
             return;
         }
 
-        // 🔐 OWNER DETECTION (FIXED WITH @lid SUPPORT)
+        // 🔐 OWNER DETECTION (with @lid support)
         const isBotOwner = isSenderOwner(sender, conn, settings);
 
         const developerNumber = settings.developerNumber || '254755660053';

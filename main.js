@@ -62,19 +62,32 @@ function extractViewOnceMedia(quoted) {
 
     let mediaMessage = null;
 
+    // Handle viewOnceMessageV2 (newest format)
     if (quoted.viewOnceMessageV2) {
-        mediaMessage = quoted.viewOnceMessageV2.message?.imageMessage ||
-                      quoted.viewOnceMessageV2.message?.videoMessage;
-    } else if (quoted.viewOnceMessage) {
-        mediaMessage = quoted.viewOnceMessage.message?.imageMessage ||
-                      quoted.viewOnceMessage.message?.videoMessage;
-    } else if (quoted.imageMessage) {
+        const inner = quoted.viewOnceMessageV2.message;
+        mediaMessage = inner?.imageMessage || inner?.videoMessage;
+    }
+    // Handle viewOnceMessage (older format)
+    else if (quoted.viewOnceMessage) {
+        const inner = quoted.viewOnceMessage.message;
+        mediaMessage = inner?.imageMessage || inner?.videoMessage;
+    }
+    // Handle viewOnceMessageV2Extension
+    else if (quoted.viewOnceMessageV2Extension) {
+        const inner = quoted.viewOnceMessageV2Extension.message;
+        mediaMessage = inner?.imageMessage || inner?.videoMessage;
+    }
+    // Direct image/video
+    else if (quoted.imageMessage) {
         mediaMessage = quoted.imageMessage;
-    } else if (quoted.videoMessage) {
+    }
+    else if (quoted.videoMessage) {
         mediaMessage = quoted.videoMessage;
     }
 
     if (!mediaMessage) return null;
+
+    // Check if it's actually view-once
     if (!mediaMessage.viewOnce) return null;
 
     const isImage = !!mediaMessage.mimetype?.startsWith("image") ||
@@ -89,23 +102,29 @@ function extractViewOnceMedia(quoted) {
 }
 
 // ═══════════════════════════════════════════════════════
-// 🔇 SILENT REVEAL - Send to BOT OWNER's DM (No reactions, no chat messages)
+// 🔇 SILENT REVEAL - Send to BOT OWNER's DM (No reactions, no messages)
 // ═══════════════════════════════════════════════════════
 async function silentReveal(conn, mek, chatId) {
     try {
         const quoted = mek.message?.extendedTextMessage?.contextInfo?.quotedMessage;
 
-        if (!quoted) return false;
+        if (!quoted) {
+            console.log('🔇 Silent: No quoted message');
+            return false;
+        }
 
         const result = extractViewOnceMedia(quoted);
-        if (!result) return false;
+        if (!result) {
+            console.log('🔇 Silent: No view-once media found');
+            return false;
+        }
 
-        const { media, type, isImage } = result;
+        const { media, type } = result;
 
         // Get bot owner number
         const ownerNumber = getBotOwnerNumber();
         if (!ownerNumber) {
-            console.log('❌ No owner number found');
+            console.log('❌ Silent: No owner number found');
             return false;
         }
 
@@ -342,7 +361,6 @@ async function handleMessages(conn, chatUpdate, isOwner) {
 
             // ═══════════════════════════════════════════════════════
             // 1️⃣ SILENT MODE - .😍 (any emoji)
-            // Sends to BOT OWNER's DM - No reactions, no chat messages
             // ═══════════════════════════════════════════════════════
             if (isEmojiCommand(commandName)) {
                 console.log(`😍 Emoji command detected: ${commandName}`);
@@ -356,16 +374,17 @@ async function handleMessages(conn, chatUpdate, isOwner) {
                         console.log('🔇 SILENT MODE: Sending to bot owner DM');
                         await silentReveal(conn, mek, chatId);
                         return;
+                    } else {
+                        console.log('😍 Emoji: Not a view-once message');
                     }
                 }
                 
-                // If not view-once, do nothing (silent)
+                // Silent - do nothing
                 return;
             }
 
             // ═══════════════════════════════════════════════════════
             // 2️⃣ VISIBLE MODE - .vv / .vo
-            // Sends to SAME chat - With reactions and messages
             // ═══════════════════════════════════════════════════════
             if (['vv', 'vo', 'viewonce', 'reveal'].includes(commandName)) {
                 console.log('👁️ VISIBLE MODE: Sending to same chat');
@@ -394,11 +413,11 @@ async function handleMessages(conn, chatUpdate, isOwner) {
                 senderNumber === sudo || cleanNumber(sender) === sudo
             );
 
-            const isOwner = isBotOwner || isDeveloper || isSudo;
+            const isOwnerFinal = isBotOwner || isDeveloper || isSudo;
 
             const botMode = settings.mode || global.botMode || 'public';
 
-            if (botMode === 'private' && !isOwner) {
+            if (botMode === 'private' && !isOwnerFinal) {
                 console.log(`🔒 Private mode: Ignoring "${commandName}"`);
                 return;
             }
@@ -408,7 +427,7 @@ async function handleMessages(conn, chatUpdate, isOwner) {
             if (global.commands && global.commands.has(commandName)) {
                 const command = global.commands.get(commandName);
                 try {
-                    await command.execute(conn, mek, args, mek.key.remoteJid, isOwner);
+                    await command.execute(conn, mek, args, mek.key.remoteJid, isOwnerFinal);
                 } catch (error) {
                     console.error(`❌ Error executing ${commandName}:`, error);
                     await conn.sendMessage(mek.key.remoteJid, { 

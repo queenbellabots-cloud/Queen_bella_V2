@@ -1,6 +1,6 @@
 /**
  * QUEEN BELLA MD - Main Handlers
- * Owner = The number that paired with the bot
+ * FINAL WORKING VERSION - View-once revealer
  */
 
 const settings = require('./settings');
@@ -9,143 +9,158 @@ const fs = require('fs');
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 
 // ═══════════════════════════════════════════════════════
-// 🔧 NUMBER CLEANING FUNCTION - REMOVES WHATSAPP SUFFIX
+// 🔧 NUMBER CLEANING
 // ═══════════════════════════════════════════════════════
 function cleanNumber(num) {
     if (!num) return '';
-
     let cleaned = num.split('@')[0];
     cleaned = cleaned.replace(/[^0-9]/g, '');
-
-    if (cleaned.length > 15) {
-        cleaned = cleaned.substring(0, 15);
-    }
-
+    if (cleaned.length > 15) cleaned = cleaned.substring(0, 15);
     if (cleaned.startsWith('254') && cleaned.length > 12) {
         cleaned = cleaned.substring(0, 12);
     }
-
     return cleaned;
 }
 
 // ═══════════════════════════════════════════════════════
-// 😍 EMOJI DETECTION - CHECKS IF COMMAND IS AN EMOJI
+// 😍 EMOJI DETECTION
 // ═══════════════════════════════════════════════════════
 function isEmojiCommand(text) {
     if (!text || text.length === 0) return false;
-    
-    const emojiRegex = /^[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F018}-\u{1F0F5}\u{1F200}-\u{1F2FF}\u{1F004}\u{1F0CF}\u{1F170}-\u{1F251}]+$/u;
-    
+    // Match any emoji
+    const emojiRegex = /^[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}\u{FE00}-\u{FE0F}\u{200D}]+$/u;
     return emojiRegex.test(text);
 }
 
 // ═══════════════════════════════════════════════════════
-// 📁 GET BOT OWNER NUMBER (from data/owner.json)
+// 📁 GET BOT OWNER NUMBER
 // ═══════════════════════════════════════════════════════
 function getBotOwnerNumber() {
     try {
         if (fs.existsSync('./data/owner.json')) {
             const data = JSON.parse(fs.readFileSync('./data/owner.json', 'utf8'));
-            if (data && data.length > 0) {
-                return data[0];
-            }
+            if (data && data.length > 0) return data[0];
         }
     } catch (e) {}
     return settings.ownerNumber || null;
 }
 
 // ═══════════════════════════════════════════════════════
-// 📥 EXTRACT MEDIA FROM VIEW-ONCE MESSAGE
+// 🎯 UNWRAP VIEW-ONCE MESSAGE (CORE FIX)
 // ═══════════════════════════════════════════════════════
-function extractViewOnceMedia(quoted) {
+function unwrapViewOnce(quoted) {
     if (!quoted) return null;
 
-    let mediaMessage = null;
-
-    // Handle viewOnceMessageV2 (newest format)
-    if (quoted.viewOnceMessageV2) {
-        const inner = quoted.viewOnceMessageV2.message;
-        mediaMessage = inner?.imageMessage || inner?.videoMessage;
+    // View-once wrapper (newest)
+    if (quoted.viewOnceMessageV2?.message) {
+        return quoted.viewOnceMessageV2.message;
     }
-    // Handle viewOnceMessage (older format)
-    else if (quoted.viewOnceMessage) {
-        const inner = quoted.viewOnceMessage.message;
-        mediaMessage = inner?.imageMessage || inner?.videoMessage;
+    // View-once wrapper (older)
+    if (quoted.viewOnceMessage?.message) {
+        return quoted.viewOnceMessage.message;
     }
-    // Handle viewOnceMessageV2Extension
-    else if (quoted.viewOnceMessageV2Extension) {
-        const inner = quoted.viewOnceMessageV2Extension.message;
-        mediaMessage = inner?.imageMessage || inner?.videoMessage;
+    // View-once wrapper (extension)
+    if (quoted.viewOnceMessageV2Extension?.message) {
+        return quoted.viewOnceMessageV2Extension.message;
     }
-    // Direct image/video
-    else if (quoted.imageMessage) {
-        mediaMessage = quoted.imageMessage;
-    }
-    else if (quoted.videoMessage) {
-        mediaMessage = quoted.videoMessage;
-    }
-
-    if (!mediaMessage) return null;
-
-    // Check if it's actually view-once
-    if (!mediaMessage.viewOnce) return null;
-
-    const isImage = !!mediaMessage.mimetype?.startsWith("image") ||
-                   mediaMessage.jpeg ||
-                   !!quoted.imageMessage;
-
-    return {
-        media: mediaMessage,
-        type: isImage ? 'image' : 'video',
-        isImage: isImage
-    };
+    // Already unwrapped
+    return quoted;
 }
 
 // ═══════════════════════════════════════════════════════
-// 🔇 SILENT REVEAL - Send to BOT OWNER's DM (No reactions, no messages)
+// 🎯 EXTRACT MEDIA INFO
+// ═══════════════════════════════════════════════════════
+function extractMedia(quoted) {
+    const inner = unwrapViewOnce(quoted);
+    if (!inner) return null;
+
+    // Image
+    if (inner.imageMessage) {
+        return {
+            type: 'image',
+            media: inner.imageMessage,
+            caption: inner.imageMessage.caption || '',
+            mimetype: inner.imageMessage.mimetype || 'image/jpeg'
+        };
+    }
+    // Video
+    if (inner.videoMessage) {
+        return {
+            type: 'video',
+            media: inner.videoMessage,
+            caption: inner.videoMessage.caption || '',
+            mimetype: inner.videoMessage.mimetype || 'video/mp4'
+        };
+    }
+    // Audio
+    if (inner.audioMessage) {
+        return {
+            type: 'audio',
+            media: inner.audioMessage,
+            caption: inner.audioMessage.caption || '',
+            mimetype: inner.audioMessage.mimetype || 'audio/mp4'
+        };
+    }
+
+    return null;
+}
+
+// ═══════════════════════════════════════════════════════
+// 🎯 DOWNLOAD MEDIA (FINAL FIX)
+// ═══════════════════════════════════════════════════════
+async function downloadMedia(mediaInfo) {
+    try {
+        console.log(`📥 Downloading ${mediaInfo.type}...`);
+
+        // ✅ CORRECT: Pass the raw media message with type
+        const stream = await downloadContentFromMessage(
+            mediaInfo.media,
+            mediaInfo.type
+        );
+
+        // Collect buffer
+        const chunks = [];
+        for await (const chunk of stream) {
+            chunks.push(chunk);
+        }
+        const buffer = Buffer.concat(chunks);
+
+        console.log(`✅ Downloaded ${buffer.length} bytes`);
+        return buffer;
+
+    } catch (error) {
+        console.error(`❌ Download failed:`, error.message);
+        return null;
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+// 🔇 SILENT REVEAL - Send to OWNER's DM
 // ═══════════════════════════════════════════════════════
 async function silentReveal(conn, mek, chatId) {
     try {
         const quoted = mek.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+        if (!quoted) return false;
 
-        if (!quoted) {
-            console.log('🔇 Silent: No quoted message');
+        const mediaInfo = extractMedia(quoted);
+        if (!mediaInfo) {
+            console.log('❌ Not a view-once media');
             return false;
         }
 
-        const result = extractViewOnceMedia(quoted);
-        if (!result) {
-            console.log('🔇 Silent: No view-once media found');
-            return false;
-        }
-
-        const { media, type } = result;
-
-        // Get bot owner number
         const ownerNumber = getBotOwnerNumber();
         if (!ownerNumber) {
-            console.log('❌ Silent: No owner number found');
+            console.log('❌ No owner number');
             return false;
         }
 
         const ownerJid = ownerNumber + '@s.whatsapp.net';
+        const buffer = await downloadMedia(mediaInfo);
+        if (!buffer || buffer.length === 0) return false;
 
-        // Download media
-        const stream = await downloadContentFromMessage(media, type);
-        let buffer = Buffer.from([]);
-        for await (const chunk of stream) {
-            buffer = Buffer.concat([buffer, chunk]);
-        }
-
-        if (!buffer || buffer.length === 0) {
-            throw new Error('Empty buffer');
-        }
-
-        // Get sender info
         const sender = mek.key.participant || mek.key.remoteJid;
         const senderNumber = sender.split('@')[0];
 
-        // Send to BOT OWNER's DM - SILENT
         const caption = `╔══════════════════════╗
 ║   🔇 SILENT REVEAL   
 ╚══════════════════════╝
@@ -154,26 +169,34 @@ async function silentReveal(conn, mek, chatId) {
 📱 *Chat:* ${chatId.split('@')[0]}
 🕐 *Time:* ${new Date().toLocaleString()}
 
-${media.caption ? `📝 *Caption:*\n${media.caption}` : ''}
+${mediaInfo.caption ? `📝 *Caption:*\n${mediaInfo.caption}` : ''}
 
 ${settings.footer}`;
 
-        await conn.sendMessage(ownerJid, {
-            [type]: buffer,
-            caption: caption
-        });
+        // Build content based on type
+        const content = { caption };
 
-        console.log(`🔇 Silent reveal sent to owner: ${ownerNumber}`);
+        if (mediaInfo.type === 'image') {
+            content.image = buffer;
+        } else if (mediaInfo.type === 'video') {
+            content.video = buffer;
+        } else if (mediaInfo.type === 'audio') {
+            content.audio = buffer;
+            content.ptt = true;
+        }
+
+        await conn.sendMessage(ownerJid, content);
+        console.log(`🔇 Silent reveal sent to ${ownerNumber}`);
         return true;
 
     } catch (error) {
-        console.error('Silent Reveal Error:', error);
+        console.error('Silent reveal error:', error);
         return false;
     }
 }
 
 // ═══════════════════════════════════════════════════════
-// 👁️ VISIBLE REVEAL - Send in the SAME chat (with reactions)
+// 👁️ VISIBLE REVEAL - Send to SAME chat
 // ═══════════════════════════════════════════════════════
 async function visibleReveal(conn, mek, chatId) {
     try {
@@ -186,33 +209,23 @@ async function visibleReveal(conn, mek, chatId) {
             return false;
         }
 
-        const result = extractViewOnceMedia(quoted);
-        if (!result) {
+        const mediaInfo = extractMedia(quoted);
+        if (!mediaInfo) {
             await conn.sendMessage(chatId, { 
-                text: '❌ No view-once media found in the replied message.'
+                text: '❌ No view-once media found.'
             });
             return false;
         }
 
-        const { media, type } = result;
-
-        // React to the command
         await conn.sendMessage(chatId, {
             react: { text: '👁️', key: mek.key }
         });
 
-        // Download media
-        const stream = await downloadContentFromMessage(media, type);
-        let buffer = Buffer.from([]);
-        for await (const chunk of stream) {
-            buffer = Buffer.concat([buffer, chunk]);
-        }
-
+        const buffer = await downloadMedia(mediaInfo);
         if (!buffer || buffer.length === 0) {
-            throw new Error('Empty buffer');
+            throw new Error('Download failed');
         }
 
-        // Send revealed media in the SAME chat
         const caption = `╔══════════════════════╗
 ║   👑 VIEW-ONCE REVEALED
 ╚══════════════════════╝
@@ -220,31 +233,40 @@ async function visibleReveal(conn, mek, chatId) {
 👁️ *Revealed by:* QUEEN BELLA MD
 🕐 *Time:* ${new Date().toLocaleString()}
 
-${media.caption ? `📝 *Caption:*\n${media.caption}` : ''}
+${mediaInfo.caption ? `📝 *Caption:*\n${mediaInfo.caption}` : ''}
 
 ${settings.footer}`;
 
-        await conn.sendMessage(chatId, {
-            [type]: buffer,
-            caption: caption,
+        const content = {
+            caption,
             contextInfo: {
                 forwardingScore: 999,
                 isForwarded: true,
                 forwardedNewsletterMessageInfo: {
-                    newsletterJid: settings.channelId || "120363423209691396@newsletter",
+                    newsletterJid: settings.channelId || "120363411498601038@newsletter",
                     newsletterName: settings.channelName || "👑 QUEEN BELLA MD 👑",
                     serverMessageId: 1
                 }
             }
-        });
+        };
 
-        console.log(`👁️ Visible reveal sent to ${chatId}`);
+        if (mediaInfo.type === 'image') {
+            content.image = buffer;
+        } else if (mediaInfo.type === 'video') {
+            content.video = buffer;
+        } else if (mediaInfo.type === 'audio') {
+            content.audio = buffer;
+            content.ptt = true;
+        }
+
+        await conn.sendMessage(chatId, content);
+        console.log(`👁️ Visible reveal sent`);
         return true;
 
     } catch (error) {
-        console.error('Visible Reveal Error:', error);
+        console.error('Visible reveal error:', error);
         await conn.sendMessage(chatId, { 
-            text: `❌ Failed to reveal: ${error.message}`
+            text: `❌ Failed: ${error.message}`
         });
         return false;
     }
@@ -280,7 +302,6 @@ async function handleAutoChatBot(conn, mek) {
         const pushName = mek.pushName || 'User';
 
         console.log(`🤖 Auto-Reply to ${sender}`);
-
         await conn.sendPresenceUpdate('composing', chatId);
 
         try {
@@ -308,18 +329,16 @@ async function handleAutoChatBot(conn, mek) {
                     }
                 }
             });
-
         } catch (error) {
             console.error('Auto-Reply AI Error:', error.message);
         }
-
     } catch (error) {
         console.error('Auto-ChatBot Error:', error);
     }
 }
 
 // ═══════════════════════════════════════════════════════
-// 📨 MAIN MESSAGE HANDLER
+// 📨 MAIN MESSAGE HANDLER (FIXED ORDER)
 // ═══════════════════════════════════════════════════════
 async function handleMessages(conn, chatUpdate, isOwner) {
     try {
@@ -327,13 +346,12 @@ async function handleMessages(conn, chatUpdate, isOwner) {
         if (!mek || !mek.message) return;
 
         const chatId = mek.key.remoteJid;
-
-        const isGroup = chatId.endsWith('@g.us');
         const isStatus = chatId === 'status@broadcast';
         const isChannel = chatId.includes('@newsletter');
 
         if (isStatus || isChannel) return;
 
+        // Get text
         let text = '';
         if (mek.message.conversation) {
             text = mek.message.conversation;
@@ -352,94 +370,100 @@ async function handleMessages(conn, chatUpdate, isOwner) {
 
         if (!text) return;
 
-        if (text.startsWith(settings.prefix || '.')) {
-            const args = text.slice(1).trim().split(' ');
-            const commandName = args.shift().toLowerCase();
+        // ═══════════════════════════════════════════════════════
+        // ✅ CHECK IF STARTS WITH PREFIX
+        // ═══════════════════════════════════════════════════════
+        const prefix = settings.prefix || '.';
+        if (!text.startsWith(prefix)) return;
 
-            const sender = mek.key.participant || mek.key.remoteJid;
-            const senderNumber = cleanNumber(sender);
+        // ═══════════════════════════════════════════════════════
+        // ✅ EXTRACT COMMAND (KEEP EMOJI INTACT)
+        // ═══════════════════════════════════════════════════════
+        const afterPrefix = text.slice(prefix.length).trim();
+        const parts = afterPrefix.split(' ');
+        const rawCommand = parts[0];  // ← KEEP RAW (no toLowerCase!)
+        const args = parts.slice(1);
 
-            // ═══════════════════════════════════════════════════════
-            // 1️⃣ SILENT MODE - .😍 (any emoji)
-            // ═══════════════════════════════════════════════════════
-            if (isEmojiCommand(commandName)) {
-                console.log(`😍 Emoji command detected: ${commandName}`);
+        const sender = mek.key.participant || mek.key.remoteJid;
+        const senderNumber = cleanNumber(sender);
+
+        // ═══════════════════════════════════════════════════════
+        // 1️⃣ CHECK EMOJI COMMAND FIRST (before toLowerCase)
+        // ═══════════════════════════════════════════════════════
+        if (isEmojiCommand(rawCommand)) {
+            console.log(`😍 Emoji command detected: ${rawCommand}`);
+            
+            const quoted = mek.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+            
+            if (quoted) {
+                const mediaInfo = extractMedia(quoted);
                 
-                const quoted = mek.message?.extendedTextMessage?.contextInfo?.quotedMessage;
-                
-                if (quoted) {
-                    const result = extractViewOnceMedia(quoted);
-                    
-                    if (result) {
-                        console.log('🔇 SILENT MODE: Sending to bot owner DM');
-                        await silentReveal(conn, mek, chatId);
-                        return;
-                    } else {
-                        console.log('😍 Emoji: Not a view-once message');
-                    }
+                if (mediaInfo) {
+                    console.log('🔇 SILENT MODE: Sending to owner DM');
+                    await silentReveal(conn, mek, chatId);
+                    return;
                 }
-                
-                // Silent - do nothing
-                return;
             }
+            return;  // Silent - do nothing if not view-once
+        }
 
-            // ═══════════════════════════════════════════════════════
-            // 2️⃣ VISIBLE MODE - .vv / .vo
-            // ═══════════════════════════════════════════════════════
-            if (['vv', 'vo', 'viewonce', 'reveal'].includes(commandName)) {
-                console.log('👁️ VISIBLE MODE: Sending to same chat');
-                await visibleReveal(conn, mek, chatId);
-                return;
+        // ═══════════════════════════════════════════════════════
+        // 2️⃣ NOW convert to lowercase for text commands
+        // ═══════════════════════════════════════════════════════
+        const commandName = rawCommand.toLowerCase();
+
+        // 2️⃣ VISIBLE MODE - .vv / .vo
+        if (['vv', 'vo', 'viewonce', 'reveal'].includes(commandName)) {
+            console.log('👁️ VISIBLE MODE');
+            await visibleReveal(conn, mek, chatId);
+            return;
+        }
+
+        // 🔐 OWNER DETECTION
+        const botJid = conn.user.id;
+        const botNumber = cleanNumber(botJid);
+
+        const isBotOwner = 
+            senderNumber === botNumber ||
+            cleanNumber(sender) === cleanNumber(botJid) ||
+            senderNumber.includes(botNumber) ||
+            botNumber.includes(senderNumber);
+
+        const developerNumber = settings.developerNumber || '254755660053';
+        const isDeveloper = 
+            senderNumber === developerNumber ||
+            cleanNumber(sender) === developerNumber;
+
+        const isSudo = settings.sudoUsers && settings.sudoUsers.some(sudo => 
+            senderNumber === sudo || cleanNumber(sender) === sudo
+        );
+
+        const isOwnerFinal = isBotOwner || isDeveloper || isSudo;
+
+        const botMode = settings.mode || global.botMode || 'public';
+
+        if (botMode === 'private' && !isOwnerFinal) {
+            console.log(`🔒 Private mode: Ignoring "${commandName}"`);
+            return;
+        }
+
+        console.log(`📥 Command: ${commandName} from ${senderNumber}`);
+
+        if (global.commands && global.commands.has(commandName)) {
+            const command = global.commands.get(commandName);
+            try {
+                await command.execute(conn, mek, args, mek.key.remoteJid, isOwnerFinal);
+            } catch (error) {
+                console.error(`❌ Error executing ${commandName}:`, error);
+                await conn.sendMessage(mek.key.remoteJid, { 
+                    text: '❌ Error executing command!'
+                });
             }
-
-            // ═══════════════════════════════════════════════════════
-            // 🔐 OWNER DETECTION
-            // ═══════════════════════════════════════════════════════
-            const botJid = conn.user.id;
-            const botNumber = cleanNumber(botJid);
-
-            const isBotOwner = 
-                senderNumber === botNumber ||
-                cleanNumber(sender) === cleanNumber(botJid) ||
-                senderNumber.includes(botNumber) ||
-                botNumber.includes(senderNumber);
-
-            const developerNumber = settings.developerNumber || '254755660053';
-            const isDeveloper = 
-                senderNumber === developerNumber ||
-                cleanNumber(sender) === developerNumber;
-
-            const isSudo = settings.sudoUsers && settings.sudoUsers.some(sudo => 
-                senderNumber === sudo || cleanNumber(sender) === sudo
-            );
-
-            const isOwnerFinal = isBotOwner || isDeveloper || isSudo;
-
-            const botMode = settings.mode || global.botMode || 'public';
-
-            if (botMode === 'private' && !isOwnerFinal) {
-                console.log(`🔒 Private mode: Ignoring "${commandName}"`);
-                return;
-            }
-
-            console.log(`📥 Command: ${commandName} from ${senderNumber}`);
-
-            if (global.commands && global.commands.has(commandName)) {
-                const command = global.commands.get(commandName);
-                try {
-                    await command.execute(conn, mek, args, mek.key.remoteJid, isOwnerFinal);
-                } catch (error) {
-                    console.error(`❌ Error executing ${commandName}:`, error);
-                    await conn.sendMessage(mek.key.remoteJid, { 
-                        text: '❌ Error executing command!'
-                    });
-                }
-            } else {
-                if (botMode !== 'private') {
-                    await conn.sendMessage(mek.key.remoteJid, { 
-                        text: `❌ Unknown command: ${text}\nType ${settings.prefix}menu`
-                    });
-                }
+        } else {
+            if (botMode !== 'private') {
+                await conn.sendMessage(mek.key.remoteJid, { 
+                    text: `❌ Unknown command: ${text}\nType ${prefix}menu`
+                });
             }
         }
     } catch (error) {

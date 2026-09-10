@@ -85,7 +85,7 @@ store.readFromFile();
 const settings = require('./settings');
 setInterval(() => store.writeToFile(), settings.storeWriteInterval || 10000);
 
-// Processed messages cache (reduced size for speed)
+// Processed messages cache
 const processedMessages = new Set();
 setInterval(() => processedMessages.clear(), 3 * 60 * 1000);
 
@@ -232,7 +232,6 @@ async function startQueenBella() {
             syncFullHistory: false,
             downloadHistory: false,
             generateHighQualityLinkPreview: false,
-            // ✅ FIX: Return proper empty message to avoid "Waiting for this message"
             getMessage: async (key) => {
                 try {
                     const jid = jidNormalizedUser(key.remoteJid);
@@ -272,7 +271,7 @@ async function startQueenBella() {
 
                 if (mek.key.id.startsWith('BAE5') && mek.key.id.length === 16) return;
 
-                // ✅ FIRE AND FORGET - Handle messages asynchronously (faster)
+                // FIRE AND FORGET - Handle messages asynchronously
                 setImmediate(() => {
                     handleMessages(QueenBella, chatUpdate, true).catch(err => {
                         if (!err.message?.includes('rate-overlimit'))
@@ -280,14 +279,7 @@ async function startQueenBella() {
                     });
                 });
 
-                // 👻 GHOST MODE - Read WITHOUT any delivery ticks
-                try {
-                    if (global.ghostMode && !mek.key.fromMe) {
-                        // Silent - no log to speed up
-                    }
-                } catch (error) {}
-
-                // 📖 AUTO-READ MESSAGES - ONLY IF GHOST MODE IS OFF
+                // 📖 AUTO-READ MESSAGES
                 if (!global.ghostMode) {
                     setImmediate(async () => {
                         try {
@@ -317,7 +309,7 @@ async function startQueenBella() {
                     await QueenBella.sendPresenceUpdate(statusText, chatId);
                 } catch (error) {}
 
-                // 🟢 ALWAYS ONLINE (only in DMs)
+                // 🟢 ALWAYS ONLINE
                 try {
                     if (global.alwaysOnline && !chatId.endsWith('@g.us')) {
                         await QueenBella.sendPresenceUpdate('available', chatId);
@@ -588,21 +580,23 @@ async function startQueenBella() {
                     }
                 } catch (e) {}
 
-                // 👇 SEND WELCOME MESSAGE
-                try {
-                    const botNumber = QueenBella.user.id.split(':')[0] + '@s.whatsapp.net';
-                    const currentPrefix = settings.prefix || '.';
+                // 👇 SEND WELCOME MESSAGE WITH FALLBACK
+                setTimeout(async () => {
+                    try {
+                        const botNumber = QueenBella.user.id.split(':')[0] + '@s.whatsapp.net';
+                        const currentPrefix = settings.prefix || '.';
 
-                    const userName = settings.botOwner || 'QUEEN BELLA USER';
-                    const userNumber = settings.ownerNumber || '254755660053';
+                        const userName = settings.botOwner || 'QUEEN BELLA USER';
+                        const userNumber = settings.ownerNumber || '254755660053';
 
-                    const welcomeImages = settings.welcomeImages || [
-                        "https://imagetourl.cloud/jey865he.jpg",
-                        "https://imagetourl.cloud/8uafyai1.jpg"
-                    ];
-                    const randomImage = welcomeImages[Math.floor(Math.random() * welcomeImages.length)];
+                        // ✅ WORKING IMAGE URLS
+                        const welcomeImages = settings.welcomeImages || [
+                            "https://i.imgur.com/687ZxLW.jpeg",
+                            "https://i.imgur.com/687ZxLW.jpeg"
+                        ];
+                        const randomImage = welcomeImages[Math.floor(Math.random() * welcomeImages.length)];
 
-                    const welcomeText = `╔═══☉❖ʜᴇʟʟᴏ ${userName.toUpperCase()}❖☉═══╗
+                        const welcomeText = `╔═══☉❖ʜᴇʟʟᴏ ${userName.toUpperCase()}❖☉═══╗
 ║   ᴛʜᴀɴᴋ ʏᴏᴜ ғᴏʀ ᴄʜᴏᴏsɪɴɢ ʙᴇʟʟᴀ!     
 ║    ᴍᴀᴅᴇ ʙʏ  ᴅᴇᴠ ʀᴏᴅɢᴇʀs                
 ╚══════════════════════╝
@@ -620,23 +614,43 @@ async function startQueenBella() {
 ┗━━━━━━━━━━━━━━━━━━┛
 © ᴀ ʙᴇʟʟᴀ ʙᴏᴛs ᴘʀᴏᴅᴜᴄᴛɪᴏɴs`;
 
-                    await QueenBella.sendMessage(botNumber, {
-                        image: { url: randomImage },
-                        caption: welcomeText,
-                        contextInfo: {
-                            forwardingScore: 999,
-                            isForwarded: true,
-                            forwardedNewsletterMessageInfo: {
-                                newsletterJid: settings.channelId,
-                                newsletterName: settings.channelName,
-                                serverMessageId: 1
-                            }
+                        // Try with image first
+                        try {
+                            await QueenBella.sendMessage(botNumber, {
+                                image: { url: randomImage },
+                                caption: welcomeText,
+                                contextInfo: {
+                                    forwardingScore: 999,
+                                    isForwarded: true,
+                                    forwardedNewsletterMessageInfo: {
+                                        newsletterJid: settings.channelId || '120363411498601038@newsletter',
+                                        newsletterName: settings.channelName || 'QUEEN BELLA MD',
+                                        serverMessageId: 1
+                                    }
+                                }
+                            });
+                            console.log(chalk.green('✅ Welcome message sent with image!'));
+                        } catch (imageError) {
+                            console.log(chalk.yellow('⚠️ Image failed, sending text only...'));
+                            // Fallback: Send text only
+                            await QueenBella.sendMessage(botNumber, {
+                                text: welcomeText,
+                                contextInfo: {
+                                    forwardingScore: 999,
+                                    isForwarded: true,
+                                    forwardedNewsletterMessageInfo: {
+                                        newsletterJid: settings.channelId || '120363411498601038@newsletter',
+                                        newsletterName: settings.channelName || 'QUEEN BELLA MD',
+                                        serverMessageId: 1
+                                    }
+                                }
+                            });
+                            console.log(chalk.green('✅ Welcome message sent (text only)!'));
                         }
-                    });
-                    console.log(chalk.green('✅ Welcome message sent!'));
-                } catch (error) {
-                    console.error('Error sending welcome message:', error.message);
-                }
+                    } catch (error) {
+                        console.error('Error sending welcome message:', error.message);
+                    }
+                }, 3000); // Wait 3 seconds after connection
             }
 
             if (connection === 'close') {

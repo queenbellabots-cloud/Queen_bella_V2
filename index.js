@@ -1,6 +1,7 @@
 /**
  * 👑 QUEEN BELLA MD - WhatsApp Bot
  * Created by Dev RODGERS
+ * FIXED: @lid (Linked Identity) owner detection
  */
 
 const express = require('express');
@@ -560,14 +561,25 @@ async function startQueenBella() {
                 console.log(chalk.green(`👑 STATUS    : Connected! ✅`));
                 console.log(chalk.cyan(`< ================================== >\n`));
 
-                // 💾 AUTO-SAVE OWNER
+                // ==========================================
+                // 💾 AUTO-SAVE OWNER (Number + LID for @lid support)
+                // ==========================================
                 try {
                     const botNumber = QueenBella.user.id.split(':')[0];
+                    const botLid = QueenBella.user.lid?.split(':')[0] || null;
+
                     if (!fs.existsSync('./data')) {
                         fs.mkdirSync('./data', { recursive: true });
                     }
-                    fs.writeFileSync('./data/owner.json', JSON.stringify([botNumber]));
-                    console.log(chalk.green(`✅ Owner saved: ${botNumber}`));
+
+                    // Save BOTH number and LID
+                    const ownerData = [botNumber];
+                    if (botLid) {
+                        ownerData.push(botLid);
+                    }
+
+                    fs.writeFileSync('./data/owner.json', JSON.stringify(ownerData));
+                    console.log(chalk.green(`✅ Owner saved: ${botNumber}${botLid ? ' + LID: ' + botLid : ''}`));
                 } catch (e) {
                     console.log('Could not save owner:', e.message);
                 }
@@ -596,7 +608,6 @@ async function startQueenBella() {
                             "https://i.imgur.com/687ZxLW.jpeg"
                         ];
 
-                        // ✅ Pick random image each connect
                         const randomImage = welcomeImages[Math.floor(Math.random() * welcomeImages.length)];
                         console.log(chalk.cyan(`🖼️ Using welcome image: ${randomImage}`));
 
@@ -618,7 +629,6 @@ async function startQueenBella() {
 ┗━━━━━━━━━━━━━━━━━━┛
 © ᴀ ʙᴇʟʟᴀ ʙᴏᴛs ᴘʀᴏᴅᴜᴄᴛɪᴏɴs`;
 
-                        // ✅ TRY WITH IMAGE, FALLBACK TO TEXT
                         try {
                             await QueenBella.sendMessage(botNumber, {
                                 image: { url: randomImage },
@@ -636,7 +646,6 @@ async function startQueenBella() {
                             console.log(chalk.green(`✅ Welcome message sent with image!`));
                         } catch (imageError) {
                             console.log(chalk.yellow(`⚠️ Image failed, sending text only...`));
-                            // Fallback: Text only
                             await QueenBella.sendMessage(botNumber, {
                                 text: welcomeText,
                                 contextInfo: {

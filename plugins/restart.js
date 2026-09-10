@@ -34,7 +34,7 @@ module.exports = {
             });
 
             // Send initial loading message
-            const loadingMsg = await conn.sendMessage(chatId, {
+            await conn.sendMessage(chatId, {
                 text: `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃   👑 QUEEN BELLA MD V1   ┃
 ┃   Created by Dev RODGERS  ┃
@@ -256,8 +256,21 @@ ${settings.footer}`;
             // Wait for message to send
             await new Promise(resolve => setTimeout(resolve, 3000));
 
-            // Restart the bot
-            process.exit(0);
+            // ==========================================
+            // 🔄 RESTART THE BOT (KataBump Compatible)
+            // ==========================================
+            console.log('🔄 Restart command received. Signaling KataBump to restart...');
+            
+            // Send SIGTERM to PID 1 (the container's init process)
+            // This tells the process manager to restart the server.
+            exec('kill -15 1', (error) => {
+                if (error) {
+                    console.error(`Restart signal error: ${error.message}`);
+                    // Fallback: If the signal command fails, exit the process.
+                    // The panel might be configured to restart on exit.
+                    process.exit(0);
+                }
+            });
 
         } catch (error) {
             console.error('Restart error:', error);

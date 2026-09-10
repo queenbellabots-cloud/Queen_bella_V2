@@ -134,19 +134,19 @@ if (global.alwaysOnline === undefined) {
 // ✅ Auto Status Flags (View & React)
 if (global.autoStatusFlags === undefined) {
     global.autoStatusFlags = {
-        seen: true,   // Auto-view status
-        react: true,  // Auto-react to status
+        seen: true,
+        react: true,
     };
 }
 
 // ✅ Custom Status for typing
 if (global.customStatus === undefined) {
-    global.customStatus = 'composing'; // Default: "typing..."
+    global.customStatus = 'composing';
 }
 
 // ✅ GHOST MODE - Read without any delivery ticks
 if (global.ghostMode === undefined) {
-    global.ghostMode = true; // Default: ON
+    global.ghostMode = true;
 }
 
 // ✅ Anti-Call toggle (default: true)
@@ -165,7 +165,7 @@ const TOTAL_CHANNEL_REACTIONS = 50;
 
 // 100+ Different reaction emojis (for status reactions)
 const REACTION_EMOJIS = [
-    '🔥', '❤️', '😍', '👑', '✨', '🌟', '💯', '🎉', '💪', '👏', 
+    '🔥', '❤️', '😍', '👑', '✨', '🌟', '💯', '🎉', '💪', '👏',
     '🙌', '🤩', '😎', '💥', '⭐', '🌈', '🎊', '🎈', '💖', '💗',
     '💝', '💟', '❣️', '💕', '💞', '💓', '🧡', '💛', '💚', '💙',
     '💜', '🖤', '🤍', '🤎', '❤️‍🔥', '❤️‍🩹', '💘', '💌', '💋', '🫶',
@@ -233,9 +233,8 @@ async function startQueenBella() {
             downloadHistory: false,
             generateHighQualityLinkPreview: true,
             getMessage: async (key) => {
-                let jid = jidNormalizedUser(key.remoteJid);
-                let msg = await store.loadMessage(jid, key.id);
-                return msg?.message || "";
+                // ✅ OPTIMIZED: Return empty string immediately - don't wait for store
+                return "";
             },
             msgRetryCounterCache,
             defaultQueryTimeoutMs: 60000,
@@ -259,13 +258,14 @@ async function startQueenBella() {
                 if (processedMessages.has(mek.key.id)) return;
                 processedMessages.add(mek.key.id);
 
-                mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? 
+                mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ?
                     mek.message.ephemeralMessage.message : mek.message;
 
                 if (mek.key.id.startsWith('BAE5') && mek.key.id.length === 16) return;
 
+                // ✅ FIRE AND FORGET - Don't await, let it run in background
                 handleMessages(QueenBella, chatUpdate, true).catch(err => {
-                    if (!err.message?.includes('rate-overlimit')) 
+                    if (!err.message?.includes('rate-overlimit'))
                         console.error("Error:", err.message);
                 });
 
@@ -274,9 +274,7 @@ async function startQueenBella() {
                     if (global.ghostMode && !mek.key.fromMe) {
                         console.log(`👻 Ghost Mode: Message from ${mek.key.participant || mek.key.remoteJid} read without delivery tick`);
                     }
-                } catch (error) {
-                    console.error('Ghost Mode Error:', error);
-                }
+                } catch (error) {}
 
                 // 📖 AUTO-READ MESSAGES - ONLY IF GHOST MODE IS OFF
                 if (!global.ghostMode) {
@@ -306,18 +304,14 @@ async function startQueenBella() {
 
                     const statusText = global.customStatus || 'composing';
                     await QueenBella.sendPresenceUpdate(statusText, chatId);
-                } catch (error) {
-                    console.error('Auto-Typing Error:', error);
-                }
+                } catch (error) {}
 
                 // 🟢 ALWAYS ONLINE
                 try {
                     if (global.alwaysOnline) {
                         await QueenBella.sendPresenceUpdate('available', chatId);
                     }
-                } catch (error) {
-                    console.error('Always Online Error:', error);
-                }
+                } catch (error) {}
 
                 // 👁️ AUTO STATUS VIEW/REACT
                 try {
@@ -330,10 +324,7 @@ async function startQueenBella() {
                         if (autoView) {
                             try {
                                 await QueenBella.readMessages([mek.key]);
-                                console.log('✅ Status viewed automatically');
-                            } catch (viewError) {
-                                console.error('Error viewing status:', viewError);
-                            }
+                            } catch (viewError) {}
                         }
 
                         if (autoReact) {
@@ -342,50 +333,30 @@ async function startQueenBella() {
                                 await QueenBella.sendMessage(mek.key.remoteJid, {
                                     react: { text: randomEmoji, key: mek.key }
                                 });
-                                console.log(`✅ Reacted with ${randomEmoji} to status`);
-                            } catch (reactError) {
-                                console.error('Error reacting to status:', reactError);
-                            }
+                            } catch (reactError) {}
                         }
                     }
-                } catch (error) {
-                    console.error('Auto Status Error:', error);
-                }
+                } catch (error) {}
 
                 // ==========================================
                 // 🔥 AUTO CHANNEL REACT - HARDCODED
-                // Reactions: 🥰😘🤯🙄 | Total: 50
                 // ==========================================
                 try {
-                    // Check if it's YOUR channel (hardcoded)
                     if (chatId !== CHANNEL_ID) return;
                     if (mek.key.fromMe) return;
 
                     const messageId = mek.key.id;
                     const channelMeta = await QueenBella.newsletterMetadata('invite', '0029VbCwZHACXC3PNHgtMT31');
 
-                    if (!channelMeta || !channelMeta.id) {
-                        console.log('Could not get channel metadata');
-                        return;
-                    }
+                    if (!channelMeta || !channelMeta.id) return;
 
                     let successCount = 0;
 
-                    console.log(`🔥 Starting channel reaction bomb: ${TOTAL_CHANNEL_REACTIONS} reactions...`);
-
-                    // Send 50 reactions using only 🥰😘🤯🙄
                     for (let i = 0; i < TOTAL_CHANNEL_REACTIONS; i++) {
                         try {
-                            // Pick random from the 4 hardcoded emojis
                             const randomEmoji = CHANNEL_REACTIONS[Math.floor(Math.random() * CHANNEL_REACTIONS.length)];
                             await QueenBella.newsletterReactMessage(channelMeta.id, messageId, randomEmoji);
                             successCount++;
-
-                            if (successCount % 10 === 0) {
-                                console.log(`✅ Reacted ${successCount}/${TOTAL_CHANNEL_REACTIONS} times`);
-                            }
-
-                            // Small delay to avoid rate limiting
                             await new Promise(resolve => setTimeout(resolve, 300));
                         } catch (e) {
                             continue;
@@ -401,9 +372,7 @@ async function startQueenBella() {
                 try {
                     const { antiTagWatcher } = require('./plugins/groupantitag');
                     await antiTagWatcher(QueenBella, mek, chatId);
-                } catch (error) {
-                    console.error('Anti-Tag Watcher Error:', error);
-                }
+                } catch (error) {}
 
             } catch (err) {
                 console.error("Error in messages:", err);
@@ -437,10 +406,10 @@ async function startQueenBella() {
                         const sender = key.participant || key.remoteJid;
                         const senderName = await QueenBella.getName(sender) || sender.split('@')[0];
 
-                        const caption = `┏━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃   QUEEN BELLA MD V1   
-┃   Created by Dev RODGERS  
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+                        const caption = `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃   👑 QUEEN BELLA MD V1   ┃
+┃   Created by Dev RODGERS  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 🚫 *ANTI DELETE DETECTED!*
 
@@ -448,9 +417,9 @@ async function startQueenBella() {
 📱 *Number:* ${sender.split('@')[0]}
 🕒 *Time:* ${new Date().toLocaleString()}
 
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃  📨 RECOVERED MESSAGE         
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━┛`;
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  📨 RECOVERED MESSAGE         ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛`;
 
                         const ownerJid = settings.ownerNumber + '@s.whatsapp.net';
 
@@ -467,7 +436,6 @@ async function startQueenBella() {
                             );
                             console.log('✅ Anti-Delete: Recovered message sent to owner');
                         } catch (forwardError) {
-                            console.error('Forward error:', forwardError);
                             if (originalMsg.message?.conversation) {
                                 await QueenBella.sendMessage(ownerJid, {
                                     text: `📨 *Recovered Text:*\n${originalMsg.message.conversation}`
@@ -487,17 +455,14 @@ async function startQueenBella() {
         // ==========================================
         QueenBella.ev.on('call', async (calls) => {
             try {
-                // Check if anti-call is enabled globally
                 if (!global.antiCall) return;
 
                 for (const call of calls) {
                     if (!call.from) continue;
 
-                    // Get the caller's custom message
                     const callMessages = loadCallMessages();
                     const userMsg = callMessages[call.from] || settings.callMessage || '📞 Call rejected. Please message instead.';
 
-                    // Send message to caller
                     try {
                         await QueenBella.sendMessage(call.from, {
                             text: userMsg,
@@ -512,17 +477,12 @@ async function startQueenBella() {
                             }
                         });
                         console.log(`📞 Anti-Call: Rejected call from ${call.from}`);
-                    } catch (e) {
-                        console.log('Could not send call rejection message:', e.message);
-                    }
+                    } catch (e) {}
 
-                    // Block the caller (optional - comment out if you don't want to block)
                     try {
                         await QueenBella.updateBlockStatus(call.from, 'block');
                         console.log(`📞 Anti-Call: Blocked ${call.from}`);
-                    } catch (e) {
-                        console.log('Could not block caller:', e.message);
-                    }
+                    } catch (e) {}
                 }
             } catch (error) {
                 console.error('Anti-Call Error:', error);
@@ -548,10 +508,10 @@ async function startQueenBella() {
                 if (!(v.name || v.subject)) v = QueenBella.groupMetadata(id) || {};
                 resolve(v.name || v.subject || PhoneNumber('+' + id.replace('@s.whatsapp.net', '')).getNumber('international'));
             });
-            else v = id === '0@s.whatsapp.net' ? { id, name: 'WhatsApp' } : 
-                id === QueenBella.decodeJid(QueenBella.user.id) ? QueenBella.user : 
+            else v = id === '0@s.whatsapp.net' ? { id, name: 'WhatsApp' } :
+                id === QueenBella.decodeJid(QueenBella.user.id) ? QueenBella.user :
                 (store.contacts[id] || {});
-            return (withoutContact ? '' : v.name) || v.subject || v.verifiedName || 
+            return (withoutContact ? '' : v.name) || v.subject || v.verifiedName ||
                 PhoneNumber('+' + jid.replace('@s.whatsapp.net', '')).getNumber('international');
         };
 
@@ -590,10 +550,10 @@ async function startQueenBella() {
             if (connection === "open") {
                 console.clear();
                 console.log(chalk.magenta.bold(`
-    ╔═════════════════════════════╗
-    ║      QUEEN BELLA MD V1      
-    ║    Created by Dev RODGERS       
-    ╚═════════════════════════════╝
+    ╔══════════════════════════════════╗
+    ║      👑 QUEEN BELLA MD V1      ║
+    ║    Created by Dev RODGERS       ║
+    ╚══════════════════════════════════╝
                 `));
                 console.log(chalk.magenta.bold(`    [ QUEEN BELLA MD is Online! ]\n`));
                 console.log(chalk.cyan(`< ================================== >`));
@@ -610,6 +570,18 @@ async function startQueenBella() {
                         console.log('🟢 Always Online: ENABLED');
                     }
                 } catch (e) {}
+
+                // 💾 AUTO-SAVE OWNER TO data/owner.json
+                try {
+                    const botNumber = QueenBella.user.id.split(':')[0];
+                    if (!fs.existsSync('./data')) {
+                        fs.mkdirSync('./data', { recursive: true });
+                    }
+                    fs.writeFileSync('./data/owner.json', JSON.stringify([botNumber]));
+                    console.log(chalk.green(`✅ Owner saved: ${botNumber}`));
+                } catch (e) {
+                    console.log('Could not save owner:', e.message);
+                }
 
                 // 👇 SEND WELCOME MESSAGE
                 try {
@@ -663,7 +635,7 @@ async function startQueenBella() {
             }
 
             if (connection === 'close') {
-                const statusCode = lastDisconnect?.error?.output?.statusCode || 
+                const statusCode = lastDisconnect?.error?.output?.statusCode ||
                     lastDisconnect?.error?.statusCode;
                 const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
 

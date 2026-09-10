@@ -39,13 +39,19 @@ const settings = {
   // ═══════════════════════════════════════════════
   // 📢 OUR CHANNEL
   // ═══════════════════════════════════════════════
+  channelId: "120363411498601038@newsletter",
   channelLink: "https://whatsapp.com/channel/0029VbCwZHACXC3PNHgtMT31",
   channelName: "QUEEN BELLA MD",
 
   // ═══════════════════════════════════════════════
-  // 🖼️ MENU IMAGE 
+  // 🖼️ MENU IMAGE - WORKING URLS
   // ═══════════════════════════════════════════════
-  menuImage: "https://imagetourl.cloud/9eumy3kr.jpg",
+  menuImage: "https://i.imgur.com/687ZxLW.jpeg",
+  
+  // Welcome images shown after connecting
+  welcomeImages: [
+    "https://i.imgur.com/687ZxLW.jpeg"
+  ],
 
   // ═══════════════════════════════════════════════
   // ⚙️ ADVANCED - DO NOT CHANGE BELOW

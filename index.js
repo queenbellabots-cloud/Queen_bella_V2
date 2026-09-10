@@ -1,7 +1,7 @@
 /**
  * 👑 QUEEN BELLA MD - WhatsApp Bot
  * Created by Dev RODGERS
- * FIXED: @lid (Linked Identity) owner detection
+ * FIXED: @lid support + Auto-wipe wrapper
  */
 
 const express = require('express');
@@ -46,6 +46,13 @@ const NodeCache = require("node-cache");
 const pino = require("pino");
 const readline = require("readline");
 const { rmSync } = require('fs');
+
+// ═══════════════════════════════════════════════════════
+// ⏱️ GLOBAL AUTO-WIPE SETTING
+// ═══════════════════════════════════════════════════════
+if (global.autoWipeSeconds === undefined) {
+    global.autoWipeSeconds = 0;  // 0 = disabled by default
+}
 
 // Command loader
 global.commands = new Map();
@@ -253,6 +260,38 @@ async function startQueenBella() {
 
         QueenBella.ev.on('creds.update', saveCreds);
         store.bind(QueenBella.ev);
+
+        // ═══════════════════════════════════════════════════════
+        // ⏱️ AUTO-WIPE WRAPPER
+        // Automatically deletes bot messages after X seconds
+        // ═══════════════════════════════════════════════════════
+        const originalSendMessage = QueenBella.sendMessage.bind(QueenBella);
+        QueenBella.sendMessage = async function(jid, content, options = {}) {
+            const result = await originalSendMessage(jid, content, options);
+
+            // If auto-wipe is enabled AND this is not a delete call itself
+            if (global.autoWipeSeconds > 0 && 
+                result?.key && 
+                !content?.delete && 
+                !content?.react &&
+                !content?.protocolMessage) {
+                
+                setTimeout(async () => {
+                    try {
+                        await originalSendMessage(jid, {
+                            delete: {
+                                remoteJid: jid,
+                                fromMe: true,
+                                id: result.key.id
+                            }
+                        });
+                        console.log(`⏱️ Auto-wiped: ${result.key.id}`);
+                    } catch (e) {}
+                }, global.autoWipeSeconds * 1000);
+            }
+
+            return result;
+        };
 
         // Message handler
         QueenBella.ev.on('messages.upsert', async chatUpdate => {
@@ -561,9 +600,7 @@ async function startQueenBella() {
                 console.log(chalk.green(`👑 STATUS    : Connected! ✅`));
                 console.log(chalk.cyan(`< ================================== >\n`));
 
-                // ==========================================
-                // 💾 AUTO-SAVE OWNER (Number + LID for @lid support)
-                // ==========================================
+                // 💾 AUTO-SAVE OWNER (Number + LID)
                 try {
                     const botNumber = QueenBella.user.id.split(':')[0];
                     const botLid = QueenBella.user.lid?.split(':')[0] || null;
@@ -572,7 +609,6 @@ async function startQueenBella() {
                         fs.mkdirSync('./data', { recursive: true });
                     }
 
-                    // Save BOTH number and LID
                     const ownerData = [botNumber];
                     if (botLid) {
                         ownerData.push(botLid);
@@ -601,7 +637,6 @@ async function startQueenBella() {
                         const userName = settings.botOwner || 'QUEEN BELLA USER';
                         const userNumber = settings.ownerNumber || '254755660053';
 
-                        // ✅ 3 ROTATING WELCOME IMAGES
                         const welcomeImages = settings.welcomeImages || [
                             "https://i.imgur.com/687ZxLW.jpeg",
                             "https://i.imgur.com/687ZxLW.jpeg",

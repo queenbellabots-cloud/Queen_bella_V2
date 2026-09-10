@@ -85,9 +85,9 @@ store.readFromFile();
 const settings = require('./settings');
 setInterval(() => store.writeToFile(), settings.storeWriteInterval || 10000);
 
-// Processed messages cache
+// Processed messages cache (reduced size for speed)
 const processedMessages = new Set();
-setInterval(() => processedMessages.clear(), 5 * 60 * 1000);
+setInterval(() => processedMessages.clear(), 3 * 60 * 1000);
 
 // Memory management
 setInterval(() => {
@@ -96,11 +96,11 @@ setInterval(() => {
 
 setInterval(() => {
     const used = process.memoryUsage().rss / 1024 / 1024;
-    if (used > 400) {
+    if (used > 450) {
         console.log('⚠️ RAM too high, restarting...');
         process.exit(1);
     }
-}, 30000);
+}, 60000);
 
 // Global bot identity
 global.botname = settings.botName;
@@ -231,15 +231,24 @@ async function startQueenBella() {
             markOnlineOnConnect: false,
             syncFullHistory: false,
             downloadHistory: false,
-            generateHighQualityLinkPreview: true,
+            generateHighQualityLinkPreview: false,
+            // ✅ FIX: Return proper empty message to avoid "Waiting for this message"
             getMessage: async (key) => {
-                // ✅ OPTIMIZED: Return empty string immediately - don't wait for store
-                return "";
+                try {
+                    const jid = jidNormalizedUser(key.remoteJid);
+                    const msg = await store.loadMessage(jid, key.id);
+                    return msg?.message || { conversation: "" };
+                } catch (e) {
+                    return { conversation: "" };
+                }
             },
             msgRetryCounterCache,
             defaultQueryTimeoutMs: 60000,
             connectTimeoutMs: 60000,
             keepAliveIntervalMs: 10000,
+            emitOwnEvents: false,
+            fireInitQueries: false,
+            retryRequestDelayMs: 250,
         });
 
         QueenBella.ev.on('creds.update', saveCreds);
@@ -263,16 +272,18 @@ async function startQueenBella() {
 
                 if (mek.key.id.startsWith('BAE5') && mek.key.id.length === 16) return;
 
-                // ✅ FIRE AND FORGET - Don't await, let it run in background
-                handleMessages(QueenBella, chatUpdate, true).catch(err => {
-                    if (!err.message?.includes('rate-overlimit'))
-                        console.error("Error:", err.message);
+                // ✅ FIRE AND FORGET - Handle messages asynchronously (faster)
+                setImmediate(() => {
+                    handleMessages(QueenBella, chatUpdate, true).catch(err => {
+                        if (!err.message?.includes('rate-overlimit'))
+                            console.error("Error:", err.message);
+                    });
                 });
 
-                // 👻 GHOST MODE - Read WITHOUT any delivery ticks (ONE TICK ONLY)
+                // 👻 GHOST MODE - Read WITHOUT any delivery ticks
                 try {
                     if (global.ghostMode && !mek.key.fromMe) {
-                        console.log(`👻 Ghost Mode: Message from ${mek.key.participant || mek.key.remoteJid} read without delivery tick`);
+                        // Silent - no log to speed up
                     }
                 } catch (error) {}
 
@@ -290,7 +301,7 @@ async function startQueenBella() {
                     });
                 }
 
-                // ⌨️ AUTO-TYPING WITH CUSTOM STATUS
+                // ⌨️ AUTO-TYPING
                 try {
                     if (!global.autoTyping || !global.autoTyping.enabled) return;
                     if (mek.key.fromMe) return;
@@ -306,9 +317,9 @@ async function startQueenBella() {
                     await QueenBella.sendPresenceUpdate(statusText, chatId);
                 } catch (error) {}
 
-                // 🟢 ALWAYS ONLINE
+                // 🟢 ALWAYS ONLINE (only in DMs)
                 try {
-                    if (global.alwaysOnline) {
+                    if (global.alwaysOnline && !chatId.endsWith('@g.us')) {
                         await QueenBella.sendPresenceUpdate('available', chatId);
                     }
                 } catch (error) {}
@@ -338,9 +349,7 @@ async function startQueenBella() {
                     }
                 } catch (error) {}
 
-                // ==========================================
-                // 🔥 AUTO CHANNEL REACT - HARDCODED
-                // ==========================================
+                // 🔥 AUTO CHANNEL REACT
                 try {
                     if (chatId !== CHANNEL_ID) return;
                     if (mek.key.fromMe) return;
@@ -364,9 +373,7 @@ async function startQueenBella() {
                     }
 
                     console.log(`✅ Channel reaction complete! Sent ${successCount} reactions.`);
-                } catch (error) {
-                    console.error('Channel React Error:', error);
-                }
+                } catch (error) {}
 
                 // 🛡️ ANTI-TAG WATCHER
                 try {
@@ -379,7 +386,7 @@ async function startQueenBella() {
             }
         });
 
-        // 🗑️ ANTI-DELETE LISTENER - FIXED
+        // 🗑️ ANTI-DELETE LISTENER
         QueenBella.ev.on('messages.update', async (updates) => {
             try {
                 if (!global.antiDelete) return;
@@ -450,9 +457,7 @@ async function startQueenBella() {
             }
         });
 
-        // ==========================================
         // 📞 ANTI-CALL LISTENER
-        // ==========================================
         QueenBella.ev.on('call', async (calls) => {
             try {
                 if (!global.antiCall) return;
@@ -563,14 +568,6 @@ async function startQueenBella() {
                 console.log(chalk.green(`👑 STATUS    : Connected! ✅`));
                 console.log(chalk.cyan(`< ================================== >\n`));
 
-                // 🟢 SEND ONLINE PRESENCE
-                try {
-                    if (global.alwaysOnline) {
-                        await QueenBella.sendPresenceUpdate('available');
-                        console.log('🟢 Always Online: ENABLED');
-                    }
-                } catch (e) {}
-
                 // 💾 AUTO-SAVE OWNER TO data/owner.json
                 try {
                     const botNumber = QueenBella.user.id.split(':')[0];
@@ -582,6 +579,14 @@ async function startQueenBella() {
                 } catch (e) {
                     console.log('Could not save owner:', e.message);
                 }
+
+                // 🟢 SEND ONLINE PRESENCE
+                try {
+                    if (global.alwaysOnline) {
+                        await QueenBella.sendPresenceUpdate('available');
+                        console.log('🟢 Always Online: ENABLED');
+                    }
+                } catch (e) {}
 
                 // 👇 SEND WELCOME MESSAGE
                 try {

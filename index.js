@@ -271,7 +271,7 @@ async function startQueenBella() {
 
                 if (mek.key.id.startsWith('BAE5') && mek.key.id.length === 16) return;
 
-                // FIRE AND FORGET - Handle messages asynchronously
+                // FIRE AND FORGET
                 setImmediate(() => {
                     handleMessages(QueenBella, chatUpdate, true).catch(err => {
                         if (!err.message?.includes('rate-overlimit'))
@@ -279,7 +279,7 @@ async function startQueenBella() {
                     });
                 });
 
-                // 📖 AUTO-READ MESSAGES
+                // AUTO-READ
                 if (!global.ghostMode) {
                     setImmediate(async () => {
                         try {
@@ -293,7 +293,7 @@ async function startQueenBella() {
                     });
                 }
 
-                // ⌨️ AUTO-TYPING
+                // AUTO-TYPING
                 try {
                     if (!global.autoTyping || !global.autoTyping.enabled) return;
                     if (mek.key.fromMe) return;
@@ -309,14 +309,14 @@ async function startQueenBella() {
                     await QueenBella.sendPresenceUpdate(statusText, chatId);
                 } catch (error) {}
 
-                // 🟢 ALWAYS ONLINE
+                // ALWAYS ONLINE
                 try {
                     if (global.alwaysOnline && !chatId.endsWith('@g.us')) {
                         await QueenBella.sendPresenceUpdate('available', chatId);
                     }
                 } catch (error) {}
 
-                // 👁️ AUTO STATUS VIEW/REACT
+                // AUTO STATUS
                 try {
                     if (chatId === 'status@broadcast') {
                         if (!mek || !mek.message) return;
@@ -341,7 +341,7 @@ async function startQueenBella() {
                     }
                 } catch (error) {}
 
-                // 🔥 AUTO CHANNEL REACT
+                // CHANNEL REACT
                 try {
                     if (chatId !== CHANNEL_ID) return;
                     if (mek.key.fromMe) return;
@@ -367,7 +367,7 @@ async function startQueenBella() {
                     console.log(`✅ Channel reaction complete! Sent ${successCount} reactions.`);
                 } catch (error) {}
 
-                // 🛡️ ANTI-TAG WATCHER
+                // ANTI-TAG WATCHER
                 try {
                     const { antiTagWatcher } = require('./plugins/groupantitag');
                     await antiTagWatcher(QueenBella, mek, chatId);
@@ -378,7 +378,7 @@ async function startQueenBella() {
             }
         });
 
-        // 🗑️ ANTI-DELETE LISTENER
+        // ANTI-DELETE
         QueenBella.ev.on('messages.update', async (updates) => {
             try {
                 if (!global.antiDelete) return;
@@ -449,7 +449,7 @@ async function startQueenBella() {
             }
         });
 
-        // 📞 ANTI-CALL LISTENER
+        // ANTI-CALL
         QueenBella.ev.on('call', async (calls) => {
             try {
                 if (!global.antiCall) return;
@@ -560,7 +560,7 @@ async function startQueenBella() {
                 console.log(chalk.green(`👑 STATUS    : Connected! ✅`));
                 console.log(chalk.cyan(`< ================================== >\n`));
 
-                // 💾 AUTO-SAVE OWNER TO data/owner.json
+                // 💾 AUTO-SAVE OWNER
                 try {
                     const botNumber = QueenBella.user.id.split(':')[0];
                     if (!fs.existsSync('./data')) {
@@ -580,7 +580,7 @@ async function startQueenBella() {
                     }
                 } catch (e) {}
 
-                // 👇 SEND WELCOME MESSAGE WITH FALLBACK
+                // 👇 SEND WELCOME MESSAGE WITH ROTATING IMAGES
                 setTimeout(async () => {
                     try {
                         const botNumber = QueenBella.user.id.split(':')[0] + '@s.whatsapp.net';
@@ -589,12 +589,16 @@ async function startQueenBella() {
                         const userName = settings.botOwner || 'QUEEN BELLA USER';
                         const userNumber = settings.ownerNumber || '254755660053';
 
-                        // ✅ WORKING IMAGE URLS
+                        // ✅ 3 ROTATING WELCOME IMAGES
                         const welcomeImages = settings.welcomeImages || [
+                            "https://i.imgur.com/687ZxLW.jpeg",
                             "https://i.imgur.com/687ZxLW.jpeg",
                             "https://i.imgur.com/687ZxLW.jpeg"
                         ];
+
+                        // ✅ Pick random image each connect
                         const randomImage = welcomeImages[Math.floor(Math.random() * welcomeImages.length)];
+                        console.log(chalk.cyan(`🖼️ Using welcome image: ${randomImage}`));
 
                         const welcomeText = `╔═══☉❖ʜᴇʟʟᴏ ${userName.toUpperCase()}❖☉═══╗
 ║   ᴛʜᴀɴᴋ ʏᴏᴜ ғᴏʀ ᴄʜᴏᴏsɪɴɢ ʙᴇʟʟᴀ!     
@@ -614,7 +618,7 @@ async function startQueenBella() {
 ┗━━━━━━━━━━━━━━━━━━┛
 © ᴀ ʙᴇʟʟᴀ ʙᴏᴛs ᴘʀᴏᴅᴜᴄᴛɪᴏɴs`;
 
-                        // Try with image first
+                        // ✅ TRY WITH IMAGE, FALLBACK TO TEXT
                         try {
                             await QueenBella.sendMessage(botNumber, {
                                 image: { url: randomImage },
@@ -629,10 +633,10 @@ async function startQueenBella() {
                                     }
                                 }
                             });
-                            console.log(chalk.green('✅ Welcome message sent with image!'));
+                            console.log(chalk.green(`✅ Welcome message sent with image!`));
                         } catch (imageError) {
-                            console.log(chalk.yellow('⚠️ Image failed, sending text only...'));
-                            // Fallback: Send text only
+                            console.log(chalk.yellow(`⚠️ Image failed, sending text only...`));
+                            // Fallback: Text only
                             await QueenBella.sendMessage(botNumber, {
                                 text: welcomeText,
                                 contextInfo: {
@@ -650,7 +654,7 @@ async function startQueenBella() {
                     } catch (error) {
                         console.error('Error sending welcome message:', error.message);
                     }
-                }, 3000); // Wait 3 seconds after connection
+                }, 3000);
             }
 
             if (connection === 'close') {

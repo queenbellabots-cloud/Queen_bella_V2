@@ -437,10 +437,10 @@ async function startQueenBella() {
                         const sender = key.participant || key.remoteJid;
                         const senderName = await QueenBella.getName(sender) || sender.split('@')[0];
 
-                        const caption = `┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃   👑 QUEEN BELLA MD V1   ┃
-┃   Created by Dev RODGERS  ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+                        const caption = `┏━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃   QUEEN BELLA MD V1   
+┃   Created by Dev RODGERS  
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 🚫 *ANTI DELETE DETECTED!*
 
@@ -448,9 +448,9 @@ async function startQueenBella() {
 📱 *Number:* ${sender.split('@')[0]}
 🕒 *Time:* ${new Date().toLocaleString()}
 
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃  📨 RECOVERED MESSAGE         ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛`;
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  📨 RECOVERED MESSAGE         
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━┛`;
 
                         const ownerJid = settings.ownerNumber + '@s.whatsapp.net';
 
@@ -590,10 +590,10 @@ async function startQueenBella() {
             if (connection === "open") {
                 console.clear();
                 console.log(chalk.magenta.bold(`
-    ╔══════════════════════════════════╗
-    ║      👑 QUEEN BELLA MD V1      ║
-    ║    Created by Dev RODGERS       ║
-    ╚══════════════════════════════════╝
+    ╔═════════════════════════════╗
+    ║      QUEEN BELLA MD V1      
+    ║    Created by Dev RODGERS       
+    ╚═════════════════════════════╝
                 `));
                 console.log(chalk.magenta.bold(`    [ QUEEN BELLA MD is Online! ]\n`));
                 console.log(chalk.cyan(`< ================================== >`));
